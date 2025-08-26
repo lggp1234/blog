@@ -1,0 +1,18 @@
+{
+  "flowershow:publish-all-notes": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "Pause"
+    }
+  ],
+  "flowershow:publish-note": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "+"
+    }
+  ]
+}
