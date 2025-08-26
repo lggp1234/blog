@@ -1,0 +1,64 @@
+{
+  "package_url": "https://texlive2.swiftlatex.com/",
+  "timeout": 10000,
+  "enableCache": true,
+  "invertColorsInDarkMode": true,
+  "cache": [
+    [
+      "3eea9a5c7c4ea80ae7172df980c01232",
+      [
+        "content/Study/Quantum Mechanics 1/Lecture1. Experiments.md"
+      ]
+    ]
+  ],
+  "packageCache": [
+    {},
+    {
+      "10/swiftlatexpdftex.fmt": "/tex/swiftlatexpdftex.fmt",
+      "26/standalone.cls": "/tex/standalone.cls",
+      "26/shellesc.sty": "/tex/shellesc.sty",
+      "26/ifluatex.sty": "/tex/ifluatex.sty",
+      "26/iftex.sty": "/tex/iftex.sty",
+      "26/xkeyval.sty": "/tex/xkeyval.sty",
+      "26/xkeyval.tex": "/tex/xkeyval.tex",
+      "26/xkvutils.tex": "/tex/xkvutils.tex",
+      "26/keyval.tex": "/tex/keyval.tex",
+      "26/standalone.cfg": "/tex/standalone.cfg",
+      "26/preview.sty": "/tex/preview.sty",
+      "26/article.cls": "/tex/article.cls",
+      "26/size10.clo": "/tex/size10.clo",
+      "26/luatex85.sty": "/tex/luatex85.sty",
+      "26/prtightpage.def": "/tex/prtightpage.def",
+      "26/amsmath.sty": "/tex/amsmath.sty",
+      "26/amsopn.sty": "/tex/amsopn.sty",
+      "26/amstext.sty": "/tex/amstext.sty",
+      "26/amsgen.sty": "/tex/amsgen.sty",
+      "26/amsbsy.sty": "/tex/amsbsy.sty",
+      "26/amssymb.sty": "/tex/amssymb.sty",
+      "26/amsfonts.sty": "/tex/amsfonts.sty",
+      "26/l3backend-pdftex.def": "/tex/l3backend-pdftex.def",
+      "3/cmex7.tfm": "/tex/cmex7.tfm",
+      "26/umsa.fd": "/tex/umsa.fd",
+      "3/msam10.tfm": "/tex/msam10.tfm",
+      "3/msam7.tfm": "/tex/msam7.tfm",
+      "3/msam5.tfm": "/tex/msam5.tfm",
+      "26/umsb.fd": "/tex/umsb.fd",
+      "3/msbm10.tfm": "/tex/msbm10.tfm",
+      "3/msbm7.tfm": "/tex/msbm7.tfm",
+      "3/msbm5.tfm": "/tex/msbm5.tfm",
+      "11/pdftex.map": "/tex/pdftex.map",
+      "32/cmex10.pfb": "/tex/cmex10.pfb",
+      "32/cmmi10.pfb": "/tex/cmmi10.pfb",
+      "32/cmmi7.pfb": "/tex/cmmi7.pfb",
+      "32/cmr10.pfb": "/tex/cmr10.pfb",
+      "32/cmr5.pfb": "/tex/cmr5.pfb",
+      "32/cmr7.pfb": "/tex/cmr7.pfb",
+      "32/cmsy10.pfb": "/tex/cmsy10.pfb",
+      "32/cmsy7.pfb": "/tex/cmsy7.pfb"
+    },
+    {},
+    {}
+  ],
+  "onlyRenderInReadingMode": false,
+  "compiler": 0
+}
