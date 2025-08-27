@@ -9,7 +9,3 @@
 \end{document}
 ```
 <img src="https://i.ibb.co/Mxg8gP9b/2024-03-07-174522.png">
-
-
-
-![](content/Study/QuantumMechanics1/옵시디언로고.jpg)
