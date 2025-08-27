@@ -1,5 +1,5 @@
 
-$$ \begin{equation} 
+$$\begin{equation} 
 \int_{0}^{\infty}e^{-x^2}dx = \sqrt{\pi}/2 \tag{clever}
 \end{equation}$$
 
