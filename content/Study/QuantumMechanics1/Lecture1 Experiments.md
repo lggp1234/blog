@@ -15,7 +15,7 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 [[content/Study/QuantumMechanics1/Lecture2|Lecture2]]
 
 
-$$ 1+1=2 \tag{equation1}  $$
+$$ 1+1=2  $$
 
 $$
 \int_1^2 \ln x \mathrm{d}x
@@ -23,4 +23,6 @@ $$
 \int_1^2 \ln x \mathrm{d}x
 $$
 
+$$
+\textbf{1+} \mathcal{2}=\mathbb{R}+\mathsf{V}
 $$
