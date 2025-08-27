@@ -7,7 +7,7 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
  Gaussian Integral Formula
 </h2></center>
 
-<center><h2></h2></center>
+<center><h2> Complex Analysis </h2></center>
 
 [[Lecture1 Experiments]]
 
