@@ -7,18 +7,15 @@ export const sharedPageComponents: SharedLayout = {
   header: [],
   afterBody: [
     Component.Comments({
-    provider: 'giscus',
-    options: {
-      // data-repo
-      repo: 'anpigon/anpigon-quartz',
-      // data-repo-id
-      repoId: 'R_kgDOLKhz-Q',
-      // data-category
-      category: 'Announcements',
-      // data-category-id
-      categoryId: 'DIC_kwDOLKhz-c4CczBa',
-    }
-  }),
+      provider: 'giscus',
+      options: {
+        repo: 'anpigon/anpigon-quartz',
+        repoId: 'R_kgDOLKhz-Q',
+        category: 'General',
+        categoryId: 'DIC_kwDOLKhz-c4CczBa',
+        mapping: 'pathname',
+      }
+    }),
   ],
   footer: Component.Footer({
     links: {
