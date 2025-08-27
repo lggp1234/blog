@@ -32,3 +32,12 @@ $$
 $$
 \begin{pmatrix} a & b \\ c & d \end{pmatrix} 
 $$
+
+$$
+\begin{bmatrix}
+p_{11} & p_{12} & \ldots & p_{1n} \\
+p_{21} & p_{22} & \ldots & p_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+p_{m1} & p_{m2} & \ldots & p_{mn}
+\end{bmatrix}
+$$
