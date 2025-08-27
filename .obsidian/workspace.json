@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
-                "mode": "preview",
+                "file": "blog/Study/QuantumMechanics1/Lecture2.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture1 Experiments"
+              "title": "Lecture2"
             }
           }
         ]
@@ -173,8 +173,8 @@
   },
   "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
-    "content/Study/QuantumMechanics1/Lecture2.md",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
+    "content/Study/QuantumMechanics1/Lecture2.md",
     "blog/Study/QuantumMechanics1/Lecture2.md",
     "blog/Study/QuantumMechanics1",
     "blog/Study",

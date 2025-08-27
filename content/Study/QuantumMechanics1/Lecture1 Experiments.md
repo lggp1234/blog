@@ -5,3 +5,4 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Gausain Integral Formula </h2></center>
 [[Lecture2|Lecture2]]
+[[content/Study/QuantumMechanics1/Lecture2|Lecture2]]
