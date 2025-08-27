@@ -11,3 +11,4 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 [[Lecture1 Experiments]]
 
+$$ \begin{equation} 1+1=2 \tag{equation1} \end{equation} $$
