@@ -42,3 +42,6 @@ p_{m1} & p_{m2} & \ldots & p_{mn}
 \end{bmatrix}
 $$
 $$ {}_1 $$
+$$
+\mathrm{DC}
+$$
