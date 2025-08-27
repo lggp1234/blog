@@ -8,5 +8,6 @@
 \]
 \end{document}
 ```
-<img src="C:\Users\dongm\PortableGit\lggp\blog\content\Study\QuantumMechanics1\옵시디언로고.jpg">
+<img src="https://ibb.co/NdF1FW7X">
+
 ![](content/Study/QuantumMechanics1/옵시디언로고.jpg)
