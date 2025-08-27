@@ -28,4 +28,6 @@ $$
 $$
 $$
 \prod_{i=1}^{N} x_{i}+y^{i}
-$$
+$$$$ \displaystyle {}_1^2{\rm H}, {}_{~~6}^{12}{\rm C} $$
+
+ $$\begin{pmatrix} a & b \\ c & d \end{pmatrix}$$ 
