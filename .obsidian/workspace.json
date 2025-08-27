@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
+                "file": "content/Study/QuantumMechanics1/Lecture2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture1 Experiments"
+              "title": "Lecture2"
             }
           }
         ]
@@ -174,10 +174,10 @@
   },
   "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
+    "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
     "quartz/static/옵시디언로고.jpg",
     "quartz/static/icon.png",
     "quartz/static/og-image.png",
-    "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
     "content/Study/QuantumMechanics1/Lecture2.md",
     "Excalidraw/Drawing 2025-08-27 12.02.29.excalidraw.md",
     "Excalidraw",
@@ -190,7 +190,6 @@
     "docs/images/social-image-preview-dark.png",
     "docs/images/social-image-preview-light.png",
     "docs/images/github-quick-setup.png",
-    "docs/images/giscus-results.png",
     "content/index.md",
     "content/Study/Quantum Mechanics 1/Untitled",
     "README.md",
