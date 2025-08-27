@@ -57,7 +57,7 @@ const config: QuartzConfig = {
   plugins: {
     transformers: [
       Plugin.FrontMatter(),
-      Plugin.LATEX({
+      Plugin.Latex({
         renderEngine: "katex",
       }),
       Plugin.CreatedModifiedDate({
