@@ -10,4 +10,5 @@
 ```
 <img src="https://i.ibb.co/Mxg8gP9b/2024-03-07-174522.png">
 
-![Alt Text](/)
+![Figure 1](images/icon.png)
+![[icon.png]]
