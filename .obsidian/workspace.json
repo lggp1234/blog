@@ -11,14 +11,12 @@
             "id": "d8b3f55b6e5c585b",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
-                "mode": "source",
-                "source": false
+                "file": "docs/images/quartz transform pipeline.png"
               },
-              "icon": "lucide-file",
-              "title": "Lecture1 Experiments"
+              "icon": "lucide-image",
+              "title": "quartz transform pipeline"
             }
           }
         ]
@@ -173,8 +171,19 @@
   },
   "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
-    "content/index.md",
+    "docs/images/quartz-layout-desktop.png",
+    "docs/images/quartz-layout-mobile.png",
+    "docs/images/quartz-layout-tablet.png",
+    "docs/images/social-image-preview-dark.png",
+    "docs/images/social-image-preview-light.png",
+    "docs/images/github-quick-setup.png",
+    "docs/images/giscus-results.png",
+    "docs/images/giscus-repo.png",
+    "docs/images/giscus-discussion.png",
+    "docs/images/custom-social-image-preview-light.png",
+    "docs/images/custom-social-image-preview-dark.png",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
+    "content/index.md",
     "content/Study/Quantum Mechanics 1/Untitled",
     "content/Study/QuantumMechanics1/Lecture2.md",
     "README.md",
