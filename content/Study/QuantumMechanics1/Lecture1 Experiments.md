@@ -41,11 +41,4 @@ p_{21} & p_{22} & \ldots & p_{2n} \\
 p_{m1} & p_{m2} & \ldots & p_{mn}
 \end{bmatrix}
 $$
-$$
-\begin{eqnarray}
-	a & = & b + c \\
-		& = & d + e + f + g \nonumber \\
-		&& + \: h + i \\
-		& = & j + k + l
-\end{eqnarray}
-$$
+$$ {}_1 $$
