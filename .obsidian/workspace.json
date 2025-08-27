@@ -20,8 +20,21 @@
               "icon": "lucide-file",
               "title": "Lecture1 Experiments"
             }
+          },
+          {
+            "id": "1988b8c2c2d92fe2",
+            "type": "leaf",
+            "state": {
+              "type": "excalidraw",
+              "state": {
+                "file": "Excalidraw/Drawing 2025-08-27 12.02.29.excalidraw.md"
+              },
+              "icon": "excalidraw-icon",
+              "title": "Drawing 2025-08-27 12.02.29.excalidraw"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -168,13 +181,16 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "flowershow:Publish with Flowershow": false
+      "flowershow:Publish with Flowershow": false,
+      "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "d8b3f55b6e5c585b",
+  "active": "1988b8c2c2d92fe2",
   "lastOpenFiles": [
-    "content/Study/QuantumMechanics1/옵시디언로고.jpg",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
+    "Excalidraw/Drawing 2025-08-27 12.02.29.excalidraw.md",
+    "Excalidraw",
+    "content/Study/QuantumMechanics1/옵시디언로고.jpg",
     "content/Image Files",
     "Untitled 1",
     "docs/images/quartz transform pipeline.png",
