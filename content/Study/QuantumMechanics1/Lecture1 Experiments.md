@@ -26,3 +26,6 @@ $$
 $$
 \textbf{1+} \mathcal{2}=\mathbb{R}+\mathsf{V}
 $$
+$$
+\prod_{i=1}^{N} x_{i}+y^{i}
+$$
