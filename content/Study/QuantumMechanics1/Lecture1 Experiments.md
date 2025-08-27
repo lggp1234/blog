@@ -16,7 +16,7 @@
 
 ![](quartz/static/옵시디언로고.jpg)
 
-<img src="quartz/static/옵시디언로고.jpg">
+<img src="C:/Users/dongm/PortableGit/lggp/blog/quartz/static/옵시디언로고.jpg">
 
 
 아니 그래서 진짜 왜 안됨??????
