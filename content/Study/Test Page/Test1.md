@@ -11,8 +11,8 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[Lecture1 Experiments]]
-[[Lecture2]]
+[[Test1]]
+[[Test2]]
 
 
 $$ 1+1=2  $$

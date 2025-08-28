@@ -13,13 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
+                "file": "content/index.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "Lecture1 Experiments"
+              "title": "index"
             }
           }
         ]
@@ -174,11 +174,11 @@
   },
   "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
+    "content/Study/Test Page/Test1.md",
+    "content/Study/Test Page/Test2.md",
     "content/images",
     "새 폴더",
     "content/images/옵시디언로고.jpg",
-    "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
-    "content/Study/QuantumMechanics1/Lecture2.md",
     "blog/Study/QuantumMechanics1/Lecture2.md",
     "blog/Study/QuantumMechanics1",
     "blog/Study",
@@ -199,7 +199,6 @@
     "content/index.md",
     "content/Study/Quantum Mechanics 1/Untitled",
     "README.md",
-    "content/docs",
-    "content/Study/QuantumMechanics1"
+    "content/docs"
   ]
 }
