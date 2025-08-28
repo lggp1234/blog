@@ -20,8 +20,23 @@
               "icon": "lucide-file",
               "title": "연습2"
             }
+          },
+          {
+            "id": "e911f8e5dd35d810",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "content/한국어버젼/공부/물리학/고전역학/강의1. 뉴턴역학.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "강의1. 뉴턴역학"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -170,27 +185,31 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "d8b3f55b6e5c585b",
+  "active": "a6efca618cf12452",
   "lastOpenFiles": [
+    "content/한국어버젼/공부/수리과학/Untitled",
+    "content/한국어버젼/공부/수리과학/해석학",
+    "content/한국어버젼/공부/수리과학/미적분학",
+    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1. Newtonian Mechanics.md",
+    "content/한국어버젼/공부/물리학/고전역학/강의1. 뉴턴역학.md",
+    "content/한국어버젼/공부/물리학/통계역학",
+    "content/한국어버젼/공부/물리학/열물리학",
+    "content/한국어버젼/공부/물리학/양자역학",
+    "content/한국어버젼/공부/물리학/수리물리학",
+    "content/한국어버젼/공부/물리학/전자기학",
+    "content/한국어버젼/공부/물리학/고전역학",
+    "content/EnglishVersion/Study/Mathematics",
+    "content/한국어버젼/공부/수리과학",
+    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Untitled.md",
+    "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
     "content/EnglishVersion/Test-Page/Test1.md",
     "content/EnglishVersion/Test-Page/Test2.md",
-    "content/한국어버젼/연습-페이지/연습2.md",
     "content/index.md",
-    "content/한국어버젼/연습-페이지",
-    "content/한국어버젼/공부",
-    "content/EnglishVersion/Test-Page",
-    "content/EnglishVersion/Study",
     "content/ko/공부/연습_페이지/연습2.md",
     "content/ko/공부/연습_페이지/연습1.md",
-    "content/ko/공부/연습_페이지",
-    "content/ko/공부",
-    "content/ko",
     "content/en/Study/Test_Page/Test2.md",
     "content/en/Study/Test_Page/Test1.md",
-    "content/en/Study/Test_Page",
-    "content/en/Study",
-    "content/en",
     "content/images/옵시디언로고.jpg",
     "content/ko/images 1/옵시디언로고.jpg",
     "Untitled.md",
