@@ -13,13 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/ko/Study/Test Page/Test1.md",
+                "file": "content/ko/Study/Test Page/Test2.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "Test1"
+              "title": "Test2"
             }
           }
         ]
@@ -172,16 +172,16 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "a6efca618cf12452",
+  "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
+    "content/en/Study/Test Page/Test2.md",
+    "content/en/Study/Test Page/Test1.md",
+    "content/ko/Study/Test Page/Test1.md",
     "content/ko/Personal History",
     "content/ko/Research",
-    "content/en/Study/Test Page/Test1.md",
     "content/ko/Study/Test Page/Test2.md",
-    "content/ko/Study/Test Page/Test1.md",
     "content/ko/Study/Test Page",
     "content/ko/Study",
-    "content/en/Study/Test Page/Test2.md",
     "content/ko/images 1/옵시디언로고.jpg",
     "content/ko/images 1",
     "content/ko",
@@ -193,7 +193,6 @@
     "content/Study/QuantumMechanics1/Lecture2.md",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
     "content/Study/QuantumMechanics1",
-    "content/images",
     "content/images/옵시디언로고.jpg",
     "blog/Study/QuantumMechanics1/Lecture2.md",
     "quartz/static/icon.png",

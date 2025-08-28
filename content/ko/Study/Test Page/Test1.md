@@ -1,3 +1,7 @@
+---
+lang: ko
+altLangPath: /en/study/Test Page/Test1/
+---
 
 $$
 \int_0^\infty e^{-x^2}dx = \frac{\sqrt{\pi}}{2}
