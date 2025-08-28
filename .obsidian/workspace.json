@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/공부/물리학/고전역학/강의1 뉴턴역학.md",
+                "file": "content/english/study/physics/classical-mechanics/index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "강의1 뉴턴역학"
+              "title": "index"
             }
           }
         ],
@@ -201,16 +201,20 @@
   },
   "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
-    "content/EnglishVersion/Study/Physics/classical-mechanics/lecture1-newtonian-mechanics.md",
-    "content/한국어버젼/공부/물리학/고전역학/강의1 뉴턴역학.md",
     "content/한국어버젼/공부/물리학/고전역학/index.md",
-    "content/EnglishVersion/Study/Physics/classical-mechanics/index.md",
+    "content/한국어버젼/공부/물리학/고전역학/강의1-뉴턴역학.md",
+    "content/한국어버젼/index.md",
+    "content/english/study/physics/index.md",
+    "content/english/study/index.md",
+    "content/english/index.md",
+    "content/english/study/physics/classical-mechanics/lecture1-newtonian-mechanics.md",
+    "content/english/study/physics/classical-mechanics/index.md",
     "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
-    "content/EnglishVersion/Study/Mathematics/Differential Equations",
-    "content/EnglishVersion/Study/Mathematics/Linear Algebra",
-    "content/EnglishVersion/Study/Mathematics/Mathematical AnalysisⅠ·Ⅱ",
-    "content/EnglishVersion/Study/Mathematics/CalculusⅠ·Ⅱ",
+    "content/english/study/mathematics/Differential Equations",
+    "content/english/study/mathematics/Linear Algebra",
+    "content/english/study/mathematics/Mathematical AnalysisⅠ·Ⅱ",
+    "content/english/study/mathematics/CalculusⅠ·Ⅱ",
     "content/한국어버젼/공부/수리과학/미분방정식",
     "content/한국어버젼/공부/수리과학/선형대수학학",
     "content/한국어버젼/공부/수리과학/해석학Ⅰ·Ⅱ",
@@ -218,8 +222,8 @@
     "content/한국어버젼/공부/물리학/통계역학",
     "content/한국어버젼/공부/물리학/열물리학",
     "content/EnglishVersion/Study/Physcis/Classical Mechanics/Untitled.md",
-    "content/EnglishVersion/Test-Page/Test1.md",
-    "content/EnglishVersion/Test-Page/Test2.md",
+    "content/english/Test-Page/Test1.md",
+    "content/english/Test-Page/Test2.md",
     "content/index.md",
     "content/ko/공부/연습_페이지/연습2.md",
     "content/ko/공부/연습_페이지/연습1.md",
