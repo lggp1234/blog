@@ -26,6 +26,9 @@ $$
 $$
 \textbf{1+} \mathcal{2}=\mathbb{R}+\mathsf{V}
 $$
+
+spaceing 
+
 $$
 \prod_{i=1}^{N} x_{i}+y^{i}
 $$
@@ -58,8 +61,6 @@ $$
 $$
 
 ![](content/images/옵시디언로고.jpg)
-
-![[옵시디언로고.jpg]]
 
 한국어 테스트
 
