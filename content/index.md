@@ -13,6 +13,7 @@ The **Study** section presents my organized notes, insights, and reflections on 
 Finally, the **Research** section highlights works, topics, and ideas that I have found noteworthy, inspiring, or intellectually stimulating.
 
 All materials are available in both Korean, intended for Korean-speaking readers, and English, intended for non-Korean readers. We kindly ask you to take this into account when navigating the archive.
+
 Have a Nice Day!
 
 ---
@@ -27,4 +28,5 @@ Have a Nice Day!
 마지막으로 **연구 활동** 항목에서는 제가 관심있어 하거나, 눈여겨 본, 영감을 받은 연구들에 대해서 살펴보실 수 있습니다.
 
 모든 글들은 한국인 독자분들을 위한 한국어 버젼과 아니신 분들을 위한 영어버젼이 제공됩니다. 이용에 참고해주세요.
+
 그럼 좋은 하루되세요!
