@@ -22,35 +22,21 @@
             }
           },
           {
-            "id": "e911f8e5dd35d810",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1. Newtonian Mechanics.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Lecture1. Newtonian Mechanics"
-            }
-          },
-          {
             "id": "3b27729b3910f9e1",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1. Newtonian Mechanics.md",
+                "file": "content/한국어버젼/공부/물리학/고전역학/강의1_뉴턴역학.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture1. Newtonian Mechanics"
+              "title": "강의1_뉴턴역학"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -201,9 +187,10 @@
   },
   "active": "3b27729b3910f9e1",
   "lastOpenFiles": [
+    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1_Newtonian_Mechanics.md",
+    "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
-    "content/한국어버젼/공부/물리학/고전역학/강의1. 뉴턴역학.md",
-    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1. Newtonian Mechanics.md",
+    "content/한국어버젼/공부/물리학/고전역학/강의1_뉴턴역학.md",
     "content/EnglishVersion/Study/Mathematics/Differential Equations",
     "content/EnglishVersion/Study/Mathematics/Linear Algebra",
     "content/EnglishVersion/Study/Mathematics/Mathematical AnalysisⅠ·Ⅱ",
@@ -215,7 +202,6 @@
     "content/한국어버젼/공부/물리학/통계역학",
     "content/한국어버젼/공부/물리학/열물리학",
     "content/EnglishVersion/Study/Physcis/Classical Mechanics/Untitled.md",
-    "content/한국어버젼/연습-페이지/연습2.md",
     "content/EnglishVersion/Test-Page/Test1.md",
     "content/EnglishVersion/Test-Page/Test2.md",
     "content/index.md",
