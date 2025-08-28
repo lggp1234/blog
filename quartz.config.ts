@@ -1,6 +1,6 @@
 import { QuartzConfig } from "./quartz/cfg"
 import * as Plugin from "./quartz/plugins"
-import LanguageSwitch form "./quartz/components/LanguageSwitch"
+import LanguageSwitch from "./quartz/components/LanguageSwitch"
 
 /**
  * Quartz 4 Configuration
