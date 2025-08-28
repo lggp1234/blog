@@ -1,5 +1,6 @@
 import { QuartzConfig } from "./quartz/cfg"
 import * as Plugin from "./quartz/plugins"
+import LanguageSwitch form "./quartz/components/LanguageSwitch"
 
 /**
  * Quartz 4 Configuration
@@ -80,7 +81,13 @@ const config: QuartzConfig = {
     emitters: [
       Plugin.AliasRedirects(),
       Plugin.ComponentResources(),
-      Plugin.ContentPage(),
+      Plugin.ContentPage({
+        components: {
+          beforeBody: [
+            LanguageSwitch(),
+          ],
+        },
+      }),
       Plugin.FolderPage(),
       Plugin.TagPage(),
       Plugin.ContentIndex({
