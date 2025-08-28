@@ -27,16 +27,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1 Newtonian Mechanics.md",
+                "file": "content/한국어버젼/공부/물리학/고전역학/강의1_뉴턴역학.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture1 Newtonian Mechanics"
+              "title": "강의1_뉴턴역학"
+            }
+          },
+          {
+            "id": "0b774a0373aebbb2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "content/EnglishVersion/Study/Physics/Classical_Mechanics/Lecture1_Newtonian_Mechanics.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Lecture1_Newtonian_Mechanics"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -185,10 +199,10 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "3b27729b3910f9e1",
+  "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
-    "content/한국어버젼/공부/물리학/고전역학/강의1 뉴턴역학.md",
-    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Lecture1 Newtonian Mechanics.md",
+    "content/한국어버젼/공부/물리학/고전역학/강의1_뉴턴역학.md",
+    "content/EnglishVersion/Study/Physics/Classical_Mechanics/Lecture1_Newtonian_Mechanics.md",
     "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
     "content/EnglishVersion/Study/Mathematics/Differential Equations",
