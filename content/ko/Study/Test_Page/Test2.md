@@ -1,6 +1,6 @@
 ---
-lang: en
-altLangPath: /ko/study/Test Page/Test2/
+lang: ko
+altLangPath: /en/Study/Test_Page/Test2/
 ---
 
 I know that dress is karma, perfume regret

@@ -1,6 +1,6 @@
 ---
-lang: ko
-altLangPath: /en/study/Test Page/Test1/
+lang: en
+altLangPath: /ko/Study/Test_Page/Test1/
 ---
 
 $$
@@ -15,8 +15,8 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[content/ko/Study/Test Page/Test1]]
-[[content/ko/Study/Test Page/Test2]]
+[[content/en/Study/Test_Page/Test1]]
+[[content/en/Study/Test_Page/Test2]]
 
 
 $$ 1+1=2  $$
@@ -63,6 +63,7 @@ $$
   \int_0^\infty e^{-x^2}\,dx &= \frac{\sqrt{\pi}}{2}
 \end{align}
 $$
+![](content/images/옵시디언로고.jpg)
 
 ![[content/images/옵시디언로고.jpg]]
 
