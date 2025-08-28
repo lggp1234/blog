@@ -1,22 +1,22 @@
 ---
-lang: ko
-altLangPath: /EnglishVersion/Study/Test_Page/Test1/
+lang: en
+altLangPath: /한국어버젼/연습-페이지/연습1/
 ---
 
 $$
 \int_0^\infty e^{-x^2}dx = \frac{\sqrt{\pi}}{2}
 $$
 
-위의 수식은 가장 중요한 수식 중 하나로, 이번 강의에서 자주 이용하게 될 예정입니다.
+This is one of the most important formulas-The Gauss Integral Formula- which will be used frequently in this lesson.
 
 <center><h2>
- 가우스 적분 공식
+ Gaussian Integral Formula
 </h2></center>
 
-<center><h2> 복소해석학 </h2></center>
+<center><h2> Complex Analysis </h2></center>
 
-[[연습1]]
-[[연습2]]
+[[Test1]]
+[[Test2]]
 
 
 $$ 1+1=2  $$
@@ -31,7 +31,7 @@ $$
 \textbf{1+} \mathcal{2}=\mathbb{R}+\mathsf{V}
 $$
 
-공간 
+spaceing 
 
 $$
 \prod_{i=1}^{N} x_{i}+y^{i}
@@ -63,9 +63,8 @@ $$
   \int_0^\infty e^{-x^2}\,dx &= \frac{\sqrt{\pi}}{2}
 \end{align}
 $$
-
-
 ![](옵시디언로고.jpg)
+
 ![[옵시디언로고.jpg]]
 
 한국어 테스트
