@@ -11,8 +11,8 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[Test1]]
-[[Test2]]
+[[content/ko/Study/Test Page/Test1]]
+[[content/ko/Study/Test Page/Test2]]
 
 
 $$ 1+1=2  $$
@@ -60,7 +60,7 @@ $$
 \end{align}
 $$
 
-![](content/images/옵시디언로고.jpg)
+![[content/images/옵시디언로고.jpg]]
 
 한국어 테스트
 

@@ -13,13 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/index.md",
+                "file": "content/ko/Study/Test Page/Test1.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "Test1"
             }
           }
         ]
@@ -172,36 +172,39 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "d8b3f55b6e5c585b",
+  "active": "a6efca618cf12452",
   "lastOpenFiles": [
+    "content/ko/Personal History",
+    "content/ko/Research",
+    "content/en/Study/Test Page/Test1.md",
+    "content/ko/Study/Test Page/Test2.md",
+    "content/ko/Study/Test Page/Test1.md",
+    "content/ko/Study/Test Page",
+    "content/ko/Study",
+    "content/en/Study/Test Page/Test2.md",
+    "content/ko/images 1/옵시디언로고.jpg",
+    "content/ko/images 1",
+    "content/ko",
+    "Untitled.md",
+    "content/en",
+    "content/index.md",
     "quartz/components/LanguageSwitch.tsx",
-    "content/Study/Test Page/Test1.md",
-    "content/Study/Test Page/Test2.md",
-    "content/Study/Test Page",
+    "content/en/Study/Test Page",
     "content/Study/QuantumMechanics1/Lecture2.md",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
     "content/Study/QuantumMechanics1",
     "content/images",
-    "새 폴더",
     "content/images/옵시디언로고.jpg",
     "blog/Study/QuantumMechanics1/Lecture2.md",
-    "blog/Study/QuantumMechanics1",
-    "blog/Study",
-    "blog",
     "quartz/static/icon.png",
     "quartz/static/og-image.png",
     "Excalidraw/Drawing 2025-08-27 12.02.29.excalidraw.md",
-    "Excalidraw",
-    "content/Image Files",
-    "Untitled 1",
     "docs/images/quartz transform pipeline.png",
     "docs/images/quartz-layout-desktop.png",
     "docs/images/quartz-layout-mobile.png",
     "docs/images/quartz-layout-tablet.png",
     "docs/images/social-image-preview-dark.png",
     "docs/images/social-image-preview-light.png",
-    "docs/images/github-quick-setup.png",
-    "content/index.md",
     "README.md"
   ]
 }
