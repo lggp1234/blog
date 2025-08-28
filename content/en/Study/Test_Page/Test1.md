@@ -1,6 +1,6 @@
 ---
 lang: en
-altLangPath: /ko/Study/Test_Page/Test1/
+altLangPath: /ko/공부/연습_페이지/연습1/
 ---
 
 $$
@@ -15,7 +15,8 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[content/ko/Study/Test_Page/Test1|Test1]]
+[[Test1]]
+[[Test2]]
 
 
 $$ 1+1=2  $$
