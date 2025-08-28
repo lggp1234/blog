@@ -21,11 +21,11 @@ const config: QuartzConfig = {
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",
     theme: {
-      fontOrigin: "googleFonts",
+      fontOrigin: "local",
       cdnCaching: true,
       typography: {
-        header: "Libre Baskerville",
-        body: "Libre Baskerville",
+        header: "Baskerville Old Face",
+        body: "Baskerville Old Face",
         code: "IBM Plex Mono",
       },
       colors: {
