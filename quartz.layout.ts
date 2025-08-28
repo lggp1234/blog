@@ -1,5 +1,6 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
+import LanguageSwitch from "./quartz/components/LanguageSwitch"
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
@@ -34,6 +35,7 @@ export const defaultContentPageLayout: PageLayout = {
     }),
     Component.ArticleTitle(),
     Component.ContentMeta(),
+    LanguageSwitch(),
     Component.TagList(),
   ],
   left: [
