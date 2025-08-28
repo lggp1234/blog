@@ -63,7 +63,7 @@ $$
   \int_0^\infty e^{-x^2}\,dx &= \frac{\sqrt{\pi}}{2}
 \end{align}
 $$
-![](content/images/옵시디언로고.jpg)
+![](/content/images/옵시디언로고.jpg)
 
 ![[/content/images/옵시디언로고.jpg]]
 
