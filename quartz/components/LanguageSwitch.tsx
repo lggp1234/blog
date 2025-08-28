@@ -8,17 +8,25 @@ export default ((opts = {}) => {
     if (!alt) return null
 
     const label = lang === "ko" ? "English" : "한국어"
+
     return (
-      <div class="not-prose mt-2 mb-6 flex justify-end">
-        <a class="px-3 py-1 rounded-md border hover:opacity-80" href={alt}>
-          {label} →
-        </a>
-      </div>
+      <a
+        class="px-3 py-1 rounded-md border hover:opacity-80 whitespace-nowrap"
+        href={alt}
+        onClick={(e) => {
+          // SPA 라우터 대신 항상 브라우저 풀 리로드를 하도록 강제
+          e.preventDefault()
+          window.location.assign(alt)
+        }}
+        aria-label={`Switch to ${label}`}
+      >
+        {label} →
+      </a>
     )
   }
 
   LanguageSwitch.css = `
-    .not-prose a { text-decoration: none; }
+    /* 필요하면 버튼 스타일을 여기에서 커스터마이즈하세요 */
   `
 
   return LanguageSwitch
