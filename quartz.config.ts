@@ -24,8 +24,8 @@ const config: QuartzConfig = {
       fontOrigin: "googleFonts",
       cdnCaching: true,
       typography: {
-        header: "Baskerville Old Face, 'Libre Baskerville', Schibsted Grotesk",
-        body: "Baskerville Old Face, 'Libre Baskerville', Source Sans Pro",
+        header: "Libre Baskerville",
+        body: "Libre Baskerville",
         code: "IBM Plex Mono",
       },
       colors: {
