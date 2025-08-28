@@ -1,6 +1,6 @@
 ---
 lang: ko
-altLangPath: /en/study/Test_Page/Test1/
+altLangPath: /en/Study/Test_Page/Test1/
 ---
 
 $$
