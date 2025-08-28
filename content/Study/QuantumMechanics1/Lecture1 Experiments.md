@@ -50,4 +50,9 @@ $$
 
  \- Doug Engelbart, 1961
 
-
+$$
+\begin{align}
+  a^2 + b^2 &= c^2 \\
+  \int_0^\infty e^{-x^2}\,dx &= \frac{\sqrt{\pi}}{2}
+\end{align}
+$$
