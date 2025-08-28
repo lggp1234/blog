@@ -36,7 +36,7 @@ export const defaultContentPageLayout: PageLayout = {
             component: Component.Breadcrumbs(),
             condition: (page) => page.fileData.slug !== "index",
           }),
-          grow = true,
+          grow: true,
         },
         { Component: LanguageSwitch() },
       ],
