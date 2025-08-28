@@ -65,7 +65,7 @@ $$
 $$
 ![](content/images/옵시디언로고.jpg)
 
-![[content/images/옵시디언로고.jpg]]
+![[옵시디언로고.jpg]]
 
 한국어 테스트
 
