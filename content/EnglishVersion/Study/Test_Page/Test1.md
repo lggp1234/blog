@@ -1,6 +1,6 @@
 ---
-lang: ko
-altLangPath: /en/Study/Test_Page/Test1/
+lang: en
+altLangPath: /한국어버젼/공부/연습_페이지/연습1/
 ---
 
 $$
@@ -15,8 +15,8 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[연습1]]
-[[연습2]]
+[[Test1]]
+[[Test2]]
 
 
 $$ 1+1=2  $$
@@ -63,8 +63,9 @@ $$
   \int_0^\infty e^{-x^2}\,dx &= \frac{\sqrt{\pi}}{2}
 \end{align}
 $$
+![](옵시디언로고.jpg)
 
-![[content/images/옵시디언로고.jpg]]
+![[옵시디언로고.jpg]]
 
 한국어 테스트
 
