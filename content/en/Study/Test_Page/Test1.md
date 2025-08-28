@@ -15,8 +15,7 @@ This is one of the most important formulas-The Gauss Integral Formula- which wil
 
 <center><h2> Complex Analysis </h2></center>
 
-[[content/en/Study/Test_Page/Test1]]
-[[content/en/Study/Test_Page/Test2]]
+[[content/ko/Study/Test_Page/Test1|Test1]]
 
 
 $$ 1+1=2  $$
