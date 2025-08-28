@@ -174,8 +174,9 @@
   },
   "active": "d8b3f55b6e5c585b",
   "lastOpenFiles": [
+    "content/images",
     "새 폴더",
-    "quartz/static/옵시디언로고.jpg",
+    "content/images/옵시디언로고.jpg",
     "content/Study/QuantumMechanics1/Lecture1 Experiments.md",
     "content/Study/QuantumMechanics1/Lecture2.md",
     "blog/Study/QuantumMechanics1/Lecture2.md",
@@ -199,7 +200,6 @@
     "content/Study/Quantum Mechanics 1/Untitled",
     "README.md",
     "content/docs",
-    "content/Study/QuantumMechanics1",
-    "content/Personal History"
+    "content/Study/QuantumMechanics1"
   ]
 }
