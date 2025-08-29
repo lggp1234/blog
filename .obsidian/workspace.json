@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/study/physics/quantum-mechanics/index.md",
+                "file": "content/한국어버젼/연습-페이지/연습2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "연습2"
             }
           }
         ],
@@ -201,16 +201,17 @@
   },
   "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
-    "content/english/study/physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
+    "content/한국어버젼/연습-페이지/연습1.md",
+    "content/english/Test-Page/Test2.md",
     "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
-    "content/한국어버젼/공부/물리학/양자역학/index.md",
     "content/english/study/physics/quantum-mechanics/index.md",
+    "content/english/study/physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
+    "content/한국어버젼/공부/물리학/양자역학/index.md",
     "content/한국어버젼/공부/물리학/index.md",
     "content/한국어버젼/공부/index.md",
     "content/english/study/physics/index.md",
     "content/english/study/index.md",
     "content/한국어버젼/공부/물리학/고전역학/index.md",
-    "content/english/Test-Page/Test2.md",
     "content/english/Test-Page/Test1.md",
     "content/english/Test-Page",
     "content/english/study/physics/Untitled.md",
@@ -231,7 +232,6 @@
     "content/한국어버젼/index.md",
     "content/english/index.md",
     "content/한국어버젼/연습-페이지/연습2.md",
-    "content/한국어버젼/연습-페이지/연습1.md",
     "content/english/study/mathematics/Differential Equations",
     "content/english/study/mathematics/Linear Algebra",
     "content/english/study/mathematics/Mathematical AnalysisⅠ·Ⅱ",
