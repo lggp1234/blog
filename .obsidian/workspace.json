@@ -41,7 +41,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/공부/물리학/index.md",
+                "file": "content/한국어버젼/공부/물리학/양자역학/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -201,8 +201,12 @@
   },
   "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
-    "content/한국어버젼/공부/index.md",
+    "content/english/study/physics/quantum-mechanics/index.md",
+    "content/한국어버젼/공부/물리학/양자역학/index.md",
+    "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
+    "content/english/study/physics/quantum-mechanics/mathematical-notation-in-quantum-mechanics.md",
     "content/한국어버젼/공부/물리학/index.md",
+    "content/한국어버젼/공부/index.md",
     "content/english/study/physics/index.md",
     "content/english/study/index.md",
     "content/한국어버젼/공부/물리학/고전역학/index.md",
@@ -233,10 +237,6 @@
     "content/english/study/mathematics/Mathematical AnalysisⅠ·Ⅱ",
     "content/EnglishVersion/Study/Physcis/Classical Mechanics/Untitled.md",
     "content/index.md",
-    "content/ko/공부/연습_페이지/연습2.md",
-    "content/ko/공부/연습_페이지/연습1.md",
-    "content/en/Study/Test_Page/Test2.md",
-    "content/en/Study/Test_Page/Test1.md",
     "content/images/옵시디언로고.jpg",
     "content/ko/images 1/옵시디언로고.jpg",
     "quartz/static/icon.png",
