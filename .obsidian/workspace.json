@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
+                "file": "content/한국어버젼/공부/물리학/통계역학/Untitled.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "양자역학에서의-수학적-표기법"
+              "title": "Untitled"
             }
           }
         ],
@@ -202,6 +202,10 @@
   },
   "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
+    "content/한국어버젼/공부/물리학/통계역학/index.md",
+    "content/한국어버젼/공부/물리학/통계역학/Untitled.md",
+    "content/한국어버젼/공부/물리학/index.md",
+    "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
@@ -209,11 +213,9 @@
     "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
     "content/english/Test-Page/Test2.md",
-    "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
     "content/english/study/physics/quantum-mechanics/index.md",
     "content/english/study/physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
     "content/한국어버젼/공부/물리학/양자역학/index.md",
-    "content/한국어버젼/공부/물리학/index.md",
     "content/한국어버젼/공부/index.md",
     "content/english/study/physics/index.md",
     "content/english/study/index.md",
@@ -233,11 +235,9 @@
     "content/EnglishVersion/Study/Physics",
     "content/EnglishVersion/Test-Page",
     "content/EnglishVersion/Study",
-    "content/EnglishVersion",
     "content/한국어버젼/공부/물리학/고전역학/강의1-뉴턴역학.md",
     "content/한국어버젼/index.md",
     "content/english/index.md",
-    "content/EnglishVersion/Study/Physcis/Classical Mechanics/Untitled.md",
     "content/images/옵시디언로고.jpg",
     "content/ko/images 1/옵시디언로고.jpg",
     "quartz/static/icon.png",
