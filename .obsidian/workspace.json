@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/공부/물리학/통계역학/Untitled.md",
+                "file": "content/한국어버젼/공부/물리학/통계역학/강의1-통계역학의-동기.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Untitled"
+              "title": "강의1-통계역학의-동기"
             }
           }
         ],
@@ -202,8 +202,10 @@
   },
   "active": "0b774a0373aebbb2",
   "lastOpenFiles": [
+    "content/english/study/physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
     "content/한국어버젼/공부/물리학/통계역학/index.md",
-    "content/한국어버젼/공부/물리학/통계역학/Untitled.md",
+    "content/english/study/physics/statistical-mechanics/index.md",
+    "content/한국어버젼/공부/물리학/통계역학/강의1-통계역학의-동기.md",
     "content/한국어버젼/공부/물리학/index.md",
     "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
     "quartz/components/SpaLangGuard.tsx",
@@ -236,8 +238,6 @@
     "content/EnglishVersion/Test-Page",
     "content/EnglishVersion/Study",
     "content/한국어버젼/공부/물리학/고전역학/강의1-뉴턴역학.md",
-    "content/한국어버젼/index.md",
-    "content/english/index.md",
     "content/images/옵시디언로고.jpg",
     "content/ko/images 1/옵시디언로고.jpg",
     "quartz/static/icon.png",
