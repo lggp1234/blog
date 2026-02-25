@@ -62,8 +62,14 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
     if (!pathNodes) {
       return null
     }
-
-    const crumbs: CrumbData[] = pathNodes.map((node, idx) => {
+  const visiblePathNodes = pathNodes.filter((node, idx) => {
+    // root(Home)는 유지, 바로 아래 언어 루트만 숨김
+    if (idx === 0) return true
+    if (idx === 1 && isLanguageRootCrumbSlug(node.slug)) return false
+    return true
+  })
+  
+  const crumbs: CrumbData[] = visiblePathNodes.map((node, idx) => {
       const crumb = formatCrumb(node.displayName, fileData.slug!, simplifySlug(node.slug))
       if (idx === 0) {
         crumb.displayName = options.rootName
