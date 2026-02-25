@@ -14,6 +14,44 @@ interface ParsedOptions {
   order: "sort" | "filter" | "map"[]
 }
 
+// --------------------- site language implement --------------------- 
+type SiteLang = "en" | "ko"
+
+function getLangFromSlug(slug: string): SiteLang | null {
+  // English
+  if (slug === "english" || slug === "english/index" || slug.startsWith("english/")) return "en"
+
+  // Korean (현재 네 repo 기준: 한국어버젼)
+  if (
+    slug === "한국어버젼" ||
+    slug === "한국어버젼/index" ||
+    slug.startsWith("한국어버젼/")
+  ) {
+    return "ko"
+  }
+
+  // 혹시 일부 경로가 /한국어/ 로 남아있을 때 대비 (fallback)
+  if (slug === "한국어" || slug === "한국어/index" || slug.startsWith("한국어/")) {
+    return "ko"
+  }
+
+  return null
+}
+
+function isEnglishRootNode(node: FileTrieNode): boolean {
+  return node.isFolder && node.slugSegment === "english"
+}
+
+function isKoreanRootNode(node: FileTrieNode): boolean {
+  return node.isFolder && (node.slugSegment === "한국어버젼" || node.slugSegment === "한국어")
+}
+
+function isLanguageRootNode(node: FileTrieNode): boolean {
+  return isEnglishRootNode(node) || isKoreanRootNode(node)
+}
+
+// -------------------------------------------------------------------
+
 type FolderState = {
   path: string
   collapsed: boolean
