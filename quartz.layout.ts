@@ -59,7 +59,28 @@ export const defaultContentPageLayout: PageLayout = {
         { Component: Component.ReaderMode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      // 문서 제목(title)이 있으면 Explorer 표시명으로 사용
+      mapFn: (node) => {
+        if (node.data?.title) {
+          node.displayName = node.data.title
+        }
+      },
+
+      // 제목 기준 사전순 정렬 (한/영 혼합 + 숫자 자연정렬)
+      sortFn: (a, b) => {
+        // 폴더를 파일보다 먼저 두고 싶으면 유지
+        if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
+
+        const aName = (a.displayName ?? "").trim()
+        const bName = (b.displayName ?? "").trim()
+    
+        return aName.localeCompare(bName, ["ko", "en"], {
+          numeric: true,
+          sensitivity: "base",
+        })
+      },
+    }),
   ],
   right: [
     Component.Graph(),
@@ -92,7 +113,22 @@ export const defaultListPageLayout: PageLayout = {
         { Component: Component.Darkmode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      mapFn: (node) => {
+        if (node.data?.title) {
+          node.displayName = node.data.title
+        }
+      },
+      sortFn: (a, b) => {
+        if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
+        const aName = (a.displayName ?? "").trim()
+        const bName = (b.displayName ?? "").trim()
+        return aName.localeCompare(bName, ["ko", "en"], {
+          numeric: true,
+          sensitivity: "base",
+        })
+      },
+    }),
   ],
   right: [],
 }
