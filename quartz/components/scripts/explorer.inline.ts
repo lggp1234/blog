@@ -23,7 +23,7 @@ function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
     }
 
     htmlEl.textContent = isHome
-      ? "언어 선택 / Language Selection"
+      ? "언어 선택 /\nLanguage Selection"
       : htmlEl.dataset.defaultExplorerTitle
   }
 }
