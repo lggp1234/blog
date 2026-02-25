@@ -26,6 +26,13 @@
   }
 }
 
+.explorer h2.lang-selection-title {
+  white-space: nowrap;   // 줄바꿈 금지
+  font-size: 0.9rem;     // 필요하면 0.85rem로 더 줄이기
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
 .explorer {
   display: flex;
   flex-direction: column;
