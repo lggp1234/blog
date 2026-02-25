@@ -1,5 +1,5 @@
 ---
-title: 수리과학
 lang: ko
-altLangPath: /english/study/mathematics
+altLangPath: /english/study/
+title: 학업
 ---

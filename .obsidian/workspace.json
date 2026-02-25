@@ -27,7 +27,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/study/mathematics/index.md",
+                "file": "content/한국어버젼/학업/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -198,9 +198,10 @@
   },
   "active": "e5185edfad48cc92",
   "lastOpenFiles": [
-    "content/한국어버젼/학업/index.md",
-    "content/english/study/mathematics/index.md",
     "content/한국어버젼/index.md",
+    "content/한국어버젼/학업/index.md",
+    "content/한국어버젼/학업/수리과학/index.md",
+    "content/english/study/mathematics/index.md",
     "content/english/study/physics/statistical-mechanics/index.md",
     "content/한국어버젼/학업/물리학/통계역학/index.md",
     "content/한국어버젼/학업/물리학/index.md",
@@ -227,7 +228,6 @@
     "content/english/Test-Page/Test2.md",
     "content/english/study/physics/quantum-mechanics/index.md",
     "content/english/study/physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
-    "content/한국어버젼/학업/물리학/양자역학/index.md",
     "content/english/Test-Page",
     "content/english/study/physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics/classical-mechanics",
