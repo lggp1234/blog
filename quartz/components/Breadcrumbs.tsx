@@ -4,9 +4,17 @@ import { FullSlug, SimpleSlug, resolveRelative, simplifySlug } from "../util/pat
 import { classNames } from "../util/lang"
 import { trieFromAllFiles } from "../util/ctx"
 
-function isLanguageRootCrumbSlug(slug: string): boolean {
-  const s = simplifySlug(slug as FullSlug)
-  return s === "english" || s === "한국어" || s === "한국어버젼"
+function isLanguageRootCrumb(node: { slug: string; displayName: string }): boolean {
+  const s = simplifySlug(node.slug as FullSlug)
+
+  // slug 기준 (영문 / 일부 케이스)
+  if (s === "english" || s === "한국어" || s === "한국어버젼") return true
+
+  // displayName 기준 (한글 slug 인코딩/표시명 커스텀 대응)
+  const name = node.displayName.trim()
+  if (name === "한국어" || name === "English Ver." || name === "English") return true
+
+  return false
 }
 
 type CrumbData = {
@@ -76,7 +84,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       }
 
       // For last node (current page), set empty path
-      if (idx === pathNodes.length - 1) {
+      if (idx === visiblePathNodes.length - 1) {
         crumb.path = ""
       }
 
