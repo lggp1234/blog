@@ -27,7 +27,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/index.md",
+                "file": "content/한국어버젼/성취/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -186,15 +186,16 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "e5185edfad48cc92",
+  "active": "a6efca618cf12452",
   "lastOpenFiles": [
+    "content/한국어버젼/index.md",
+    "content/한국어버젼/성취/index.md",
     "content/한국어버젼/연습-페이지/index.md",
     "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
     "content/english/Test-Page/index.md",
     "content/english/index.md",
     "content/index.md",
-    "content/한국어버젼/index.md",
     "content/english/Test-Page/Test1.md",
     "content/english/study/physics/statistical-mechanics/lecture2-statistical-ensemble.md",
     "content/한국어버젼/공부/물리학/통계역학/강의2-통계역학적-앙상블.md",
@@ -218,7 +219,6 @@
     "content/한국어버젼/공부/물리학/고전역학/index.md",
     "content/english/Test-Page",
     "content/english/study/physics/Untitled.md",
-    "content/english/study/physics/classical-mechanics/index.md",
     "content/english/study/physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics",
