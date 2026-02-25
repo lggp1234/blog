@@ -73,7 +73,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
   const visiblePathNodes = pathNodes.filter((node, idx) => {
     // root(Home)는 유지, 바로 아래 언어 루트만 숨김
     if (idx === 0) return true
-    if (idx === 1 && isLanguageRootCrumbSlug(node.slug)) return false
+    if (idx === 1 && isLanguageRootCrumb(node)) return false
     return true
   })
   
