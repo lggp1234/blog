@@ -11,7 +11,7 @@ interface ParsedOptions {
   sortFn: (a: FileTrieNode, b: FileTrieNode) => number
   filterFn: (node: FileTrieNode) => boolean
   mapFn: (node: FileTrieNode) => void
-  order: "sort" | "filter" | "map"[]
+  order: ("sort" | "filter" | "map")[]
 }
 
 // --------------------- site language implement --------------------- 
@@ -286,46 +286,6 @@ async function setupExplorer(currentSlug: FullSlug) {
     // Create and insert new content
     const fragment = document.createDocumentFragment()
     for (const child of renderRoot.children) {
-      const node = child.isFolder
-        ? createFolderNode(currentSlug, child, opts)
-        : createFileNode(currentSlug, child)
-
-      fragment.appendChild(node)
-    }
-    explorerUl.insertBefore(fragment, explorerUl.firstChild)
-    
-    // Apply functions in order
-    for (const fn of opts.order) {
-      switch (fn) {
-        case "filter":
-          if (opts.filterFn) trie.filter(opts.filterFn)
-          break
-        case "map":
-          if (opts.mapFn) trie.map(opts.mapFn)
-          break
-        case "sort":
-          if (opts.sortFn) trie.sort(opts.sortFn)
-          break
-      }
-    }
-
-    // Get folder paths for state management
-    const folderPaths = trie.getFolderPaths()
-    currentExplorerState = folderPaths.map((path) => {
-      const previousState = oldIndex.get(path)
-      return {
-        path,
-        collapsed:
-          previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
-      }
-    })
-
-    const explorerUl = explorer.querySelector(".explorer-ul")
-    if (!explorerUl) continue
-
-    // Create and insert new content
-    const fragment = document.createDocumentFragment()
-    for (const child of trie.children) {
       const node = child.isFolder
         ? createFolderNode(currentSlug, child, opts)
         : createFileNode(currentSlug, child)
