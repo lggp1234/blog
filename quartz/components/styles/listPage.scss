@@ -11,7 +11,8 @@ li.section-li {
 
   & > .section {
     display: grid;
-    grid-template-columns: fit-content(8em) 3fr 1fr;
+    grid-template-columns: max-content minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
 
     @media all and ($mobile) {
       & > .tags {
@@ -26,6 +27,8 @@ li.section-li {
     & .meta {
       margin: 0 1em 0 0;
       opacity: 0.6;
+      white-space: nowrap;
+      word-break: keep-all;
     }
   }
 }
