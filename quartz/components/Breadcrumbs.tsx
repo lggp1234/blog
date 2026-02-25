@@ -4,6 +4,19 @@ import { FullSlug, SimpleSlug, resolveRelative, simplifySlug } from "../util/pat
 import { classNames } from "../util/lang"
 import { trieFromAllFiles } from "../util/ctx"
 
+function getBreadcrumbUiLang(pathNodes: Array<{ slug: string; displayName?: string }>): "ko" | "en" | null {
+  const langNode = pathNodes[1]
+  if (!langNode) return null
+
+  const s = simplifySlug(langNode.slug as FullSlug)
+  const name = (langNode.displayName ?? "").trim()
+
+  if (s === "english" || name === "English" || name === "English Ver.") return "en"
+  if (s === "한국어" || s === "한국어버젼" || name === "한국어") return "ko"
+
+  return null
+}
+
 function getLanguageRootPathFromPathNodes(
   pathNodes: Array<{ slug: string; displayName?: string }>,
 ): SimpleSlug | null {
@@ -84,7 +97,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
     if (!pathNodes) {
       return null
     }
-  
+    const uiLang = getBreadcrumbUiLang(pathNodes)
     const langRootPath = getLanguageRootPathFromPathNodes(pathNodes)
   const visiblePathNodes = pathNodes.filter((node, idx) => {
     // root(Home)는 유지, 바로 아래 언어 루트만 숨김
@@ -96,7 +109,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
   const crumbs: CrumbData[] = visiblePathNodes.map((node, idx) => {
       const crumb = formatCrumb(node.displayName, fileData.slug!, simplifySlug(node.slug))
       if (idx === 0) {
-        crumb.displayName = options.rootName
+        crumb.displayName = uiLang === "ko" ? "홈" : options.rootName
 
         // 현재 페이지가 특정 언어 트리 안에 있으면 Home 링크를 그 언어 루트로 보냄
         if (langRootPath) {
