@@ -4,6 +4,11 @@ import { FullSlug, SimpleSlug, resolveRelative, simplifySlug } from "../util/pat
 import { classNames } from "../util/lang"
 import { trieFromAllFiles } from "../util/ctx"
 
+function isLanguageRootCrumbSlug(slug: string): boolean {
+  const s = simplifySlug(slug as FullSlug)
+  return s === "english" || s === "한국어" || s === "한국어버젼"
+}
+
 type CrumbData = {
   displayName: string
   path: string
