@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/연구/Untitled.md",
+                "file": "content/english/Research/index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Untitled"
+              "title": "index"
             }
           }
         ],
@@ -188,8 +188,9 @@
   },
   "active": "e5185edfad48cc92",
   "lastOpenFiles": [
+    "content/한국어버젼/연구/index.md",
+    "content/english/Research/index.md",
     "content/한국어버젼/프로필/index.md",
-    "content/한국어버젼/연구/Untitled.md",
     "content/한국어버젼/index.md",
     "content/한국어버젼/연습-페이지/index.md",
     "content/한국어버젼/연습-페이지/연습2.md",
@@ -217,7 +218,6 @@
     "content/한국어버젼/학업/index.md",
     "content/english/study/physics/index.md",
     "content/english/study/index.md",
-    "content/한국어버젼/학업/물리학/고전역학/index.md",
     "content/english/Test-Page",
     "content/english/study/physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics/classical-mechanics",
