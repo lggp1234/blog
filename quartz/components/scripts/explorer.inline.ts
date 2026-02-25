@@ -214,6 +214,86 @@ async function setupExplorer(currentSlug: FullSlug) {
     const entries = [...Object.entries(data)] as [FullSlug, ContentDetails][]
     const trie = FileTrieNode.fromEntries(entries)
 
+    // Apply functions in order (기존 옵션 적용)
+    for (const fn of opts.order) {
+      switch (fn) {
+        case "filter":
+          if (opts.filterFn) trie.filter(opts.filterFn)
+          break
+        case "map":
+          if (opts.mapFn) trie.map(opts.mapFn)
+          break
+        case "sort":
+          if (opts.sortFn) trie.sort(opts.sortFn)
+          break
+      }
+    }
+
+    // -------------------------------
+    // Language-aware filtering & virtual root
+    // -------------------------------
+    const currentLang = getLangFromSlug(currentSlug)
+    let renderRoot = trie // 기본: 홈(index)에서는 전체 트리 그대로
+
+    if (currentLang) {
+      // 현재 언어가 정해진 페이지에서는 반대 언어 제거
+      trie.filter((node) => {
+        // tags는 기존 filterFn에서 보통 걸러지지만, 혹시 모르니 한번 더 방어
+        if (node.slugSegment === "tags") return false
+
+        // 최상위 언어 루트 폴더는 명시적으로 판정
+        if (isEnglishRootNode(node)) return currentLang === "en"
+        if (isKoreanRootNode(node)) return currentLang === "ko"
+
+        // 일반 노드들은 slug prefix로 판정
+        const lang = getLangFromSlug(node.slug)
+        if (!lang) return true // 언어 중립 노드는 유지
+        return lang === currentLang
+      })
+
+      // 현재 언어 루트 폴더를 찾아서, 그 children만 루트처럼 보여주기
+      const langRoot = trie.children.find((child) => {
+        return currentLang === "en" ? isEnglishRootNode(child) : isKoreanRootNode(child)
+      })
+
+      if (langRoot && langRoot.isFolder) {
+        renderRoot = langRoot
+      }
+    }
+
+    // Get folder paths for state management
+    // (virtual root인 경우, 그 루트 폴더 자체는 렌더링 안 하므로 상태 목록에서도 제외)
+    const hiddenRootPath = renderRoot !== trie ? renderRoot.slug : null
+    const folderPaths = renderRoot
+      .getFolderPaths()
+      .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
+
+    currentExplorerState = folderPaths.map((path) => {
+      const previousState = oldIndex.get(path)
+      return {
+        path,
+        collapsed:
+          previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
+      }
+    })
+
+    const explorerUl = explorer.querySelector(".explorer-ul")
+    if (!explorerUl) continue
+
+    // (중요) 기존 내용 비우고 다시 그림
+    explorerUl.innerHTML = ""
+
+    // Create and insert new content
+    const fragment = document.createDocumentFragment()
+    for (const child of renderRoot.children) {
+      const node = child.isFolder
+        ? createFolderNode(currentSlug, child, opts)
+        : createFileNode(currentSlug, child)
+
+      fragment.appendChild(node)
+    }
+    explorerUl.insertBefore(fragment, explorerUl.firstChild)
+    
     // Apply functions in order
     for (const fn of opts.order) {
       switch (fn) {
