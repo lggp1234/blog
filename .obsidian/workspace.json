@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/index.md",
+                "file": "content/english/99-Test-Page/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,6 +183,9 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/english/99-Test-Page/Test1.md",
+    "content/english/99-Test-Page/Test2.md",
+    "content/한국어버젼/1-학업/index.md",
     "content/한국어버젼/1-학업/물리학/index.md",
     "content/english/1-study/physics/statistical-mechanics/lecture2-statistical-ensemble.md",
     "content/english/1-study/physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
@@ -206,9 +209,6 @@
     "CODE_OF_CONDUCT.md",
     "README.md",
     "content/한국어버젼/index.md",
-    "content/english/99-Test-Page/Test1.md",
-    "content/english/99-Test-Page/Test2.md",
-    "content/english/99-Test-Page/index.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
