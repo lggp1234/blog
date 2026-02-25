@@ -4,6 +4,20 @@ import { FullSlug, SimpleSlug, resolveRelative, simplifySlug } from "../util/pat
 import { classNames } from "../util/lang"
 import { trieFromAllFiles } from "../util/ctx"
 
+function getLanguageRootPathFromPathNodes(
+  pathNodes: Array<{ slug: string; displayName?: string }>,
+): SimpleSlug | null {
+  // 보통 idx=1이 언어 루트 (idx=0은 site root)
+  const langNode = pathNodes[1]
+  if (!langNode) return null
+
+  if (isLanguageRootCrumb({ slug: langNode.slug, displayName: langNode.displayName ?? "" })) {
+    return simplifySlug(langNode.slug as FullSlug)
+  }
+
+  return null
+}
+
 function isLanguageRootCrumb(node: { slug: string; displayName: string }): boolean {
   const s = simplifySlug(node.slug as FullSlug)
 
@@ -70,6 +84,8 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
     if (!pathNodes) {
       return null
     }
+  
+    const langRootPath = getLanguageRootPathFromPathNodes(pathNodes)
   const visiblePathNodes = pathNodes.filter((node, idx) => {
     // root(Home)는 유지, 바로 아래 언어 루트만 숨김
     if (idx === 0) return true
@@ -81,6 +97,11 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       const crumb = formatCrumb(node.displayName, fileData.slug!, simplifySlug(node.slug))
       if (idx === 0) {
         crumb.displayName = options.rootName
+
+        // 현재 페이지가 특정 언어 트리 안에 있으면 Home 링크를 그 언어 루트로 보냄
+        if (langRootPath) {
+          crumb.path = resolveRelative(fileData.slug!, langRootPath)
+        }
       }
 
       // For last node (current page), set empty path
