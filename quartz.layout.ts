@@ -10,10 +10,10 @@ export const sharedPageComponents: SharedLayout = {
     Component.Comments({
       provider: 'giscus',
       options: {
-        repo: 'anpigon/anpigon-quartz',
-        repoId: 'R_kgDOLKhz-Q',
+        repo: 'lggp1234/blog',
+        repoId: 'R_kgDOPMIgzg',
         category: 'General',
-        categoryId: 'DIC_kwDOLKhz-c4CczBa',
+        categoryId: 'DIC_kwDOPMIgzs4Cuo_O',
         mapping: 'pathname',
       }
     }),
