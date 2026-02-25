@@ -4,6 +4,30 @@ import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 type MaybeHTMLElement = HTMLElement | undefined
 
+function isGlobalHomeSlug(slug: string): boolean {
+  // Quartz 버전에 따라 홈 slug가 "index" 또는 빈 문자열일 수 있어서 둘 다 처리
+  return slug === "index" || slug === ""
+}
+
+function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
+  const isHome = isGlobalHomeSlug(currentSlug)
+
+  // Explorer 내부의 h2 제목들(모바일/데스크톱 둘 다 있을 수 있음)
+  const titleEls = explorer.querySelectorAll("h2")
+
+  for (const el of titleEls) {
+    // 원래 제목 저장 (처음 1번만)
+    const htmlEl = el as HTMLElement
+    if (!htmlEl.dataset.defaultExplorerTitle) {
+      htmlEl.dataset.defaultExplorerTitle = htmlEl.textContent ?? "탐색기"
+    }
+
+    htmlEl.textContent = isHome
+      ? "언어 선택 / Language Selection"
+      : htmlEl.dataset.defaultExplorerTitle
+  }
+}
+
 interface ParsedOptions {
   folderClickBehavior: "collapse" | "link"
   folderDefaultState: "collapsed" | "open"
@@ -202,6 +226,8 @@ async function setupExplorer(currentSlug: FullSlug) {
       filterFn: new Function("return " + (dataFns.filterFn || "undefined"))(),
       mapFn: new Function("return " + (dataFns.mapFn || "undefined"))(),
     }
+
+    updateExplorerTitle(explorer, currentSlug)
 
     // Get folder state from local storage
     const storageTree = localStorage.getItem("fileTree")
