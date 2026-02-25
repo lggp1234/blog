@@ -16,15 +16,18 @@ function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
   const titleEls = explorer.querySelectorAll("h2")
 
   for (const el of titleEls) {
-    // 원래 제목 저장 (처음 1번만)
     const htmlEl = el as HTMLElement
+
     if (!htmlEl.dataset.defaultExplorerTitle) {
       htmlEl.dataset.defaultExplorerTitle = htmlEl.textContent ?? "탐색기"
     }
 
     htmlEl.textContent = isHome
-      ? "언어 선택 /\nLanguage Selection"
+      ? "언어 선택 / Language Selection"
       : htmlEl.dataset.defaultExplorerTitle
+
+    // Home에서만 작은 폰트 class 적용
+    htmlEl.classList.toggle("lang-selection-title", isHome)
   }
 }
 
