@@ -11,8 +11,8 @@ function isGlobalHomeSlug(slug: string): boolean {
 
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
   const isHome = isGlobalHomeSlug(currentSlug)
+  const currentLang = getLangFromSlug(currentSlug) // "en" | "ko" | null
 
-  // Explorer 내부의 h2 제목들(모바일/데스크톱 둘 다 있을 수 있음)
   const titleEls = explorer.querySelectorAll("h2")
 
   for (const el of titleEls) {
@@ -22,11 +22,17 @@ function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
       htmlEl.dataset.defaultExplorerTitle = htmlEl.textContent ?? "탐색기"
     }
 
-    htmlEl.textContent = isHome
-      ? "언어 선택 / Language Selection"
-      : htmlEl.dataset.defaultExplorerTitle
+    if (isHome) {
+      htmlEl.textContent = "언어 선택 / Language Selection"
+    } else if (currentLang === "en") {
+      htmlEl.textContent = "Explorer"
+    } else if (currentLang === "ko") {
+      htmlEl.textContent = "탐색기"
+    } else {
+      htmlEl.textContent = htmlEl.dataset.defaultExplorerTitle
+    }
 
-    // Home에서만 작은 폰트 class 적용
+    // Home에서만 작은 폰트 class (이전 단계에서 추가한 경우 유지)
     htmlEl.classList.toggle("lang-selection-title", isHome)
   }
 }
