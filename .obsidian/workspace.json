@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/성취/index.md",
+                "file": "content/한국어버젼/연구/Untitled.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "Untitled"
             }
           }
         ],
@@ -186,10 +186,11 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "a6efca618cf12452",
+  "active": "e5185edfad48cc92",
   "lastOpenFiles": [
+    "content/한국어버젼/프로필/index.md",
+    "content/한국어버젼/연구/Untitled.md",
     "content/한국어버젼/index.md",
-    "content/한국어버젼/성취/index.md",
     "content/한국어버젼/연습-페이지/index.md",
     "content/한국어버젼/연습-페이지/연습2.md",
     "content/한국어버젼/연습-페이지/연습1.md",
@@ -198,13 +199,13 @@
     "content/index.md",
     "content/english/Test-Page/Test1.md",
     "content/english/study/physics/statistical-mechanics/lecture2-statistical-ensemble.md",
-    "content/한국어버젼/공부/물리학/통계역학/강의2-통계역학적-앙상블.md",
-    "content/한국어버젼/공부/물리학/통계역학/강의1-통계역학의-동기.md",
+    "content/한국어버젼/학업/물리학/통계역학/강의2-통계역학적-앙상블.md",
+    "content/한국어버젼/학업/물리학/통계역학/강의1-통계역학의-동기.md",
     "content/english/study/physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
-    "content/한국어버젼/공부/물리학/통계역학/index.md",
+    "content/한국어버젼/학업/물리학/통계역학/index.md",
     "content/english/study/physics/statistical-mechanics/index.md",
-    "content/한국어버젼/공부/물리학/index.md",
-    "content/한국어버젼/공부/물리학/양자역학/양자역학에서의-수학적-표기법.md",
+    "content/한국어버젼/학업/물리학/index.md",
+    "content/한국어버젼/학업/물리학/양자역학/양자역학에서의-수학적-표기법.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
@@ -212,13 +213,12 @@
     "content/english/Test-Page/Test2.md",
     "content/english/study/physics/quantum-mechanics/index.md",
     "content/english/study/physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
-    "content/한국어버젼/공부/물리학/양자역학/index.md",
-    "content/한국어버젼/공부/index.md",
+    "content/한국어버젼/학업/물리학/양자역학/index.md",
+    "content/한국어버젼/학업/index.md",
     "content/english/study/physics/index.md",
     "content/english/study/index.md",
-    "content/한국어버젼/공부/물리학/고전역학/index.md",
+    "content/한국어버젼/학업/물리학/고전역학/index.md",
     "content/english/Test-Page",
-    "content/english/study/physics/Untitled.md",
     "content/english/study/physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics/classical-mechanics",
     "content/EnglishVersion/Study/Physics",
