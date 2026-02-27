@@ -181,8 +181,9 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "bf750706b3ad40fc",
+  "active": "814e75f6c08ac4b1",
   "lastOpenFiles": [
+    "quartz/static/_headers",
     "content/한국어버젼/1-학업/물리학/양자역학/양자역학에서의-수학적-표기법.md",
     "content/한국어버젼/1-학업/물리학/통계역학/강의1-통계역학의-동기.md",
     "content/한국어버젼/1-학업/물리학/통계역학/강의2-통계역학적-앙상블.md",
@@ -210,7 +211,6 @@
     "docs/tags/component.md",
     "docs/tags/plugin.md",
     "docs/authoring content.md",
-    "docs/build.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
