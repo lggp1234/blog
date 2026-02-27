@@ -98,7 +98,7 @@ export const defaultContentPageLayout: PageLayout = {
         sticky: false, // true면 사이드바 안에서 스크롤 따라오는 느낌
         titleKo: "위치",
         titleEn: "Location",
-        iframeSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d955.1395344719443!2d127.36311522887266!3d36.368198860395765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35654bc8f5ab6ced%3A0x683eda38f6c6366d!2z7ZWc6rWt6rO87ZWZ6riw7Iig7JuQIEtJ67mM65SpKEU0KQ!5e0!3m2!1sko!2skr!4v1772198546601!5m2!1sko!2skr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade",
+        iframeSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d955.1395344719443!2d127.36311522887266!3d36.368198860395765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35654bc8f5ab6ced%3A0x683eda38f6c6366d!2z7ZWc6rWt6rO87ZWZ6riw7Iig7JuQIEtJ67mM65SpKEU0KQ!5e0!3m2!1sko!2skr!4v1772198546601!5m2!1sko!2skr",
       }),
     ),
   ],
