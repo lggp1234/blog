@@ -25,12 +25,6 @@ function isSimplePrefix(prefix: string, target: string): boolean {
   return target === prefix || target.startsWith(prefix + "/")
 }
 
-function normalizePaginationSlug(slug: FullSlug): FullSlug {
-  // foo/bar/page/2/index -> foo/bar/index
-  const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
-  return (m ? `${m[1]}/index` : slug) as FullSlug
-}
-
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
   const isHome = isGlobalHomeSlug(currentSlug)
   const currentLang = getLangFromSlug(currentSlug) // "en" | "ko" | null
@@ -346,7 +340,6 @@ function createFolderNode(
 
 async function setupExplorer(currentSlug: FullSlug) {
   lastKnownSlug = currentSlug
-  const activeSlug = normalizePaginationSlug(currentSlug)
   const activeSlug = normalizePaginationSlug(currentSlug)
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
