@@ -148,7 +148,7 @@ button.desktop-explorer {
       }
     }
 
-        // =========================
+    // =========================
     // Ellipsis folding buttons (⋯)
     // - normal: black glyph on white background
     // - expanded: white glyph on black background
@@ -187,19 +187,6 @@ button.desktop-explorer {
       background: var(--tertiary);
       color: #fff;
       border-color: var(--tertiary);
-      opacity: 1;
-    }
-
-    & li > button.explorer-ellipsis:hover {
-      opacity: 1;
-      border-color: var(--gray);
-    }
-
-    & li > button.explorer-ellipsis.expanded {
-      // "⋯(문자표 흰색, 문자표 배경 검은색)"
-      color: #fff;
-      background: #000;
-      border-color: #000;
       opacity: 1;
     }
   }
