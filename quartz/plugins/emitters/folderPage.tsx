@@ -42,9 +42,7 @@ async function* processFolderInfo(
   ][]) {
     // 폴더 내 아이템 개수(폴더/파일) 기반으로 총 페이지 수 계산
     const folderNode = trie.findNode(folder.split("/"))
-    const totalItems =
-      (folderNode?.children ?? []).filter((n) => n.isFolder || n.data).length
-
+    const totalItems = (folderNode?.children ?? []).filter((n) => n.isFolder || n.data).length
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
 
     const baseTitle =
@@ -64,10 +62,12 @@ async function* processFolderInfo(
           ? folderContent
           : defaultProcessedContent({
               slug,
+              // 요구사항: 폴더 제목은 동일하게 유지 (페이지 번호는 하단 네비게이션에서만 표시)
               frontmatter: {
-                title: `${baseTitle} (Page ${p})`,
+                title: baseTitle,
                 tags: [],
               },
+              // description은 유지해도 되고(SEO), FolderContent에서 1페이지에서만 노출됨
               description: folderContent[1].data.description,
             })
 
@@ -169,15 +169,13 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       const folders: Set<SimpleSlug> = new Set(
         allFiles.flatMap((data) => {
           return data.slug
-            ? _getFolders(data.slug).filter(
-                (folderName) => folderName !== "." && folderName !== "tags",
-              )
+            ? _getFolders(data.slug).filter((folderName) => folderName !== "." && folderName !== "tags")
             : []
         }),
       )
 
       const folderInfo = computeFolderInfo(folders, content, cfg.locale)
-      const pageSize = userOpts?.pageSize ?? 40
+      const pageSize = userOpts?.pageSize ?? 10
       yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources, pageSize)
     },
     async *partialEmit(ctx, content, resources, changeEvents) {
@@ -189,16 +187,14 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       for (const changeEvent of changeEvents) {
         if (!changeEvent.file) continue
         const slug = changeEvent.file.data.slug!
-        const folders = _getFolders(slug).filter(
-          (folderName) => folderName !== "." && folderName !== "tags",
-        )
+        const folders = _getFolders(slug).filter((folderName) => folderName !== "." && folderName !== "tags")
         folders.forEach((folder) => affectedFolders.add(folder))
       }
 
       // If there are affected folders, rebuild their pages
       if (affectedFolders.size > 0) {
         const folderInfo = computeFolderInfo(affectedFolders, content, cfg.locale)
-        const pageSize = userOpts?.pageSize ?? 40
+        const pageSize = userOpts?.pageSize ?? 10
         yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources, pageSize)
       }
     },
