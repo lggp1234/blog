@@ -169,7 +169,11 @@ export function pathToRoot(slug: FullSlug): RelativeURL {
 }
 
 export function resolveRelative(current: FullSlug, target: FullSlug | SimpleSlug): RelativeURL {
-  const res = joinSegments(pathToRoot(current), simplifySlug(target as FullSlug)) as RelativeURL
+  const simplified = simplifySlug(target as FullSlug)
+  // 폴더 타겟(보통 .../index -> simplifySlug 결과가 ".../"로 끝남)이면 trailing slash 유지
+  const folderTail = simplified.endsWith("/") ? "/" : ""
+
+  const res = (joinSegments(pathToRoot(current), simplified) + folderTail) as RelativeURL
   return res
 }
 
