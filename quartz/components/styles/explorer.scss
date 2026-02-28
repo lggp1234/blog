@@ -137,6 +137,50 @@ button.desktop-explorer {
         color: var(--tertiary);
       }
     }
+
+        // =========================
+    // Ellipsis folding buttons (⋯)
+    // - normal: black glyph on white background
+    // - expanded: white glyph on black background
+    // =========================
+    & li > button.explorer-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      // "⋯(문자표 검은색, 문자표 배경 흰색)"
+      color: #000;
+      background: #fff;
+
+      border: 1px solid var(--lightgray);
+      border-radius: 999px;
+
+      padding: 0.1rem 0.45rem;
+      margin: 0.15rem 0;
+
+      cursor: pointer;
+      pointer-events: all;
+      user-select: none;
+
+      font-family: var(--codeFont);
+      font-size: 0.95rem;
+      line-height: 1.2;
+
+      opacity: 0.9;
+    }
+
+    & li > button.explorer-ellipsis:hover {
+      opacity: 1;
+      border-color: var(--gray);
+    }
+
+    & li > button.explorer-ellipsis.expanded {
+      // "⋯(문자표 흰색, 문자표 배경 검은색)"
+      color: #fff;
+      background: #000;
+      border-color: #000;
+      opacity: 1;
+    }
   }
 
   .folder-outer {
