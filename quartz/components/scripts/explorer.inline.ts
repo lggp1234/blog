@@ -100,11 +100,16 @@ function isLanguageRootNode(node: FileTrieNode): boolean {
 type FolderState = {
   path: string
   collapsed: boolean
+  // (렌더링용) 아래 두 값은 localStorage에 저장하지 않고, ellipsisState(Map)에서만 관리
   expandPrev?: boolean
   expandNext?: boolean
 }
 
 let currentExplorerState: Array<FolderState>
+
+// ✅ ellipsis만 “이동 시 초기화”하기 위한 메모리 상태 (persist X)
+const ellipsisState = new Map<string, { prev: boolean; next: boolean }>()
+
 function toggleExplorer(this: HTMLElement) {
   const nearestExplorer = this.closest(".explorer") as HTMLElement
   if (!nearestExplorer) return
@@ -124,7 +129,6 @@ function toggleExplorer(this: HTMLElement) {
 
 let lastKnownSlug: FullSlug = "index" as FullSlug
 let lastExplorerActiveSlug: string | null = null
-const ellipsisState = new Map<string, { prev: boolean; next: boolean }>()
 
 function toggleFolder(evt: MouseEvent) {
   evt.stopPropagation()
@@ -164,12 +168,16 @@ function toggleFolder(evt: MouseEvent) {
     })
   }
 
-  // ✅ localStorage에는 폴더 접힘 상태만 저장 (ellipsis 토글은 저장 금지)
+  // ✅ localStorage에는 “폴더 접힘 상태”만 저장 (ellipsis 토글 저장 X)
   const persisted = currentExplorerState.map(({ path, collapsed }) => ({ path, collapsed }))
   localStorage.setItem("fileTree", JSON.stringify(persisted))
 }
 
-function createEllipsisNode(folderPath: FullSlug, side: "prev" | "next", expanded: boolean): HTMLLIElement {
+function createEllipsisNode(
+  folderPath: FullSlug,
+  side: "prev" | "next",
+  expanded: boolean,
+): HTMLLIElement {
   const li = document.createElement("li")
   const btn = document.createElement("button")
   btn.type = "button"
@@ -202,11 +210,9 @@ async function toggleEllipsis(evt: MouseEvent) {
 
   ellipsisState.set(key, cur)
 
-  // 현재 렌더링에 바로 반영되도록 currentExplorerState에도 동기화
-  if (side === "prev") st.expandPrev = cur.prev
-  if (side === "next") st.expandNext = cur.next
-
-  // ❌ localStorage(fileTree)에는 ellipsis 상태를 저장하지 않음!
+  // 렌더링용 상태에도 반영
+  st.expandPrev = cur.prev
+  st.expandNext = cur.next
 
   // scroll position 유지
   const explorerUl = btn.closest(".explorer")?.querySelector(".explorer-ul") as HTMLElement | null
@@ -329,10 +335,9 @@ function createFolderNode(
     ul.appendChild(childNode)
   }
 
-  // Next block (아래쪽 ⋯ + 이후 문서들)
+  // Next block (아래쪽 ⋯ + 이후 문서들) — 펼쳤을 땐 목록 아래로 ⋯ 내려감
   if (hasNextHidden) {
     if (expandNext) {
-      // ✅ 먼저 숨겨진 이후 문서들을 다 보여주고
       for (let i = ctxEnd + 1; i < n; i++) {
         const child = children[i]
         const childNode = child.isFolder
@@ -340,10 +345,8 @@ function createFolderNode(
           : createFileNode(currentSlug, activeSlug, child)
         ul.appendChild(childNode)
       }
-      // ✅ 그 다음에 ⋯ 버튼을 맨 아래에 둔다 (펼친 상태)
       ul.appendChild(createEllipsisNode(folderPath, "next", true))
     } else {
-      // 접힌 상태에서는 기존처럼 context 바로 아래에 ⋯ 버튼
       ul.appendChild(createEllipsisNode(folderPath, "next", false))
     }
   }
@@ -357,8 +360,9 @@ async function setupExplorer(currentSlug: FullSlug) {
 
   const navigationChanged = lastExplorerActiveSlug !== (activeSlug as string)
   lastExplorerActiveSlug = activeSlug as string
+
+  // ✅ 페이지 이동 시: ⋯ 상태만 접힘으로 초기화 (폴더 collapsed는 유지)
   if (navigationChanged) {
-    // ✅ 페이지 이동 시: ⋯ 상태만 초기화 (폴더 collapsed 상태는 건드리지 않음)
     ellipsisState.clear()
   }
 
@@ -378,7 +382,7 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     updateExplorerTitle(explorer, currentSlug)
 
-    // Get folder state from local storage
+    // Get folder state from local storage (collapsed만 사용)
     const storageTree = localStorage.getItem("fileTree")
     const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
     const oldCollapsed = new Map<string, boolean>(
@@ -411,22 +415,16 @@ async function setupExplorer(currentSlug: FullSlug) {
     let renderRoot = trie // 기본: 홈(index)에서는 전체 트리 그대로
 
     if (currentLang) {
-      // 현재 언어가 정해진 페이지에서는 반대 언어 제거
       trie.filter((node) => {
-        // tags는 기존 filterFn에서 보통 걸러지지만, 혹시 모르니 한번 더 방어
         if (node.slugSegment === "tags") return false
-
-        // 최상위 언어 루트 폴더는 명시적으로 판정
         if (isEnglishRootNode(node)) return currentLang === "en"
         if (isKoreanRootNode(node)) return currentLang === "ko"
 
-        // 일반 노드들은 slug prefix로 판정
         const lang = getLangFromSlug(node.slug)
-        if (!lang) return true // 언어 중립 노드는 유지
+        if (!lang) return true
         return lang === currentLang
       })
 
-      // 현재 언어 루트 폴더를 찾아서, 그 children만 루트처럼 보여주기
       const langRoot = trie.children.find((child) => {
         return currentLang === "en" ? isEnglishRootNode(child) : isKoreanRootNode(child)
       })
@@ -436,40 +434,29 @@ async function setupExplorer(currentSlug: FullSlug) {
       }
     }
 
-    // Get folder paths for state management
-    // (virtual root인 경우, 그 루트 폴더 자체는 렌더링 안 하므로 상태 목록에서도 제외)
     const hiddenRootPath = renderRoot !== trie ? renderRoot.slug : null
     const folderPaths = renderRoot
       .getFolderPaths()
       .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
 
-    // ✅ CHANGE: 이동(nav)하면 항상 접힌 상태로 시작하도록
-    // - expandPrev/expandNext는 이전 저장값을 "읽을 수는 있지만"
-    // - navigationChanged인 경우에는 무조건 false로 덮어쓴다.
     currentExplorerState = folderPaths.map((path) => {
       const previousCollapsed = oldCollapsed.get(path)
-      const key = String(path)
-      const mem = ellipsisState.get(key) ?? { prev: false, next: false }
+      const mem = ellipsisState.get(String(path)) ?? { prev: false, next: false }
 
       return {
         path,
-        collapsed: previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
+        collapsed:
+          previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
         expandPrev: mem.prev,
         expandNext: mem.next,
       }
-
-    // ✅ CHANGE: 이동이면 저장값도 "접힘"으로 갱신해서 새로고침/뒤로가기에서도 접히게
-    if (navigationChanged && opts.useSavedState) {
-      localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
-    }
+    })
 
     const explorerUl = explorer.querySelector(".explorer-ul")
     if (!explorerUl) continue
 
-    // (중요) 기존 내용 비우고 다시 그림
     explorerUl.innerHTML = ""
 
-    // Create and insert new content
     const fragment = document.createDocumentFragment()
     for (const child of renderRoot.children) {
       const node = child.isFolder
@@ -480,12 +467,10 @@ async function setupExplorer(currentSlug: FullSlug) {
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
 
-    // restore explorer scrollTop position if it exists
     const scrollTop = sessionStorage.getItem("explorerScrollTop")
     if (scrollTop) {
       explorerUl.scrollTop = parseInt(scrollTop)
     } else {
-      // try to scroll to the active element if it exists
       const activeElement = explorerUl.querySelector(".active")
       if (activeElement) {
         activeElement.scrollIntoView({ behavior: "smooth" })
@@ -493,9 +478,7 @@ async function setupExplorer(currentSlug: FullSlug) {
     }
 
     // Set up event handlers
-    const explorerButtons = explorer.getElementsByClassName(
-      "explorer-toggle",
-    ) as HTMLCollectionOf<HTMLElement>
+    const explorerButtons = explorer.getElementsByClassName("explorer-toggle") as HTMLCollectionOf<HTMLElement>
     for (const button of explorerButtons) {
       button.addEventListener("click", toggleExplorer)
       window.addCleanup(() => button.removeEventListener("click", toggleExplorer))
@@ -503,26 +486,20 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     // Set up folder click handlers
     if (opts.folderClickBehavior === "collapse") {
-      const folderButtons = explorer.getElementsByClassName(
-        "folder-button",
-      ) as HTMLCollectionOf<HTMLElement>
+      const folderButtons = explorer.getElementsByClassName("folder-button") as HTMLCollectionOf<HTMLElement>
       for (const button of folderButtons) {
         button.addEventListener("click", toggleFolder)
         window.addCleanup(() => button.removeEventListener("click", toggleFolder))
       }
     }
 
-    const folderIcons = explorer.getElementsByClassName(
-      "folder-icon",
-    ) as HTMLCollectionOf<HTMLElement>
+    const folderIcons = explorer.getElementsByClassName("folder-icon") as HTMLCollectionOf<HTMLElement>
     for (const icon of folderIcons) {
       icon.addEventListener("click", toggleFolder)
       window.addCleanup(() => icon.removeEventListener("click", toggleFolder))
     }
 
-    const ellipsisButtons = explorer.getElementsByClassName(
-      "explorer-ellipsis",
-    ) as HTMLCollectionOf<HTMLElement>
+    const ellipsisButtons = explorer.getElementsByClassName("explorer-ellipsis") as HTMLCollectionOf<HTMLElement>
     for (const btn of ellipsisButtons) {
       btn.addEventListener("click", toggleEllipsis)
       window.addCleanup(() => btn.removeEventListener("click", toggleEllipsis))
@@ -531,8 +508,7 @@ async function setupExplorer(currentSlug: FullSlug) {
 }
 
 document.addEventListener("prenav", async () => {
-  // save explorer scrollTop position
-  const explorer = document.querySelector(".explorer-ul")
+  const explorer = document.querySelector(".explorer-ul") as HTMLElement | null
   if (!explorer) return
   sessionStorage.setItem("explorerScrollTop", explorer.scrollTop.toString())
 })
@@ -543,24 +519,20 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
 
   // if mobile hamburger is visible, collapse by default
   for (const explorer of document.getElementsByClassName("explorer")) {
-    const mobileExplorer = explorer.querySelector(".mobile-explorer")
+    const mobileExplorer = (explorer as HTMLElement).querySelector(".mobile-explorer")
     if (!mobileExplorer) return
 
-    if (mobileExplorer.checkVisibility()) {
-      explorer.classList.add("collapsed")
-      explorer.setAttribute("aria-expanded", "false")
-
-      // Allow <html> to be scrollable when mobile explorer is collapsed
+    if ((mobileExplorer as HTMLElement).checkVisibility()) {
+      ;(explorer as HTMLElement).classList.add("collapsed")
+      ;(explorer as HTMLElement).setAttribute("aria-expanded", "false")
       document.documentElement.classList.remove("mobile-no-scroll")
     }
 
-    mobileExplorer.classList.remove("hide-until-loaded")
+    ;(mobileExplorer as HTMLElement).classList.remove("hide-until-loaded")
   }
 })
 
 window.addEventListener("resize", function () {
-  // Desktop explorer opens by default, and it stays open when the window is resized
-  // to mobile screen size. Applies `no-scroll` to <html> in this edge case.
   const explorer = document.querySelector(".explorer")
   if (explorer && !explorer.classList.contains("collapsed")) {
     document.documentElement.classList.add("mobile-no-scroll")
