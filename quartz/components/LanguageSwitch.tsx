@@ -41,11 +41,7 @@ export default ((opts = {}) => {
     return (
       <a
         class="px-3 py-1 rounded-md border hover:opacity-80 whitespace-nowrap"
-        href={alt}
-        onClick={(e) => {
-          e.preventDefault()
-          window.location.assign(alt)
-        }}
+        href={encodeURI(alt)}
         aria-label={`Switch to ${label}`}
       >
         {label} →
