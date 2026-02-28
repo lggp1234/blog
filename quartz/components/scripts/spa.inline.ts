@@ -62,20 +62,30 @@ async function _navigate(url: URL, isBack: boolean = false) {
   isNavigating = true
   startLoading()
   p = p || new DOMParser()
-  const contents = await fetchCanonical(url)
-    .then((res) => {
-      const contentType = res.headers.get("content-type")
-      if (contentType?.startsWith("text/html")) {
-        return res.text()
-      } else {
-        window.location.assign(url)
-      }
-    })
-    .catch(() => {
-      window.location.assign(url)
-    })
+  let res: Response | null = null
+  try {
+    res = await fetchCanonical(url)
+  } catch {
+    window.location.assign(url)
+    return
+  }
 
+  const contentType = res.headers.get("content-type")
+  if (!contentType?.startsWith("text/html")) {
+    window.location.assign(url)
+    return
+  }
+
+  const contents = await res.text()
   if (!contents) return
+
+// ✅ 핵심: 서버/alias/디렉토리 리다이렉트로 최종 URL이 바뀌면,
+// 그 "최종 URL"을 기준으로 relative URL rebasing + history를 해야 함
+  try {
+    url = new URL(res.url, window.location.origin)
+  } catch {
+    // res.url이 이상하면 그냥 기존 url 유지
+  }
 
   // notify about to nav
   const event: CustomEventMap["prenav"] = new CustomEvent("prenav", { detail: {} })
