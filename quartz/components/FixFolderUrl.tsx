@@ -8,14 +8,15 @@ export default (() => {
 (function () {
   function fix() {
     var slug = (document.body && document.body.dataset && document.body.dataset.slug) || "";
-    // folder index 페이지면 slug가 ".../index"
+    // 폴더 index 페이지면 slug가 ".../index"
     if (!slug.endsWith("/index")) return;
 
     var p = location.pathname;
+
     // 이미 / 로 끝나면 OK
     if (p.endsWith("/")) return;
 
-    // /something/index 로 들어온 경우도 /something/ 로 정규화
+    // /something/index 로 들어온 경우 -> /something/
     if (p.endsWith("/index")) {
       var np = p.replace(/\\/index$/, "/");
       history.replaceState({}, "", np + location.search + location.hash);
