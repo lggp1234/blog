@@ -165,7 +165,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
     // 요구사항: 첫 페이지에서만 index.md 내용을 제목 아래에 표시
     const hasFolderIntro = (tree as Root).children.length > 0 || !!fileData.description
-    const showFolderIntro = safePage === 1 && hasFolderIntro
+    const showFolderIntro = hasFolderIntro
 
     return (
       <div class="popover-hint">
