@@ -124,6 +124,7 @@ function toggleExplorer(this: HTMLElement) {
 
 let lastKnownSlug: FullSlug = "index" as FullSlug
 let lastExplorerActiveSlug: string | null = null
+const ellipsisState = new Map<string, { prev: boolean; next: boolean }>()
 
 function toggleFolder(evt: MouseEvent) {
   evt.stopPropagation()
@@ -163,8 +164,9 @@ function toggleFolder(evt: MouseEvent) {
     })
   }
 
-  const stringifiedFileTree = JSON.stringify(currentExplorerState)
-  localStorage.setItem("fileTree", stringifiedFileTree)
+  // ✅ localStorage에는 폴더 접힘 상태만 저장 (ellipsis 토글은 저장 금지)
+  const persisted = currentExplorerState.map(({ path, collapsed }) => ({ path, collapsed }))
+  localStorage.setItem("fileTree", JSON.stringify(persisted))
 }
 
 function createEllipsisNode(folderPath: FullSlug, side: "prev" | "next", expanded: boolean): HTMLLIElement {
@@ -192,10 +194,19 @@ async function toggleEllipsis(evt: MouseEvent) {
   const st = currentExplorerState.find((s) => s.path === folderPath)
   if (!st) return
 
-  if (side === "prev") st.expandPrev = !(st.expandPrev ?? false)
-  if (side === "next") st.expandNext = !(st.expandNext ?? false)
+  const key = String(folderPath)
+  const cur = ellipsisState.get(key) ?? { prev: false, next: false }
 
-  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+  if (side === "prev") cur.prev = !cur.prev
+  if (side === "next") cur.next = !cur.next
+
+  ellipsisState.set(key, cur)
+
+  // 현재 렌더링에 바로 반영되도록 currentExplorerState에도 동기화
+  if (side === "prev") st.expandPrev = cur.prev
+  if (side === "next") st.expandNext = cur.next
+
+  // ❌ localStorage(fileTree)에는 ellipsis 상태를 저장하지 않음!
 
   // scroll position 유지
   const explorerUl = btn.closest(".explorer")?.querySelector(".explorer-ul") as HTMLElement | null
@@ -346,6 +357,10 @@ async function setupExplorer(currentSlug: FullSlug) {
 
   const navigationChanged = lastExplorerActiveSlug !== (activeSlug as string)
   lastExplorerActiveSlug = activeSlug as string
+  if (navigationChanged) {
+    // ✅ 페이지 이동 시: ⋯ 상태만 초기화 (폴더 collapsed 상태는 건드리지 않음)
+    ellipsisState.clear()
+  }
 
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -368,12 +383,6 @@ async function setupExplorer(currentSlug: FullSlug) {
     const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
     const oldCollapsed = new Map<string, boolean>(
       serializedExplorerState.map((entry: FolderState) => [entry.path, entry.collapsed]),
-    )
-    const oldExpandPrev = new Map<string, boolean>(
-      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.expandPrev ?? false]),
-    )
-    const oldExpandNext = new Map<string, boolean>(
-      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.expandNext ?? false]),
     )
 
     const data = await fetchData
@@ -439,19 +448,15 @@ async function setupExplorer(currentSlug: FullSlug) {
     // - navigationChanged인 경우에는 무조건 false로 덮어쓴다.
     currentExplorerState = folderPaths.map((path) => {
       const previousCollapsed = oldCollapsed.get(path)
-      const previousExpandPrev = oldExpandPrev.get(path)
-      const previousExpandNext = oldExpandNext.get(path)
+      const key = String(path)
+      const mem = ellipsisState.get(key) ?? { prev: false, next: false }
 
       return {
         path,
-        collapsed:
-          previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
-
-        // ✅ 핵심: 이동이면 false로 초기화, 아니면 기존값 유지(⋯ 클릭 재렌더링일 때 유지)
-        expandPrev: navigationChanged ? false : (previousExpandPrev ?? false),
-        expandNext: navigationChanged ? false : (previousExpandNext ?? false),
+        collapsed: previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
+        expandPrev: mem.prev,
+        expandNext: mem.next,
       }
-    })
 
     // ✅ CHANGE: 이동이면 저장값도 "접힘"으로 갱신해서 새로고침/뒤로가기에서도 접히게
     if (navigationChanged && opts.useSavedState) {
