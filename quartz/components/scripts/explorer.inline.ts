@@ -9,6 +9,22 @@ function isGlobalHomeSlug(slug: string): boolean {
   return slug === "index" || slug === ""
 }
 
+// =====================
+// Compact Explorer (⋯ folding) helpers
+// =====================
+const CONTEXT_RADIUS = 2 // 항상 현재 항목 기준 ±2 표시
+
+function normalizePaginationSlug(slug: FullSlug): FullSlug {
+  // foo/bar/page/2/index -> foo/bar/index
+  const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
+  return (m ? `${m[1]}/index` : slug) as FullSlug
+}
+
+function isSimplePrefix(prefix: string, target: string): boolean {
+  if (prefix === "/" || prefix === "") return true
+  return target === prefix || target.startsWith(prefix + "/")
+}
+
 function normalizePaginationSlug(slug: FullSlug): FullSlug {
   // foo/bar/page/2/index -> foo/bar/index
   const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
@@ -94,6 +110,8 @@ function isLanguageRootNode(node: FileTrieNode): boolean {
 type FolderState = {
   path: string
   collapsed: boolean
+  expandPrev?: boolean
+  expandNext?: boolean
 }
 
 let currentExplorerState: Array<FolderState>
@@ -113,6 +131,8 @@ function toggleExplorer(this: HTMLElement) {
     document.documentElement.classList.remove("mobile-no-scroll")
   }
 }
+
+let lastKnownSlug: FullSlug = "index" as FullSlug
 
 function toggleFolder(evt: MouseEvent) {
   evt.stopPropagation()
@@ -156,6 +176,45 @@ function toggleFolder(evt: MouseEvent) {
   localStorage.setItem("fileTree", stringifiedFileTree)
 }
 
+function createEllipsisNode(folderPath: FullSlug, side: "prev" | "next", expanded: boolean): HTMLLIElement {
+  const li = document.createElement("li")
+  const btn = document.createElement("button")
+  btn.type = "button"
+  btn.className = expanded ? "explorer-ellipsis expanded" : "explorer-ellipsis"
+  btn.textContent = "⋯"
+  btn.dataset.folderpath = folderPath
+  btn.dataset.side = side
+  btn.setAttribute("aria-label", expanded ? "Collapse hidden items" : "Expand hidden items")
+  li.appendChild(btn)
+  return li
+}
+
+async function toggleEllipsis(evt: MouseEvent) {
+  evt.preventDefault()
+  evt.stopPropagation()
+
+  const btn = evt.currentTarget as HTMLElement | null
+  const folderPath = btn?.dataset.folderpath as FullSlug | undefined
+  const side = btn?.dataset.side as ("prev" | "next") | undefined
+  if (!folderPath || !side) return
+
+  const st = currentExplorerState.find((s) => s.path === folderPath)
+  if (!st) return
+
+  if (side === "prev") st.expandPrev = !(st.expandPrev ?? false)
+  if (side === "next") st.expandNext = !(st.expandNext ?? false)
+
+  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+
+  // scroll position 유지
+  const explorerUl = btn.closest(".explorer")?.querySelector(".explorer-ul") as HTMLElement | null
+  if (explorerUl) {
+    sessionStorage.setItem("explorerScrollTop", explorerUl.scrollTop.toString())
+  }
+
+  await setupExplorer(lastKnownSlug)
+}
+
 function createFileNode(currentSlug: FullSlug, activeSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
   const template = document.getElementById("template-file") as HTMLTemplateElement
   const clone = template.content.cloneNode(true) as DocumentFragment
@@ -165,9 +224,9 @@ function createFileNode(currentSlug: FullSlug, activeSlug: FullSlug, node: FileT
   a.dataset.for = node.slug
   a.textContent = node.displayName
 
-  // ✅ 현재 페이지가 pagination이면, active 판정은 baseSlug로
   if (activeSlug === node.slug) {
     a.classList.add("active")
+    a.setAttribute("aria-current", "page")
   }
 
   return li
@@ -197,46 +256,97 @@ function createFolderNode(
     a.dataset.for = folderPath
     a.className = "folder-title"
     a.textContent = node.displayName
-
-    // ✅ 폴더 페이지(또는 pagination page 2+)에서도 현재 폴더가 active로 보이게
-    if (activeSlug === folderPath) {
-      a.classList.add("active")
-    }
-
     button.replaceWith(a)
   } else {
     const span = titleContainer.querySelector(".folder-title") as HTMLElement
     span.textContent = node.displayName
-    if (activeSlug === folderPath) {
-      span.classList.add("active")
-    }
   }
 
-  const isCollapsed =
-    currentExplorerState.find((item) => item.path === folderPath)?.collapsed ??
-    opts.folderDefaultState === "collapsed"
+  const st = currentExplorerState.find((item) => item.path === folderPath)
+  const isCollapsed = st?.collapsed ?? opts.folderDefaultState === "collapsed"
 
-  const simpleFolderPath = simplifySlug(folderPath)
+  const simpleFolderPath = simplifySlug(folderPath) as string
+  const simpleActive = simplifySlug(activeSlug) as string
+  const folderIsPrefixOfActive = isSimplePrefix(simpleFolderPath, simpleActive)
 
-  // ✅ 폴더를 자동으로 열어야 하는지 판정도 activeSlug 기준으로
-  const folderIsPrefixOfActiveSlug =
-    simpleFolderPath === (activeSlug as string).slice(0, (simpleFolderPath as string).length)
-
-  if (!isCollapsed || folderIsPrefixOfActiveSlug) {
+  if (!isCollapsed || folderIsPrefixOfActive) {
     folderOuter.classList.add("open")
   }
 
-  for (const child of node.children) {
+  // =========================
+  // "현재 보는 파일 기준 ±2" + 앞/뒤는 ⋯로 접기(토글)
+  // =========================
+  const children = node.children
+  const n = children.length
+
+  const expandPrev = st?.expandPrev ?? false
+  const expandNext = st?.expandNext ?? false
+
+  // 이 폴더가 "현재 파일의 직계 부모"이거나 "현재 폴더 페이지"일 때만 folding 적용
+  const directIdx = children.findIndex((c) => !c.isFolder && c.slug === activeSlug)
+  const isCurrentFolderPage = activeSlug === folderPath
+  const shouldFold = (directIdx >= 0 || isCurrentFolderPage) && n > 0
+
+  if (!shouldFold) {
+    for (const child of children) {
+      const childNode = child.isFolder
+        ? createFolderNode(currentSlug, activeSlug, child, opts)
+        : createFileNode(currentSlug, activeSlug, child)
+      ul.appendChild(childNode)
+    }
+    return li
+  }
+
+  const anchor = directIdx >= 0 ? directIdx : 0
+  const ctxStart = Math.max(0, anchor - CONTEXT_RADIUS)
+  const ctxEnd = Math.min(n - 1, anchor + CONTEXT_RADIUS)
+
+  const hasPrevHidden = ctxStart > 0
+  const hasNextHidden = ctxEnd < n - 1
+
+  // Prev block (위쪽 ⋯ + 이전 문서들)
+  if (hasPrevHidden) {
+    ul.appendChild(createEllipsisNode(folderPath, "prev", expandPrev))
+    if (expandPrev) {
+      for (let i = 0; i < ctxStart; i++) {
+        const child = children[i]
+        const childNode = child.isFolder
+          ? createFolderNode(currentSlug, activeSlug, child, opts)
+          : createFileNode(currentSlug, activeSlug, child)
+        ul.appendChild(childNode)
+      }
+    }
+  }
+
+  // Context block (항상 보이는 ±2)
+  for (let i = ctxStart; i <= ctxEnd; i++) {
+    const child = children[i]
     const childNode = child.isFolder
       ? createFolderNode(currentSlug, activeSlug, child, opts)
       : createFileNode(currentSlug, activeSlug, child)
     ul.appendChild(childNode)
   }
 
+  // Next block (아래쪽 ⋯ + 이후 문서들)
+  if (hasNextHidden) {
+    ul.appendChild(createEllipsisNode(folderPath, "next", expandNext))
+    if (expandNext) {
+      for (let i = ctxEnd + 1; i < n; i++) {
+        const child = children[i]
+        const childNode = child.isFolder
+          ? createFolderNode(currentSlug, activeSlug, child, opts)
+          : createFileNode(currentSlug, activeSlug, child)
+        ul.appendChild(childNode)
+      }
+    }
+  }
+
   return li
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
+  lastKnownSlug = currentSlug
+  const activeSlug = normalizePaginationSlug(currentSlug)
   const activeSlug = normalizePaginationSlug(currentSlug)
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -257,8 +367,14 @@ async function setupExplorer(currentSlug: FullSlug) {
     // Get folder state from local storage
     const storageTree = localStorage.getItem("fileTree")
     const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
-    const oldIndex = new Map<string, boolean>(
+    const oldCollapsed = new Map<string, boolean>(
       serializedExplorerState.map((entry: FolderState) => [entry.path, entry.collapsed]),
+    )
+    const oldExpandPrev = new Map<string, boolean>(
+      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.expandPrev ?? false]),
+    )
+    const oldExpandNext = new Map<string, boolean>(
+      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.expandNext ?? false]),
     )
 
     const data = await fetchData
@@ -320,11 +436,14 @@ async function setupExplorer(currentSlug: FullSlug) {
       .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
 
     currentExplorerState = folderPaths.map((path) => {
-      const previousState = oldIndex.get(path)
+      const previousCollapsed = oldCollapsed.get(path)
+      const previousExpandPrev = oldExpandPrev.get(path)
+      const previousExpandNext = oldExpandNext.get(path)
       return {
         path,
-        collapsed:
-          previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
+        collapsed: previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
+        expandPrev: previousExpandPrev ?? false,
+        expandNext: previousExpandNext ?? false,
       }
     })
 
@@ -383,6 +502,14 @@ async function setupExplorer(currentSlug: FullSlug) {
     for (const icon of folderIcons) {
       icon.addEventListener("click", toggleFolder)
       window.addCleanup(() => icon.removeEventListener("click", toggleFolder))
+    }
+
+    const ellipsisButtons = explorer.getElementsByClassName(
+      "explorer-ellipsis",
+    ) as HTMLCollectionOf<HTMLElement>
+    for (const btn of ellipsisButtons) {
+      btn.addEventListener("click", toggleEllipsis)
+      window.addCleanup(() => btn.removeEventListener("click", toggleEllipsis))
     }
   }
 }
