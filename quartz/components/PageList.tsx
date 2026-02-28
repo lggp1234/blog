@@ -54,15 +54,17 @@ export function byDateAndAlphabeticalFolderFirst(cfg: GlobalConfiguration): Sort
 
 type Props = {
   limit?: number
+  offset?: number
   sort?: SortFn
 } & QuartzComponentProps
 
-export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, sort }: Props) => {
+export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort }: Props) => {
   const sorter = sort ?? byDateAndAlphabeticalFolderFirst(cfg)
   let list = allFiles.sort(sorter)
-  if (limit) {
-    list = list.slice(0, limit)
-  }
+
+  const start = offset ?? 0
+  const end = limit ? start + limit : undefined
+  list = list.slice(start, end)
 
   return (
     <ul class="section-ul">
