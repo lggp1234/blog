@@ -183,6 +183,7 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "quartz/components/FixFolderUrl.tsx",
     "content/한국어버젼/1-학업/물리학/통계역학/강의1-통계역학의-동기.md",
     "content/한국어버젼/1-학업/물리학/통계역학/강의2-통계역학적-앙상블.md",
     "content/english/99-Test-Page/Test1.md",
@@ -211,7 +212,6 @@
     "quartz/components/SidebarMap.tsx",
     "content/english/99-Test-Page/Test2.md",
     "content/english/1-study/1-physics/statistical-mechanics/lecture2-statistical-ensemble.md",
-    "content/english/1-study/1-physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
