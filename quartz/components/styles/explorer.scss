@@ -121,8 +121,9 @@ button.desktop-explorer {
 }
 
 :root[saved-theme="dark"] {
-  --explorer-ellipsis-bg: #000;
-  --explorer-ellipsis-fg: #fff;
+  --explorer-ellipsis-bg: #1b1c20;     // <- 스샷 느낌의 다크 그레이(필요하면 1a1b1f~20222a 사이로 미세조정)
+  --explorer-ellipsis-fg: #e6e6e6;     // 글자(⋯)는 밝은 회색
+  --explorer-ellipsis-border: #2a2c33; // 테두리도 살짝 밝게
 }
 
 .explorer-content {
@@ -160,8 +161,7 @@ button.desktop-explorer {
 
       background: var(--explorer-ellipsis-bg);
       color: var(--explorer-ellipsis-fg);
-
-      border: 1px solid var(--lightgray);
+      border: 1px solid var(--explorer-ellipsis-border);
       border-radius: 999px;
 
       padding: 0.1rem 0.45rem;
@@ -182,14 +182,13 @@ button.desktop-explorer {
       border-color: var(--gray);
     }
 
-    // ✅ 클릭(펼침) 상태: 청록색
+    /* ✅ 펼침 상태: 청록색 */
     & li > button.explorer-ellipsis.expanded {
       background: var(--tertiary);
       color: #fff;
       border-color: var(--tertiary);
       opacity: 1;
     }
-  }
 
   .folder-outer {
     display: grid;
