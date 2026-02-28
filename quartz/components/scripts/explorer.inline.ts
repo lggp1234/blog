@@ -9,6 +9,12 @@ function isGlobalHomeSlug(slug: string): boolean {
   return slug === "index" || slug === ""
 }
 
+function normalizePaginationSlug(slug: FullSlug): FullSlug {
+  // foo/bar/page/2/index -> foo/bar/index
+  const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
+  return (m ? `${m[1]}/index` : slug) as FullSlug
+}
+
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
   const isHome = isGlobalHomeSlug(currentSlug)
   const currentLang = getLangFromSlug(currentSlug) // "en" | "ko" | null
@@ -150,7 +156,7 @@ function toggleFolder(evt: MouseEvent) {
   localStorage.setItem("fileTree", stringifiedFileTree)
 }
 
-function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
+function createFileNode(currentSlug: FullSlug, activeSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
   const template = document.getElementById("template-file") as HTMLTemplateElement
   const clone = template.content.cloneNode(true) as DocumentFragment
   const li = clone.querySelector("li") as HTMLLIElement
@@ -159,7 +165,8 @@ function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElemen
   a.dataset.for = node.slug
   a.textContent = node.displayName
 
-  if (currentSlug === node.slug) {
+  // ✅ 현재 페이지가 pagination이면, active 판정은 baseSlug로
+  if (activeSlug === node.slug) {
     a.classList.add("active")
   }
 
@@ -168,6 +175,7 @@ function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElemen
 
 function createFolderNode(
   currentSlug: FullSlug,
+  activeSlug: FullSlug,
   node: FileTrieNode,
   opts: ParsedOptions,
 ): HTMLLIElement {
@@ -183,38 +191,45 @@ function createFolderNode(
   folderContainer.dataset.folderpath = folderPath
 
   if (opts.folderClickBehavior === "link") {
-    // Replace button with link for link behavior
     const button = titleContainer.querySelector(".folder-button") as HTMLElement
     const a = document.createElement("a")
     a.href = resolveRelative(currentSlug, folderPath)
     a.dataset.for = folderPath
     a.className = "folder-title"
     a.textContent = node.displayName
+
+    // ✅ 폴더 페이지(또는 pagination page 2+)에서도 현재 폴더가 active로 보이게
+    if (activeSlug === folderPath) {
+      a.classList.add("active")
+    }
+
     button.replaceWith(a)
   } else {
     const span = titleContainer.querySelector(".folder-title") as HTMLElement
     span.textContent = node.displayName
+    if (activeSlug === folderPath) {
+      span.classList.add("active")
+    }
   }
 
-  // if the saved state is collapsed or the default state is collapsed
   const isCollapsed =
     currentExplorerState.find((item) => item.path === folderPath)?.collapsed ??
     opts.folderDefaultState === "collapsed"
 
-  // if this folder is a prefix of the current path we
-  // want to open it anyways
   const simpleFolderPath = simplifySlug(folderPath)
-  const folderIsPrefixOfCurrentSlug =
-    simpleFolderPath === currentSlug.slice(0, simpleFolderPath.length)
 
-  if (!isCollapsed || folderIsPrefixOfCurrentSlug) {
+  // ✅ 폴더를 자동으로 열어야 하는지 판정도 activeSlug 기준으로
+  const folderIsPrefixOfActiveSlug =
+    simpleFolderPath === (activeSlug as string).slice(0, (simpleFolderPath as string).length)
+
+  if (!isCollapsed || folderIsPrefixOfActiveSlug) {
     folderOuter.classList.add("open")
   }
 
   for (const child of node.children) {
     const childNode = child.isFolder
-      ? createFolderNode(currentSlug, child, opts)
-      : createFileNode(currentSlug, child)
+      ? createFolderNode(currentSlug, activeSlug, child, opts)
+      : createFileNode(currentSlug, activeSlug, child)
     ul.appendChild(childNode)
   }
 
@@ -222,6 +237,7 @@ function createFolderNode(
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
+  const activeSlug = normalizePaginationSlug(currentSlug)
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
   for (const explorer of allExplorers) {
@@ -322,8 +338,8 @@ async function setupExplorer(currentSlug: FullSlug) {
     const fragment = document.createDocumentFragment()
     for (const child of renderRoot.children) {
       const node = child.isFolder
-        ? createFolderNode(currentSlug, child, opts)
-        : createFileNode(currentSlug, child)
+        ? createFolderNode(currentSlug, activeSlug, child, opts)
+        : createFileNode(currentSlug, activeSlug, child)
 
       fragment.appendChild(node)
     }
