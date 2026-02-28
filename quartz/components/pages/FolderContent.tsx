@@ -9,7 +9,7 @@ import { QuartzPluginData } from "../../plugins/vfile"
 import { ComponentChildren } from "preact"
 import { concatenateResources } from "../../util/resources"
 import { trieFromAllFiles } from "../../util/ctx"
-import { isFolderPath } from "../../util/path"
+import { FullSlug, isFolderPath, joinSegments, resolveRelative } from "../../util/path"
 
 interface FolderContentOptions {
   /**
@@ -18,6 +18,7 @@ interface FolderContentOptions {
   showFolderCount: boolean
   showSubfolders: boolean
   sort?: SortFn
+  pageSize?: number
 }
 
 const nameFromSlug = (slug: string) =>
@@ -38,6 +39,7 @@ const defaultOptions: FolderContentOptions = {
   showFolderCount: true,
   showSubfolders: true,
   sort: alphabeticalFolderFirst,
+  pageSize: 40,
 }
 
 // NOTE: 폴더 항목의 날짜를 "하위 파일들 중 최신 수정일(modified)"로 표시하기 위한 helper
@@ -55,6 +57,13 @@ const mostRecentModifiedInSubtree = (node: any): Date | undefined => {
   return latest
 }
 
+const parseFolderPagination = (slug: string) => {
+  // ex) foo/bar/page/2/index  -> baseSlug=foo/bar/index, page=2
+  const m = slug.match(/^(.*)\/page\/(\d+)\/index$/)
+  if (!m) return { baseSlug: slug, page: 1 }
+  return { baseSlug: `${m[1]}/index`, page: parseInt(m[2], 10) }
+}
+
 export default ((opts?: Partial<FolderContentOptions>) => {
   const options: FolderContentOptions = {
     ...defaultOptions,
@@ -67,7 +76,9 @@ export default ((opts?: Partial<FolderContentOptions>) => {
     const { tree, fileData, allFiles, cfg } = props
 
     const trie = (props.ctx.trie ??= trieFromAllFiles(allFiles))
-    const folder = trie.findNode(fileData.slug!.split("/"))
+
+    const { baseSlug, page } = parseFolderPagination(fileData.slug!)
+    const folder = trie.findNode(baseSlug.split("/"))
     if (!folder) {
       return null
     }
@@ -112,6 +123,21 @@ export default ((opts?: Partial<FolderContentOptions>) => {
           return undefined
         })
         .filter((page): page is QuartzPluginData => page !== undefined)
+    // ✅ (E) pagination 계산
+    const pageSize = 40 // 원하는 값. 나중에 options로 빼도 됨.
+    const totalPages = Math.max(1, Math.ceil(allPagesInFolder.length / pageSize))
+    const safePage = Math.min(Math.max(page, 1), totalPages)
+
+// baseSlug: foo/bar/index  -> baseFolder: foo/bar
+    const baseFolder = baseSlug.replace(/\/index$/, "")
+
+    const pageSlug = (p: number): FullSlug =>
+      p === 1
+        ? (joinSegments(baseFolder, "index") as FullSlug)
+        : (joinSegments(baseFolder, "page", String(p), "index") as FullSlug)
+
+    const prevHref = safePage > 1 ? resolveRelative(fileData.slug!, pageSlug(safePage - 1)) : null
+    const nextHref = safePage < totalPages ? resolveRelative(fileData.slug!, pageSlug(safePage + 1)) : null
     const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
     const classes = cssClasses.join(" ")
     const listProps = {
@@ -138,7 +164,35 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             </p>
           )}
           <div>
-            <PageList {...listProps} />
+            <PageList
+              {...listProps}
+              offset={(safePage - 1) * pageSize}
+              limit={pageSize}
+            />
+
+            {totalPages > 1 && (
+              <nav class="pagination">
+                {prevHref ? (
+                  <a class="internal" href={prevHref}>
+                    ← Prev
+                  </a>
+                ) : (
+                  <span class="pagination-disabled">← Prev</span>
+                )}
+
+                <span class="pagination-info">
+                  {safePage} / {totalPages}
+                </span>
+
+                {nextHref ? (
+                  <a class="internal" href={nextHref}>
+                    Next →
+                  </a>
+                ) : (
+                  <span class="pagination-disabled">Next →</span>
+                )}
+              </nav>
+            )}
           </div>
         </div>
       </div>
