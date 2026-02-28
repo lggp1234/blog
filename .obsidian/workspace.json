@@ -11,14 +11,10 @@
             "id": "bf750706b3ad40fc",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "content/한국어버젼/1-학업/물리학/통계역학/Untitled 9.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Untitled 9"
+              "title": "New tab"
             }
           }
         ]
@@ -181,7 +177,7 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "bf750706b3ad40fc",
+  "active": "a6efca618cf12452",
   "lastOpenFiles": [
     "content/한국어버젼/1-학업/물리학/통계역학/Untitled 8.md",
     "content/한국어버젼/1-학업/물리학/통계역학/Untitled 9.md",
