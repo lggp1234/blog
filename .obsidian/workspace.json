@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/물리학/통계역학/index.md",
+                "file": "content/한국어버젼/1-학업/물리학/통계역학/Untitled 9.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "Untitled 9"
             }
           }
         ]
@@ -183,6 +183,17 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 8.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 9.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 7.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 6.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 5.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 4.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 3.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 2.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled 1.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/Untitled.md",
+    "content/한국어버젼/1-학업/물리학/통계역학/index.md",
     "content/english/99-Test-Page/index.md",
     "content/english/3-Profile/index.md",
     "content/english/2-Research/index.md",
@@ -193,7 +204,6 @@
     "content/english/1-study/1-physics/statistical-mechanics/index.md",
     "content/english/1-study/1-physics/classical-mechanics/index.md",
     "content/english/1-study/1-physics/quantum-mechanics/index.md",
-    "content/한국어버젼/1-학업/물리학/통계역학/index.md",
     "content/english/1-study/1-physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
     "content/english/1-study/1-physics/quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
     "content/한국어버젼/1-학업/수리과학/위상수학/index.md",
@@ -202,17 +212,7 @@
     "quartz/components/FixFolderUrl.tsx",
     "content/한국어버젼/1-학업/물리학/통계역학/강의1-통계역학의-동기.md",
     "content/한국어버젼/1-학업/물리학/통계역학/강의2-통계역학적-앙상블.md",
-    "content/english/99-Test-Page/Test1.md",
-    "content/english/index.md",
-    "content/한국어버젼/index.md",
-    "content/한국어버젼/99-연습-페이지/index.md",
-    "content/한국어버젼/3-프로필/index.md",
-    "content/한국어버젼/2-연구/index.md",
-    "content/한국어버젼/1-학업/index.md",
-    "content/한국어버젼/1-학업/물리학/고전역학/강의1-뉴턴역학.md",
     "quartz/static/_headers",
-    "content/한국어버젼/1-학업/물리학/양자역학/양자역학에서의-수학적-표기법.md",
-    "content/한국어버젼/1-학업/수리과학/index.md",
     "quartz/static/google4400562a0eada61a.html",
     "quartz/components/SidebarMap.tsx",
     "quartz/components/SpaLangGuard.tsx",
