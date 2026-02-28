@@ -4,6 +4,12 @@ import { FullSlug, SimpleSlug, resolveRelative, simplifySlug } from "../util/pat
 import { classNames } from "../util/lang"
 import { trieFromAllFiles } from "../util/ctx"
 
+function normalizePaginationSlug(slug: FullSlug): FullSlug {
+  // foo/bar/page/2/index -> foo/bar/index
+  const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
+  return (m ? `${m[1]}/index` : slug) as FullSlug
+}
+
 function getBreadcrumbUiLang(pathNodes: Array<{ slug: string; displayName?: string }>): "ko" | "en" | null {
   const langNode = pathNodes[1]
   if (!langNode) return null
@@ -20,24 +26,20 @@ function getBreadcrumbUiLang(pathNodes: Array<{ slug: string; displayName?: stri
 function getLanguageRootPathFromPathNodes(
   pathNodes: Array<{ slug: string; displayName?: string }>,
 ): SimpleSlug | null {
-  // 보통 idx=1이 언어 루트 (idx=0은 site root)
   const langNode = pathNodes[1]
   if (!langNode) return null
 
   if (isLanguageRootCrumb({ slug: langNode.slug, displayName: langNode.displayName ?? "" })) {
     return simplifySlug(langNode.slug as FullSlug)
   }
-
   return null
 }
 
 function isLanguageRootCrumb(node: { slug: string; displayName: string }): boolean {
   const s = simplifySlug(node.slug as FullSlug)
 
-  // slug 기준 (영문 / 일부 케이스)
   if (s === "english" || s === "한국어" || s === "한국어버젼") return true
 
-  // displayName 기준 (한글 slug 인코딩/표시명 커스텀 대응)
   const name = node.displayName.trim()
   if (name === "한국어" || name === "English Ver." || name === "English") return true
 
@@ -50,21 +52,9 @@ type CrumbData = {
 }
 
 interface BreadcrumbOptions {
-  /**
-   * Symbol between crumbs
-   */
   spacerSymbol: string
-  /**
-   * Name of first crumb
-   */
   rootName: string
-  /**
-   * Whether to look up frontmatter title for folders (could cause performance problems with big vaults)
-   */
   resolveFrontmatterTitle: boolean
-  /**
-   * Whether to display the current page in the breadcrumbs.
-   */
   showCurrentPage: boolean
 }
 
@@ -84,40 +74,38 @@ function formatCrumb(displayName: string, baseSlug: FullSlug, currentSlug: Simpl
 
 export default ((opts?: Partial<BreadcrumbOptions>) => {
   const options: BreadcrumbOptions = { ...defaultOptions, ...opts }
-  const Breadcrumbs: QuartzComponent = ({
-    fileData,
-    allFiles,
-    displayClass,
-    ctx,
-  }: QuartzComponentProps) => {
-    const trie = (ctx.trie ??= trieFromAllFiles(allFiles))
-    const slugParts = fileData.slug!.split("/")
-    const pathNodes = trie.ancestryChain(slugParts)
 
-    if (!pathNodes) {
-      return null
-    }
+  const Breadcrumbs: QuartzComponent = ({ fileData, allFiles, displayClass, ctx }: QuartzComponentProps) => {
+    const trie = (ctx.trie ??= trieFromAllFiles(allFiles))
+
+    const currentSlug = fileData.slug! as FullSlug
+    const lookupSlug = normalizePaginationSlug(currentSlug) // ✅ 여기서만 정규화
+    const slugParts = (lookupSlug as string).split("/")
+
+    const pathNodes = trie.ancestryChain(slugParts)
+    if (!pathNodes) return null
+
     const uiLang = getBreadcrumbUiLang(pathNodes)
     const langRootPath = getLanguageRootPathFromPathNodes(pathNodes)
-  const visiblePathNodes = pathNodes.filter((node, idx) => {
-    // root(Home)는 유지, 바로 아래 언어 루트만 숨김
-    if (idx === 0) return true
-    if (idx === 1 && isLanguageRootCrumb(node)) return false
-    return true
-  })
-  
-  const crumbs: CrumbData[] = visiblePathNodes.map((node, idx) => {
-      const crumb = formatCrumb(node.displayName, fileData.slug!, simplifySlug(node.slug))
+
+    const visiblePathNodes = pathNodes.filter((node, idx) => {
+      if (idx === 0) return true
+      if (idx === 1 && isLanguageRootCrumb(node)) return false
+      return true
+    })
+
+    const crumbs: CrumbData[] = visiblePathNodes.map((node, idx) => {
+      // ✅ 링크는 "현재 페이지(currentSlug)" 기준으로 상대경로를 만들어야 함
+      const crumb = formatCrumb(node.displayName, currentSlug, simplifySlug(node.slug as FullSlug))
+
       if (idx === 0) {
         crumb.displayName = uiLang === "ko" ? "홈" : options.rootName
-
-        // 현재 페이지가 특정 언어 트리 안에 있으면 Home 링크를 그 언어 루트로 보냄
         if (langRootPath) {
-          crumb.path = resolveRelative(fileData.slug!, langRootPath)
+          crumb.path = resolveRelative(currentSlug, langRootPath)
         }
       }
 
-      // For last node (current page), set empty path
+      // 마지막 크럼(현재 페이지 표기)은 클릭 비활성
       if (idx === visiblePathNodes.length - 1) {
         crumb.path = ""
       }
@@ -125,9 +113,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       return crumb
     })
 
-    if (!options.showCurrentPage) {
-      crumbs.pop()
-    }
+    if (!options.showCurrentPage) crumbs.pop()
 
     return (
       <nav class={classNames(displayClass, "breadcrumb-container")} aria-label="breadcrumbs">
@@ -140,7 +126,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       </nav>
     )
   }
-  Breadcrumbs.css = breadcrumbsStyle
 
+  Breadcrumbs.css = breadcrumbsStyle
   return Breadcrumbs
 }) satisfies QuartzComponentConstructor
