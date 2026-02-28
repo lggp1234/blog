@@ -115,6 +115,16 @@ button.desktop-explorer {
   }
 }
 
+:root[saved-theme="light"] {
+  --explorer-ellipsis-bg: #fff;
+  --explorer-ellipsis-fg: #000;
+}
+
+:root[saved-theme="dark"] {
+  --explorer-ellipsis-bg: #000;
+  --explorer-ellipsis-fg: #fff;
+}
+
 .explorer-content {
   list-style: none;
   overflow: hidden;
@@ -148,9 +158,8 @@ button.desktop-explorer {
       align-items: center;
       justify-content: center;
 
-      // "⋯(문자표 검은색, 문자표 배경 흰색)"
-      color: #000;
-      background: #fff;
+      background: var(--explorer-ellipsis-bg);
+      color: var(--explorer-ellipsis-fg);
 
       border: 1px solid var(--lightgray);
       border-radius: 999px;
@@ -165,8 +174,20 @@ button.desktop-explorer {
       font-family: var(--codeFont);
       font-size: 0.95rem;
       line-height: 1.2;
+      opacity: 0.95;
+    }
 
-      opacity: 0.9;
+    & li > button.explorer-ellipsis:hover {
+      opacity: 1;
+      border-color: var(--gray);
+    }
+
+    // ✅ 클릭(펼침) 상태: 청록색
+    & li > button.explorer-ellipsis.expanded {
+      background: var(--tertiary);
+      color: #fff;
+      border-color: var(--tertiary);
+      opacity: 1;
     }
 
     & li > button.explorer-ellipsis:hover {
