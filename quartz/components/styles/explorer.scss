@@ -1,5 +1,21 @@
 @use "../../styles/variables.scss" as *;
 
+/* =========================
+   Ellipsis button theme vars
+   ========================= */
+:root[saved-theme="light"] {
+  --explorer-ellipsis-bg: #ffffff;        /* 기본 흰색 */
+  --explorer-ellipsis-fg: #000000;
+  --explorer-ellipsis-border: var(--lightgray);
+}
+
+/* 다크모드: 네가 올린 이미지 느낌의 "짙은 다크 그레이" */
+:root[saved-theme="dark"] {
+  --explorer-ellipsis-bg: #1b1c20;        /* 필요하면 #191a1e ~ #20222a 사이에서 미세조정 */
+  --explorer-ellipsis-fg: #e6e6e6;
+  --explorer-ellipsis-border: #2a2c33;
+}
+
 @media all and ($mobile) {
   .page > #quartz-body {
     // Shift page position when toggling Explorer on mobile.
@@ -115,17 +131,6 @@ button.desktop-explorer {
   }
 }
 
-:root[saved-theme="light"] {
-  --explorer-ellipsis-bg: #fff;
-  --explorer-ellipsis-fg: #000;
-}
-
-:root[saved-theme="dark"] {
-  --explorer-ellipsis-bg: #1b1c20;     // <- 스샷 느낌의 다크 그레이(필요하면 1a1b1f~20222a 사이로 미세조정)
-  --explorer-ellipsis-fg: #e6e6e6;     // 글자(⋯)는 밝은 회색
-  --explorer-ellipsis-border: #2a2c33; // 테두리도 살짝 밝게
-}
-
 .explorer-content {
   list-style: none;
   overflow: hidden;
@@ -147,13 +152,18 @@ button.desktop-explorer {
         opacity: 1;
         color: var(--tertiary);
       }
+
+      /* (선택) 이미 JS에서 active 앞에 "> "를 붙이는게 아니라 CSS로 하고 싶으면 여기서:
+      &.active::before { content: "> "; }
+      */
     }
 
-    // =========================
-    // Ellipsis folding buttons (⋯)
-    // - normal: black glyph on white background
-    // - expanded: white glyph on black background
-    // =========================
+    /* =========================
+       Ellipsis folding buttons (⋯)
+       - light: white base
+       - dark : dark gray base
+       - expanded: teal (var(--tertiary))
+       ========================= */
     & li > button.explorer-ellipsis {
       display: inline-flex;
       align-items: center;
@@ -182,13 +192,13 @@ button.desktop-explorer {
       border-color: var(--gray);
     }
 
-    /* ✅ 펼침 상태: 청록색 */
     & li > button.explorer-ellipsis.expanded {
       background: var(--tertiary);
       color: #fff;
       border-color: var(--tertiary);
       opacity: 1;
     }
+  }
 
   .folder-outer {
     display: grid;
