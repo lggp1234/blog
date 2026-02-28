@@ -18,10 +18,11 @@ import { defaultListPageLayout, sharedPageComponents } from "../../../quartz.lay
 import { FolderContent } from "../../components"
 import { write } from "./helpers"
 import { i18n, TRANSLATIONS } from "../../i18n"
-import { BuildCtx } from "../../util/ctx"
+import { BuildCtx, trieFromAllFiles } from "../../util/ctx"
 import { StaticResources } from "../../util/resources"
 interface FolderPageOptions extends FullPageLayout {
   sort?: (f1: QuartzPluginData, f2: QuartzPluginData) => number
+  pageSize?: number
 }
 
 async function* processFolderInfo(
@@ -30,32 +31,65 @@ async function* processFolderInfo(
   allFiles: QuartzPluginData[],
   opts: FullPageLayout,
   resources: StaticResources,
+  pageSize: number,
 ) {
+  const cfg = ctx.cfg.configuration
+  const trie = (ctx.trie ??= trieFromAllFiles(allFiles))
+
   for (const [folder, folderContent] of Object.entries(folderInfo) as [
     SimpleSlug,
     ProcessedContent,
   ][]) {
-    const slug = joinSegments(folder, "index") as FullSlug
-    const [tree, file] = folderContent
-    const cfg = ctx.cfg.configuration
-    const externalResources = pageResources(pathToRoot(slug), resources)
-    const componentData: QuartzComponentProps = {
-      ctx,
-      fileData: file.data,
-      externalResources,
-      cfg,
-      children: [],
-      tree,
-      allFiles,
-    }
+    // 폴더 내 아이템 개수(폴더/파일) 기반으로 총 페이지 수 계산
+    const folderNode = trie.findNode(folder.split("/"))
+    const totalItems =
+      (folderNode?.children ?? []).filter((n) => n.isFolder || n.data).length
 
-    const content = renderPage(cfg, slug, componentData, opts, externalResources)
-    yield write({
-      ctx,
-      content,
-      slug,
-      ext: ".html",
-    })
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+
+    const baseTitle =
+      folderContent[1].data.frontmatter?.title ??
+      `${i18n(cfg.locale).pages.folderContent.folder}: ${folder}`
+
+    for (let p = 1; p <= totalPages; p++) {
+      const slug =
+        (p === 1
+          ? joinSegments(folder, "index")
+          : joinSegments(folder, "page", String(p), "index")) as FullSlug
+
+      // 1페이지: 실제 folder index 내용 사용
+      // 2페이지+: 빈 본문(목록만) + 제목만 유지
+      const [tree, file] =
+        p === 1
+          ? folderContent
+          : defaultProcessedContent({
+              slug,
+              frontmatter: {
+                title: `${baseTitle} (Page ${p})`,
+                tags: [],
+              },
+              description: folderContent[1].data.description,
+            })
+
+      const externalResources = pageResources(pathToRoot(slug), resources)
+      const componentData: QuartzComponentProps = {
+        ctx,
+        fileData: file.data,
+        externalResources,
+        cfg,
+        children: [],
+        tree,
+        allFiles,
+      }
+
+      const content = renderPage(cfg, slug, componentData, opts, externalResources)
+      yield write({
+        ctx,
+        content,
+        slug,
+        ext: ".html",
+      })
+    }
   }
 }
 
@@ -104,7 +138,7 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
   const opts: FullPageLayout = {
     ...sharedPageComponents,
     ...defaultListPageLayout,
-    pageBody: FolderContent({ sort: userOpts?.sort }),
+    pageBody: FolderContent({ sort: userOpts?.sort, pageSize: userOpts?.pageSize }),
     ...userOpts,
   }
 
@@ -143,7 +177,8 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       )
 
       const folderInfo = computeFolderInfo(folders, content, cfg.locale)
-      yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources)
+      const pageSize = userOpts?.pageSize ?? 40
+      yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources, pageSize)
     },
     async *partialEmit(ctx, content, resources, changeEvents) {
       const allFiles = content.map((c) => c[1].data)
@@ -163,7 +198,8 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       // If there are affected folders, rebuild their pages
       if (affectedFolders.size > 0) {
         const folderInfo = computeFolderInfo(affectedFolders, content, cfg.locale)
-        yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources)
+        const pageSize = userOpts?.pageSize ?? 40
+        yield* processFolderInfo(ctx, folderInfo, allFiles, opts, resources, pageSize)
       }
     },
   }
