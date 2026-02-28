@@ -24,6 +24,24 @@ const defaultOptions: FolderContentOptions = {
   showSubfolders: true,
 }
 
+// NOTE: 폴더 항목의 날짜를 "하위 파일들 중 최신 수정일(modified)"로 표시하기 위한 helper
+const mostRecentModifiedInDescendants = (node: any): Date | undefined => {
+  let latest: Date | undefined = undefined
+
+  const walk = (n: any) => {
+    const d: Date | undefined = n?.data?.dates?.modified
+    if (d) {
+      if (!latest || d > latest) latest = d
+    }
+    for (const c of n?.children ?? []) walk(c)
+  }
+
+  // "하위 파일들"만: node 자기 자신(index.md 포함)은 제외하고 children부터 순회
+  for (const c of node?.children ?? []) walk(c)
+
+  return latest
+}
+
 export default ((opts?: Partial<FolderContentOptions>) => {
   const options: FolderContentOptions = { ...defaultOptions, ...opts }
 
@@ -39,35 +57,42 @@ export default ((opts?: Partial<FolderContentOptions>) => {
     const allPagesInFolder: QuartzPluginData[] =
       folder.children
         .map((node) => {
-          // regular file, proceed
+          // 1) 폴더 항목: (index.md 유무와 무관하게) 폴더 날짜 = 하위 최신 수정일
+          if (node.isFolder && options.showSubfolders) {
+            const latestModified =
+              mostRecentModifiedInDescendants(node) ?? node.data?.dates?.modified ?? new Date()
+
+    // 폴더에 index.md가 있으면 node.data가 존재함 -> 기존 frontmatter 유지 + modified만 덮어쓰기
+            if (node.data) {
+              return {
+                ...node.data,
+                dates: {
+                  ...node.data.dates,
+                  modified: latestModified,
+                },
+              }
+            }
+
+    // index.md가 없는 폴더 -> synthetic 항목 생성
+            return {
+              slug: node.slug,
+              dates: {
+                created: latestModified,
+                modified: latestModified,
+                published: latestModified,
+              },
+              frontmatter: {
+                title: node.displayName,
+                tags: [],
+              },
+            }
+          }
+
+          // 2) 일반 파일
           if (node.data) {
             return node.data
           }
-
-          if (node.isFolder && options.showSubfolders) {
-            // folders that dont have data need synthetic files
-            const getMostRecentDates = (): QuartzPluginData["dates"] => {
-              let maybeDates: QuartzPluginData["dates"] | undefined = undefined
-              for (const child of node.children) {
-                if (child.data?.dates) {
-                  // compare all dates and assign to maybeDates if its more recent or its not set
-                  if (!maybeDates) {
-                    maybeDates = { ...child.data.dates }
-                  } else {
-                    if (child.data.dates.created > maybeDates.created) {
-                      maybeDates.created = child.data.dates.created
-                    }
-
-                    if (child.data.dates.modified > maybeDates.modified) {
-                      maybeDates.modified = child.data.dates.modified
-                    }
-
-                    if (child.data.dates.published > maybeDates.published) {
-                      maybeDates.published = child.data.dates.published
-                    }
-                  }
-                }
-              }
+        })
               return (
                 maybeDates ?? {
                   created: new Date(),
