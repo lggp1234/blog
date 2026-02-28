@@ -41,3 +41,21 @@ li.section-li {
     display: none;
   }
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+  user-select: none;
+}
+
+.pagination-info {
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.pagination-disabled {
+  opacity: 0.35;
+}
