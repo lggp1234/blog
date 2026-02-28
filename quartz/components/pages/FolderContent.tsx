@@ -9,6 +9,7 @@ import { QuartzPluginData } from "../../plugins/vfile"
 import { ComponentChildren } from "preact"
 import { concatenateResources } from "../../util/resources"
 import { trieFromAllFiles } from "../../util/ctx"
+import { isFolderPath } from "../../util/path"
 
 interface FolderContentOptions {
   /**
@@ -22,6 +23,7 @@ interface FolderContentOptions {
 const defaultOptions: FolderContentOptions = {
   showFolderCount: true,
   showSubfolders: true,
+  sort: alphabeticalFolderFirst,
 }
 
 // NOTE: 폴더 항목의 날짜를 "하위 파일들 중 최신 수정일(modified)"로 표시하기 위한 helper
@@ -37,6 +39,23 @@ const mostRecentModifiedInSubtree = (node: any): Date | undefined => {
 
   walk(node) // node 자신(index.md 포함) + 하위 전체
   return latest
+}
+
+const alphabeticalFolderFirst: SortFn = (a, b) => {
+  // (선택) 폴더를 먼저 보여주고 싶으면 유지
+  const aIsFolder = isFolderPath(a.slug ?? "")
+  const bIsFolder = isFolderPath(b.slug ?? "")
+  if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1
+
+  // 제목 우선, 없으면 slug로 fallback
+  const aName = (a.frontmatter?.title ?? a.slug ?? "").trim()
+  const bName = (b.frontmatter?.title ?? b.slug ?? "").trim()
+
+  // 숫자 포함된 이름도 자연스럽게 정렬(1,2,10)
+  return aName.localeCompare(bName, ["ko", "en"], {
+    numeric: true,
+    sensitivity: "base",
+  })
 }
 
 export default ((opts?: Partial<FolderContentOptions>) => {
