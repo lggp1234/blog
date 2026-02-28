@@ -25,20 +25,17 @@ const defaultOptions: FolderContentOptions = {
 }
 
 // NOTE: 폴더 항목의 날짜를 "하위 파일들 중 최신 수정일(modified)"로 표시하기 위한 helper
-const mostRecentModifiedInDescendants = (node: any): Date | undefined => {
-  let latest: Date | undefined = undefined
+// 폴더 항목의 날짜를 "하위(재귀) 파일들 중 최신 modified"로 계산
+const mostRecentModifiedInSubtree = (node: any): Date | undefined => {
+  let latest: Date | undefined
 
   const walk = (n: any) => {
     const d: Date | undefined = n?.data?.dates?.modified
-    if (d) {
-      if (!latest || d > latest) latest = d
-    }
+    if (d && (!latest || d > latest)) latest = d
     for (const c of n?.children ?? []) walk(c)
   }
 
-  // "하위 파일들"만: node 자기 자신(index.md 포함)은 제외하고 children부터 순회
-  for (const c of node?.children ?? []) walk(c)
-
+  walk(node) // node 자신(index.md 포함) + 하위 전체
   return latest
 }
 
@@ -56,13 +53,13 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
     const allPagesInFolder: QuartzPluginData[] =
       folder.children
-        .map((node) => {
-          // 1) 폴더 항목: (index.md 유무와 무관하게) 폴더 날짜 = 하위 최신 수정일
+        .map((node): QuartzPluginData | undefined => {
+      // 1) 폴더 항목: 폴더 날짜 = 하위(재귀) 최신 modified
           if (node.isFolder && options.showSubfolders) {
             const latestModified =
-              mostRecentModifiedInDescendants(node) ?? node.data?.dates?.modified ?? new Date()
+              mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
 
-    // 폴더에 index.md가 있으면 node.data가 존재함 -> 기존 frontmatter 유지 + modified만 덮어쓰기
+        // 폴더에 index.md가 있는 경우(node.data 존재): 기존 데이터 유지 + modified만 덮어쓰기
             if (node.data) {
               return {
                 ...node.data,
@@ -71,9 +68,9 @@ export default ((opts?: Partial<FolderContentOptions>) => {
                   modified: latestModified,
                 },
               }
-            }
+            }  
 
-    // index.md가 없는 폴더 -> synthetic 항목 생성
+        // index.md 없는 폴더: synthetic 항목 생성
             return {
               slug: node.slug,
               dates: {
@@ -88,31 +85,12 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             }
           }
 
-          // 2) 일반 파일
-          if (node.data) {
-            return node.data
-          }
-        })
-              return (
-                maybeDates ?? {
-                  created: new Date(),
-                  modified: new Date(),
-                  published: new Date(),
-                }
-              )
-            }
+          // 2) 일반 파일: 파일 날짜는 CreatedModifiedDate가 채운 file의 dates.modified(=git lastmod) 그대로 사용
+          if (node.data) return node.data
 
-            return {
-              slug: node.slug,
-              dates: getMostRecentDates(),
-              frontmatter: {
-                title: node.displayName,
-                tags: [],
-              },
-            }
-          }
+          return undefined
         })
-        .filter((page) => page !== undefined) ?? []
+        .filter((page): page is QuartzPluginData => page !== undefined)
     const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
     const classes = cssClasses.join(" ")
     const listProps = {
