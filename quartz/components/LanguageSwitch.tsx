@@ -26,13 +26,20 @@ function inferAltForFolderList(slug?: string): string | null {
 
 function ensureFolderUrl(href: string): string {
   // hash 분리 보존
-  const [path, hash] = href.split("#", 2)
+  const [path0, hash] = href.split("#", 2)
+
+  // SPA에서 상대경로 꼬임 방지: 항상 절대경로로
+  const path = path0.startsWith("/") ? path0 : `/${path0}`
+
   // 이미 / 로 끝나거나 /index 로 끝나면 그대로
-  if (path.endsWith("/") || path.endsWith("/index")) return href
-  return (hash ? `${path}/#${hash}` : `${path}/`)
+  if (path.endsWith("/") || path.endsWith("/index")) {
+    return hash ? `${path}#${hash}` : path
+  }
+
+  return hash ? `${path}/#${hash}` : `${path}/`
 }
 
-export default ((opts = {}) => {
+export default (() => {
   function LanguageSwitch({ fileData }: QuartzComponentProps) {
     const fm = fileData.frontmatter ?? {}
     const slug = fileData.slug
@@ -41,11 +48,15 @@ export default ((opts = {}) => {
     const fmLang = (fm as any).lang as string | undefined
 
     const inferredLang = getLangFromSlug(slug)
-    const lang = (fmLang as SiteLang | undefined) ?? inferredLang ?? undefined
+    const lang = (fmLang as SiteLang | undefined) ?? inferredLang
     const rawAlt = fmAlt ?? inferAltForFolderList(slug)
+
     if (!rawAlt || !lang) return null
 
-// 현재 페이지가 folder index(slug가 .../index)면 alt도 folder URL로 강제
+    // 버튼 라벨(현재 언어 기준으로 반대 언어를 표시)
+    const label = lang === "ko" ? "English" : "한국어"
+
+    // 현재 페이지가 folder index(slug가 .../index)면 alt도 folder URL로 강제
     const alt = slug?.endsWith("/index") ? ensureFolderUrl(rawAlt) : rawAlt
 
     return (
@@ -57,6 +68,7 @@ export default ((opts = {}) => {
         {label} →
       </a>
     )
+  }
 
   LanguageSwitch.css = `
     /* 필요하면 버튼 스타일을 여기에서 커스터마이즈하세요 */
