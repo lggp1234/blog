@@ -20,6 +20,20 @@ interface FolderContentOptions {
   sort?: SortFn
 }
 
+const nameFromSlug = (slug: string) =>
+  slug.replace(/\/index$/, "").split("/").filter(Boolean).at(-1) ?? slug
+
+const alphabeticalFolderFirst: SortFn = (a, b) => {
+  const aIsFolder = isFolderPath(a.slug ?? "")
+  const bIsFolder = isFolderPath(b.slug ?? "")
+  if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1
+
+  const aKey = aIsFolder ? nameFromSlug(a.slug ?? "") : (a.frontmatter?.title ?? a.slug ?? "")
+  const bKey = bIsFolder ? nameFromSlug(b.slug ?? "") : (b.frontmatter?.title ?? b.slug ?? "")
+
+  return aKey.localeCompare(bKey, ["ko", "en"], { numeric: true, sensitivity: "base" })
+}
+
 const defaultOptions: FolderContentOptions = {
   showFolderCount: true,
   showSubfolders: true,
@@ -41,25 +55,13 @@ const mostRecentModifiedInSubtree = (node: any): Date | undefined => {
   return latest
 }
 
-const alphabeticalFolderFirst: SortFn = (a, b) => {
-  // (선택) 폴더를 먼저 보여주고 싶으면 유지
-  const aIsFolder = isFolderPath(a.slug ?? "")
-  const bIsFolder = isFolderPath(b.slug ?? "")
-  if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1
-
-  // 제목 우선, 없으면 slug로 fallback
-  const aName = (a.frontmatter?.title ?? a.slug ?? "").trim()
-  const bName = (b.frontmatter?.title ?? b.slug ?? "").trim()
-
-  // 숫자 포함된 이름도 자연스럽게 정렬(1,2,10)
-  return aName.localeCompare(bName, ["ko", "en"], {
-    numeric: true,
-    sensitivity: "base",
-  })
-}
-
 export default ((opts?: Partial<FolderContentOptions>) => {
-  const options: FolderContentOptions = { ...defaultOptions, ...opts }
+  const options: FolderContentOptions = {
+    ...defaultOptions,
+    ...opts,
+    // opts.sort가 undefined이면 defaultOptions.sort를 유지
+    sort: opts?.sort ?? defaultOptions.sort,
+  }
 
   const FolderContent: QuartzComponent = (props: QuartzComponentProps) => {
     const { tree, fileData, allFiles, cfg } = props
