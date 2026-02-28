@@ -187,70 +187,44 @@ export default ((opts?: Partial<FolderContentOptions>) => {
               <nav class="pagination" aria-label="Pagination">
                 {/* « : 가장 첫 페이지 */}
                 {firstHref ? (
-                  <a class="internal pagination-btn" href={firstHref} aria-label="First page">
-                    «
-                  </a>
+                  <a class="internal pagination-btn" href={firstHref} aria-label="First page">«</a>
                 ) : (
-                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    «
-                  </span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">«</span>
                 )}
 
                 {/* < : 10개 단위로 앞으로(이전 그룹) 이동 */}
                 {prevGroupHref ? (
-                  <a
-                    class="internal pagination-btn"
-                    href={prevGroupHref}
-                    aria-label="Previous 10 pages"
-                  >
-                    &lt;
-                  </a>
+                  <a class="internal pagination-btn" href={prevGroupHref} aria-label="Previous 10 pages">&lt;</a>
                 ) : (
-                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    &lt;
-                  </span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">&lt;</span>
                 )}
 
-                {/* 1 | 2 | ... | 10 형태의 숫자 네비 (현재 그룹만 표시) */}
+                {/* 1 | 2 | ... 숫자 */}
                 <div class="pagination-pages" aria-label="Page numbers">
-                  {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(
-                    (p, idx) => (
-                      <Fragment key={p}>
-                        {idx > 0 && <span class="pagination-sep">|</span>}
-                        {p === safePage ? (
-                          <span class="pagination-page pagination-current" aria-current="page">
-                            {p}
-                          </span>
-                        ) : (
-                          <a class="internal pagination-page" href={hrefForPage(p)}>
-                            {p}
-                          </a>
-                        )}
-                      </Fragment>
-                    ),
-                  )}
+                  {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map((p, idx) => (
+                    <Fragment key={p}>
+                      {idx > 0 && <span class="pagination-sep">|</span>}
+                      {p === safePage ? (
+                        <span class="pagination-page pagination-current" aria-current="page">{p}</span>
+                      ) : (
+                        <a class="internal pagination-page" href={hrefForPage(p)}>{p}</a>
+                      )}
+                    </Fragment>
+                  ))}
                 </div>
 
                 {/* > : 10개 단위로 뒤로(다음 그룹) 이동 */}
                 {nextGroupHref ? (
-                  <a class="internal pagination-btn" href={nextGroupHref} aria-label="Next 10 pages">
-                    &gt;
-                  </a>
+                  <a class="internal pagination-btn" href={nextGroupHref} aria-label="Next 10 pages">&gt;</a>
                 ) : (
-                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    &gt;
-                  </span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">&gt;</span>
                 )}
 
                 {/* » : 가장 뒷 페이지 */}
                 {lastHref ? (
-                  <a class="internal pagination-btn" href={lastHref} aria-label="Last page">
-                    »
-                  </a>
+                  <a class="internal pagination-btn" href={lastHref} aria-label="Last page">»</a>
                 ) : (
-                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    »
-                  </span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">»</span>
                 )}
               </nav>
             )}
