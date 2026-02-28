@@ -15,11 +15,21 @@ function getLangFromSlug(slug?: string): SiteLang | null {
 function inferAltForFolderList(slug?: string): string | null {
   if (!slug) return null
 
-  if (slug === "english") return "/한국어"
-  if (slug === "한국어" || slug === "한국어버젼") return "/english"
+  // folder index slug(".../index")도 동일 취급
+  const s = slug.replace(/\/index$/, "")
 
-  // 하위 폴더는 이름이 번역되어 있으면 자동 매핑이 불가능하므로 여기선 무리해서 추정 안 함
+  if (s === "english") return "/한국어/"
+  if (s === "한국어" || s === "한국어버젼") return "/english/"
+
   return null
+}
+
+function ensureFolderUrl(href: string): string {
+  // hash 분리 보존
+  const [path, hash] = href.split("#", 2)
+  // 이미 / 로 끝나거나 /index 로 끝나면 그대로
+  if (path.endsWith("/") || path.endsWith("/index")) return href
+  return (hash ? `${path}/#${hash}` : `${path}/`)
 }
 
 export default ((opts = {}) => {
@@ -32,11 +42,11 @@ export default ((opts = {}) => {
 
     const inferredLang = getLangFromSlug(slug)
     const lang = (fmLang as SiteLang | undefined) ?? inferredLang ?? undefined
-    const alt = fmAlt ?? inferAltForFolderList(slug)
+    const rawAlt = fmAlt ?? inferAltForFolderList(slug)
+    if (!rawAlt || !lang) return null
 
-    if (!alt || !lang) return null
-
-    const label = lang === "ko" ? "English" : "한국어"
+// 현재 페이지가 folder index(slug가 .../index)면 alt도 folder URL로 강제
+    const alt = slug?.endsWith("/index") ? ensureFolderUrl(rawAlt) : rawAlt
 
     return (
       <a
@@ -47,7 +57,6 @@ export default ((opts = {}) => {
         {label} →
       </a>
     )
-  }
 
   LanguageSwitch.css = `
     /* 필요하면 버튼 스타일을 여기에서 커스터마이즈하세요 */
