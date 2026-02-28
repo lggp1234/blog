@@ -16,7 +16,7 @@ const CONTEXT_RADIUS = 2 // 항상 현재 항목 기준 ±2 표시
 
 function normalizePaginationSlug(slug: FullSlug): FullSlug {
   // foo/bar/page/2/index -> foo/bar/index
-  const m = (slug as string).match(/^(.*)\/page\/\d+\/index$/)
+  const m = (slug as string).match(/^(.*)\/page\/\d+(?:\/index)?$/)
   return (m ? `${m[1]}/index` : slug) as FullSlug
 }
 
@@ -355,16 +355,14 @@ function createFolderNode(
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
-  lastKnownSlug = currentSlug
-  const activeSlug = normalizePaginationSlug(currentSlug)
+  // ✅ URL로 들어온 slug가 "/foo/" 처럼 올 수 있으니 정규화
+  const normalizedCurrentSlug = simplifySlug(currentSlug) as FullSlug
 
-  const navigationChanged = lastExplorerActiveSlug !== (activeSlug as string)
-  lastExplorerActiveSlug = activeSlug as string
+  lastKnownSlug = normalizedCurrentSlug
+  const rawActiveSlug = normalizePaginationSlug(normalizedCurrentSlug)
 
-  // ✅ 페이지 이동 시: ⋯ 상태만 접힘으로 초기화 (폴더 collapsed는 유지)
-  if (navigationChanged) {
-    ellipsisState.clear()
-  }
+  const navigationChanged = lastExplorerActiveSlug !== (rawActiveSlug as string)
+  lastExplorerActiveSlug = rawActiveSlug as string
 
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -392,6 +390,8 @@ async function setupExplorer(currentSlug: FullSlug) {
     const data = await fetchData
     const entries = [...Object.entries(data)] as [FullSlug, ContentDetails][]
     const trie = FileTrieNode.fromEntries(entries)
+    const activeNode = trie.findNode((simplifySlug(rawActiveSlug) as string).split("/"))
+    const canonicalActiveSlug = (activeNode?.slug ?? rawActiveSlug) as FullSlug
 
     // Apply functions in order (기존 옵션 적용)
     for (const fn of opts.order) {
@@ -460,8 +460,8 @@ async function setupExplorer(currentSlug: FullSlug) {
     const fragment = document.createDocumentFragment()
     for (const child of renderRoot.children) {
       const node = child.isFolder
-        ? createFolderNode(currentSlug, activeSlug, child, opts)
-        : createFileNode(currentSlug, activeSlug, child)
+        ? createFolderNode(normalizedCurrentSlug, canonicalActiveSlug, child, opts)
+        : createFileNode(normalizedCurrentSlug, canonicalActiveSlug, child)
 
       fragment.appendChild(node)
     }
@@ -514,7 +514,7 @@ document.addEventListener("prenav", async () => {
 })
 
 document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
-  const currentSlug = e.detail.url
+  const currentSlug = simplifySlug(e.detail.url as FullSlug) as FullSlug
   await setupExplorer(currentSlug)
 
   // if mobile hamburger is visible, collapse by default
