@@ -1,5 +1,5 @@
 ---
 lang: ko
 altLangPath: /english/2-Research
-title: 연구
+title: 🔬 연구
 ---
