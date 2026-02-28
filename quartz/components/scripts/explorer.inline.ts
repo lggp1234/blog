@@ -15,7 +15,7 @@ function isGlobalHomeSlug(slug: string): boolean {
 const CONTEXT_RADIUS = 2 // 항상 현재 항목 기준 ±2 표시
 
 function normalizePaginationSlug(slug: FullSlug): FullSlug {
-  // foo/bar/page/2/index -> foo/bar/index
+  // foo/bar/page/2 OR foo/bar/page/2/index -> foo/bar/index
   const m = (slug as string).match(/^(.*)\/page\/\d+(?:\/index)?$/)
   return (m ? `${m[1]}/index` : slug) as FullSlug
 }
@@ -25,7 +25,7 @@ function isSimplePrefix(prefix: string, target: string): boolean {
   return target === prefix || target.startsWith(prefix + "/")
 }
 
-function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
+function updateExplorerTitle(explorer: HTMLElement, canonicalCurrentForLinks: FullSlug) {
   const isHome = isGlobalHomeSlug(currentSlug)
   const currentLang = getLangFromSlug(currentSlug) // "en" | "ko" | null
 
@@ -355,16 +355,34 @@ function createFolderNode(
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
-  // ✅ URL로 들어온 slug가 "/foo/" 처럼 올 수 있으니 정규화
-  const normalizedCurrentSlug = simplifySlug(currentSlug) as FullSlug
+  // (A) URL이 folder/, folder, folder/page/2 처럼 들어와도 처리하기 위해 단순화
+  const simpleUrl = simplifySlug(currentSlug as FullSlug) as string
 
-  lastKnownSlug = normalizedCurrentSlug
-  const rawActiveSlug = normalizePaginationSlug(normalizedCurrentSlug)
+  // (B) 페이지네이션 페이지면 “실제 HTML 파일 경로”는 항상 .../index
+  const pageMatch = simpleUrl.match(/^(.*\/page\/\d+)$/)
+  const currentSlugForLinks: FullSlug =
+    simpleUrl === "/"
+      ? ("index" as FullSlug)
+      : (pageMatch ? `${pageMatch[1]}/index` : (simpleUrl as FullSlug))
 
-  const navigationChanged = lastExplorerActiveSlug !== (rawActiveSlug as string)
-  lastExplorerActiveSlug = rawActiveSlug as string
+  // (C) active는 페이지네이션이면 base 폴더로, 아니면 현재 페이지로
+  const activeBaseSimple = pageMatch ? pageMatch[1].replace(/\/page\/\d+$/, "") : simpleUrl
+  const activeSlugRaw: FullSlug =
+    activeBaseSimple === "/"
+      ? ("index" as FullSlug)
+      : ((activeBaseSimple === "" ? "index" : activeBaseSimple) as FullSlug)
+
+  // ✅ lastKnownSlug는 "링크 기준 slug"로 저장 (toggleEllipsis가 이걸로 rerender하므로 중요)
+  lastKnownSlug = currentSlugForLinks
+
+  // navigationChanged는 “active 기준”으로 비교 (폴더/페이지 이동 감지)
+  const navigationChanged = lastExplorerActiveSlug !== String(activeSlugRaw)
+  lastExplorerActiveSlug = String(activeSlugRaw)
 
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
+
+  for (const explorer of allExplorers) {
+    ...
 
   for (const explorer of allExplorers) {
     const dataFns = JSON.parse(explorer.dataset.dataFns || "{}")
@@ -390,8 +408,15 @@ async function setupExplorer(currentSlug: FullSlug) {
     const data = await fetchData
     const entries = [...Object.entries(data)] as [FullSlug, ContentDetails][]
     const trie = FileTrieNode.fromEntries(entries)
-    const activeNode = trie.findNode((simplifySlug(rawActiveSlug) as string).split("/"))
-    const canonicalActiveSlug = (activeNode?.slug ?? rawActiveSlug) as FullSlug
+    const parts = (s: string) => s.split("/").filter(Boolean)
+
+    // (1) 링크 기준 current page가 trie에 존재하면(폴더면 folder/index로) canonicalize
+    const currentNode = trie.findNode(parts(simplifySlug(currentSlugForLinks as FullSlug) as string))
+    const canonicalCurrentForLinks = (currentNode?.slug ?? currentSlugForLinks) as FullSlug
+
+    // (2) active도 trie 기준으로 canonicalize (폴더 페이지면 folder/index로 맞춰짐)
+    const activeNode = trie.findNode(parts(simplifySlug(activeSlugRaw as FullSlug) as string))
+    const canonicalActiveSlug = (activeNode?.slug ?? activeSlugRaw) as FullSlug
 
     // Apply functions in order (기존 옵션 적용)
     for (const fn of opts.order) {
@@ -460,9 +485,8 @@ async function setupExplorer(currentSlug: FullSlug) {
     const fragment = document.createDocumentFragment()
     for (const child of renderRoot.children) {
       const node = child.isFolder
-        ? createFolderNode(normalizedCurrentSlug, canonicalActiveSlug, child, opts)
-        : createFileNode(normalizedCurrentSlug, canonicalActiveSlug, child)
-
+        ? createFolderNode(canonicalCurrentForLinks, canonicalActiveSlug, child, opts)
+        : createFileNode(canonicalCurrentForLinks, canonicalActiveSlug, child)
       fragment.appendChild(node)
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
