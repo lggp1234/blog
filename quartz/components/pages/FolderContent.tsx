@@ -6,18 +6,17 @@ import { Root } from "hast"
 import { htmlToJsx } from "../../util/jsx"
 import { i18n } from "../../i18n"
 import { QuartzPluginData } from "../../plugins/vfile"
-import { ComponentChildren } from "preact"
+import { ComponentChildren, Fragment } from "preact"
 import { concatenateResources } from "../../util/resources"
 import { trieFromAllFiles } from "../../util/ctx"
 import { FullSlug, isFolderPath, joinSegments, resolveRelative } from "../../util/path"
 
 interface FolderContentOptions {
-  /**
-   * Whether to display number of folders
-   */
+  /** Whether to display number of folders */
   showFolderCount: boolean
   showSubfolders: boolean
   sort?: SortFn
+  /** number of items per page */
   pageSize?: number
 }
 
@@ -39,11 +38,10 @@ const defaultOptions: FolderContentOptions = {
   showFolderCount: true,
   showSubfolders: true,
   sort: alphabeticalFolderFirst,
-  pageSize: 40,
+  pageSize: 10,
 }
 
 // NOTE: 폴더 항목의 날짜를 "하위 파일들 중 최신 수정일(modified)"로 표시하기 위한 helper
-// 폴더 항목의 날짜를 "하위(재귀) 파일들 중 최신 modified"로 계산
 const mostRecentModifiedInSubtree = (node: any): Date | undefined => {
   let latest: Date | undefined
 
@@ -79,82 +77,100 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
     const { baseSlug, page } = parseFolderPagination(fileData.slug!)
     const folder = trie.findNode(baseSlug.split("/"))
-    if (!folder) {
-      return null
-    }
+    if (!folder) return null
 
-    const allPagesInFolder: QuartzPluginData[] =
-      folder.children
-        .map((node): QuartzPluginData | undefined => {
-      // 1) 폴더 항목: 폴더 날짜 = 하위(재귀) 최신 modified
-          if (node.isFolder && options.showSubfolders) {
-            const latestModified =
-              mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
+    // Build items under this folder
+    const allPagesInFolder: QuartzPluginData[] = folder.children
+      .map((node): QuartzPluginData | undefined => {
+        // 1) 폴더 항목: 폴더 날짜 = 하위(재귀) 최신 modified
+        if (node.isFolder && options.showSubfolders) {
+          const latestModified =
+            mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
 
-        // 폴더에 index.md가 있는 경우(node.data 존재): 기존 데이터 유지 + modified만 덮어쓰기
-            if (node.data) {
-              return {
-                ...node.data,
-                dates: {
-                  ...node.data.dates,
-                  modified: latestModified,
-                },
-              }
-            }  
-
-        // index.md 없는 폴더: synthetic 항목 생성
+          // 폴더에 index.md가 있는 경우(node.data 존재): 기존 데이터 유지 + modified만 덮어쓰기
+          if (node.data) {
+            const created = node.data.dates?.created ?? latestModified
+            const published = node.data.dates?.published ?? latestModified
             return {
-              slug: node.slug,
+              ...node.data,
               dates: {
-                created: latestModified,
+                created,
                 modified: latestModified,
-                published: latestModified,
-              },
-              frontmatter: {
-                title: node.displayName,
-                tags: [],
+                published,
               },
             }
           }
 
-          // 2) 일반 파일: 파일 날짜는 CreatedModifiedDate가 채운 file의 dates.modified(=git lastmod) 그대로 사용
-          if (node.data) return node.data
+          // index.md 없는 폴더: synthetic 항목 생성
+          return {
+            slug: node.slug,
+            dates: {
+              created: latestModified,
+              modified: latestModified,
+              published: latestModified,
+            },
+            frontmatter: {
+              title: node.displayName,
+              tags: [],
+            },
+          }
+        }
 
-          return undefined
-        })
-        .filter((page): page is QuartzPluginData => page !== undefined)
-    // ✅ (E) pagination 계산
-    const pageSize = 40 // 원하는 값. 나중에 options로 빼도 됨.
+        // 2) 일반 파일: 파일 날짜는 CreatedModifiedDate가 채운 file의 dates.modified(=git lastmod) 그대로 사용
+        if (node.data) return node.data
+
+        return undefined
+      })
+      .filter((p): p is QuartzPluginData => p !== undefined)
+
+    // =========================
+    // Pagination (static pages)
+    // =========================
+    const pageSize = options.pageSize ?? 10
     const totalPages = Math.max(1, Math.ceil(allPagesInFolder.length / pageSize))
     const safePage = Math.min(Math.max(page, 1), totalPages)
 
-// baseSlug: foo/bar/index  -> baseFolder: foo/bar
+    // baseSlug: foo/bar/index -> baseFolder: foo/bar
     const baseFolder = baseSlug.replace(/\/index$/, "")
-
     const pageSlug = (p: number): FullSlug =>
       p === 1
         ? (joinSegments(baseFolder, "index") as FullSlug)
         : (joinSegments(baseFolder, "page", String(p), "index") as FullSlug)
+    const hrefForPage = (p: number) => resolveRelative(fileData.slug!, pageSlug(p))
 
-    const prevHref = safePage > 1 ? resolveRelative(fileData.slug!, pageSlug(safePage - 1)) : null
-    const nextHref = safePage < totalPages ? resolveRelative(fileData.slug!, pageSlug(safePage + 1)) : null
+    // Navigation window: show 10 page numbers at a time
+    const navWindow = 10
+    const groupStart = Math.floor((safePage - 1) / navWindow) * navWindow + 1
+    const groupEnd = Math.min(totalPages, groupStart + navWindow - 1)
+
+    const firstHref = safePage === 1 ? null : hrefForPage(1)
+    const lastHref = safePage === totalPages ? null : hrefForPage(totalPages)
+    const prevGroupHref = groupStart === 1 ? null : hrefForPage(Math.max(1, groupStart - navWindow))
+    const nextGroupHref =
+      groupEnd === totalPages ? null : hrefForPage(Math.min(totalPages, groupStart + navWindow))
+
     const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
     const classes = cssClasses.join(" ")
+
     const listProps = {
       ...props,
       sort: options.sort,
       allFiles: allPagesInFolder,
     }
 
+    // Folder intro content (index.md body / description)
     const content = (
-      (tree as Root).children.length === 0
-        ? fileData.description
-        : htmlToJsx(fileData.filePath!, tree)
+      (tree as Root).children.length === 0 ? fileData.description : htmlToJsx(fileData.filePath!, tree)
     ) as ComponentChildren
+
+    // 요구사항: 첫 페이지에서만 index.md 내용을 제목 아래에 표시
+    const hasFolderIntro = (tree as Root).children.length > 0 || !!fileData.description
+    const showFolderIntro = safePage === 1 && hasFolderIntro
 
     return (
       <div class="popover-hint">
-        <article class={classes}>{content}</article>
+        {showFolderIntro && <article class={classes}>{content}</article>}
+
         <div class="page-listing">
           {options.showFolderCount && (
             <p>
@@ -163,33 +179,78 @@ export default ((opts?: Partial<FolderContentOptions>) => {
               })}
             </p>
           )}
+
           <div>
-            <PageList
-              {...listProps}
-              offset={(safePage - 1) * pageSize}
-              limit={pageSize}
-            />
+            <PageList {...listProps} offset={(safePage - 1) * pageSize} limit={pageSize} />
 
             {totalPages > 1 && (
-              <nav class="pagination">
-                {prevHref ? (
-                  <a class="internal" href={prevHref}>
-                    ← Prev
+              <nav class="pagination" aria-label="Pagination">
+                {/* « : 가장 첫 페이지 */}
+                {firstHref ? (
+                  <a class="internal pagination-btn" href={firstHref} aria-label="First page">
+                    «
                   </a>
                 ) : (
-                  <span class="pagination-disabled">← Prev</span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
+                    «
+                  </span>
                 )}
 
-                <span class="pagination-info">
-                  {safePage} / {totalPages}
-                </span>
-
-                {nextHref ? (
-                  <a class="internal" href={nextHref}>
-                    Next →
+                {/* < : 10개 단위로 앞으로(이전 그룹) 이동 */}
+                {prevGroupHref ? (
+                  <a
+                    class="internal pagination-btn"
+                    href={prevGroupHref}
+                    aria-label="Previous 10 pages"
+                  >
+                    &lt;
                   </a>
                 ) : (
-                  <span class="pagination-disabled">Next →</span>
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
+                    &lt;
+                  </span>
+                )}
+
+                {/* 1 | 2 | ... | 10 형태의 숫자 네비 (현재 그룹만 표시) */}
+                <div class="pagination-pages" aria-label="Page numbers">
+                  {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(
+                    (p, idx) => (
+                      <Fragment key={p}>
+                        {idx > 0 && <span class="pagination-sep">|</span>}
+                        {p === safePage ? (
+                          <span class="pagination-page pagination-current" aria-current="page">
+                            {p}
+                          </span>
+                        ) : (
+                          <a class="internal pagination-page" href={hrefForPage(p)}>
+                            {p}
+                          </a>
+                        )}
+                      </Fragment>
+                    ),
+                  )}
+                </div>
+
+                {/* > : 10개 단위로 뒤로(다음 그룹) 이동 */}
+                {nextGroupHref ? (
+                  <a class="internal pagination-btn" href={nextGroupHref} aria-label="Next 10 pages">
+                    &gt;
+                  </a>
+                ) : (
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
+                    &gt;
+                  </span>
+                )}
+
+                {/* » : 가장 뒷 페이지 */}
+                {lastHref ? (
+                  <a class="internal pagination-btn" href={lastHref} aria-label="Last page">
+                    »
+                  </a>
+                ) : (
+                  <span class="pagination-btn pagination-disabled" aria-disabled="true">
+                    »
+                  </span>
                 )}
               </nav>
             )}
