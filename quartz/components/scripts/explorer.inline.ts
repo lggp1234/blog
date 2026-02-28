@@ -382,9 +382,6 @@ async function setupExplorer(currentSlug: FullSlug) {
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
   for (const explorer of allExplorers) {
-    ...
-
-  for (const explorer of allExplorers) {
     const dataFns = JSON.parse(explorer.dataset.dataFns || "{}")
     const opts: ParsedOptions = {
       folderClickBehavior: (explorer.dataset.behavior || "collapse") as "collapse" | "link",
