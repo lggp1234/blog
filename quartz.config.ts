@@ -81,7 +81,8 @@ const config: QuartzConfig = {
       Plugin.AliasRedirects(),
       Plugin.ComponentResources(),
       Plugin.ContentPage(),
-      Plugin.FolderPage({ pageSize: 40 }),
+      // 폴더 목록 페이지: 10개씩 페이지네이션 + 숫자 네비게이션 (10페이지 단위 점프)
+      Plugin.FolderPage({ pageSize: 10 }),
       Plugin.TagPage(),
       Plugin.ContentIndex({
         enableSiteMap: true,
