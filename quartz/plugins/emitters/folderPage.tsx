@@ -25,6 +25,20 @@ interface FolderPageOptions extends FullPageLayout {
   pageSize?: number
 }
 
+const mostRecentModifiedInDescendants = (node: any): Date | undefined => {
+  let latest: Date | undefined
+
+  const walk = (n: any) => {
+    const d: Date | undefined = n?.data?.dates?.modified
+    if (d && (!latest || d > latest)) latest = d
+    for (const c of n?.children ?? []) walk(c)
+  }
+
+  // node 자신 + 하위 전체 포함
+  walk(node)
+  return latest
+}
+
 async function* processFolderInfo(
   ctx: BuildCtx,
   folderInfo: Record<SimpleSlug, ProcessedContent>,
@@ -57,19 +71,57 @@ async function* processFolderInfo(
 
       // 1페이지: 실제 folder index 내용 사용
       // 2페이지+: 빈 본문(목록만) + 제목만 유지
-      const [tree, file] =
-        p === 1
-          ? folderContent
-          : defaultProcessedContent({
-              slug,
-              // 요구사항: 폴더 제목은 동일하게 유지 (페이지 번호는 하단 네비게이션에서만 표시)
-              frontmatter: {
-                title: baseTitle,
-                tags: [],
-              },
-              // description은 유지해도 되고(SEO), FolderContent에서 1페이지에서만 노출됨
-              description: folderContent[1].data.description,
-            })
+      const baseData = folderContent[1].data
+
+      // (선택) 폴더의 표시 modified 날짜를 page 2+에서도 1페이지와 동일하게(최신 하위 modified) 맞춤
+     const folderLatestModified = folderNode ? mostRecentModifiedInDescendants(folderNode) : undefined
+
+     // reading time 계산용 텍스트: index.md의 text가 있으면 그대로, 없으면 description이라도 사용
+     const inheritedText = (baseData.text ?? baseData.description ?? "") as string
+
+     // 날짜: index.md의 dates를 기본으로 하되, modified는 폴더 최신으로 덮어쓰기(원하면)
+     const inheritedDates =
+       baseData.dates
+         ? {
+             ...baseData.dates,
+             modified: folderLatestModified ?? baseData.dates.modified,
+           }
+         : folderLatestModified
+           ? { created: folderLatestModified, modified: folderLatestModified, published: folderLatestModified }
+           : undefined
+
+     // 1페이지는 원본(folder index), 2페이지+는 meta가 포함된 synthetic vfile + (원한다면) 동일한 tree 사용
+     const [tree, file] =
+       p === 1
+         ? folderContent
+         : (() => {
+             const [, vf] = defaultProcessedContent({
+               // baseData를 최대한 계승(타이틀/설정 등)
+               ...baseData,
+
+               // ✅ 페이지 slug는 page/2/index 같은 걸로 유지해야 FolderContent가 페이지 번호를 파싱함
+               slug,
+
+               // ✅ meta를 살리기 위한 핵심 2개
+               text: inheritedText,
+               dates: inheritedDates,
+
+               // 제목은 페이지 번호 붙이고 싶으면 여기서 조절
+               frontmatter: {
+                 ...(baseData.frontmatter ?? {}),
+                 title: baseTitle,          // 또는 `${baseTitle} (Page ${p})`
+                 tags: baseData.frontmatter?.tags ?? [],
+               },
+
+               // description은 유지(너는 폴더 소개글을 description으로 쓰고 있으니까)
+               description: baseData.description,
+             })
+
+             // ✅ page 2+에서도 폴더 index.md 본문(html tree)을 계속 보여주고 싶으면:
+             // return [folderContent[0], vf] 로 유지
+             // (지금 너 화면에서 이미 intro가 보이니, 이건 있어도/없어도 OK)
+             return [folderContent[0], vf] as const
+           })()
 
       const externalResources = pageResources(pathToRoot(slug), resources)
       const componentData: QuartzComponentProps = {
