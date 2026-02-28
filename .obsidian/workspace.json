@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/1-study/index.md",
+                "file": "content/한국어버젼/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,6 +183,8 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/english/index.md",
+    "content/english/1-study/index.md",
     "content/english/2-Research/index.md",
     "content/english/3-Profile/index.md",
     "content/english/99-Test-Page/index.md",
@@ -203,7 +205,6 @@
     "content/한국어버젼/1-학업/물리학/통계역학/index.md",
     "content/한국어버젼/1-학업/물리학/index.md",
     "content/english/1-study/2-mathematics/index.md",
-    "content/english/1-study/index.md",
     "quartz/static/google4400562a0eada61a.html",
     "quartz/components/SidebarMap.tsx",
     "content/english/99-Test-Page/Test1.md",
@@ -211,7 +212,6 @@
     "content/english/1-study/1-physics/statistical-mechanics/lecture2-statistical-ensemble.md",
     "content/english/1-study/1-physics/statistical-mechanics/lecture1-motivations-of-statistical-mechanics.md",
     "content/english/1-study/1-physics/classical-mechanics/lecture1-newtonian-mechanics.md",
-    "content/english/1-study/1-physics/classical-mechanics/index.md",
     "quartz/components/SpaLangGuard.tsx",
     "quartz/components/SpaLangGuard.tsx.txt",
     "quartz/components/SpaLang.txt",
