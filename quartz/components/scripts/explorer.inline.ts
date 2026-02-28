@@ -63,7 +63,7 @@ interface ParsedOptions {
   order: ("sort" | "filter" | "map")[]
 }
 
-// --------------------- site language implement --------------------- 
+// --------------------- site language implement ---------------------
 type SiteLang = "en" | "ko"
 
 function getLangFromSlug(slug: string): SiteLang | null {
@@ -71,11 +71,7 @@ function getLangFromSlug(slug: string): SiteLang | null {
   if (slug === "english" || slug === "english/index" || slug.startsWith("english/")) return "en"
 
   // Korean (현재 네 repo 기준: 한국어버젼)
-  if (
-    slug === "한국어버젼" ||
-    slug === "한국어버젼/index" ||
-    slug.startsWith("한국어버젼/")
-  ) {
+  if (slug === "한국어버젼" || slug === "한국어버젼/index" || slug.startsWith("한국어버젼/")) {
     return "ko"
   }
 
@@ -127,6 +123,7 @@ function toggleExplorer(this: HTMLElement) {
 }
 
 let lastKnownSlug: FullSlug = "index" as FullSlug
+let lastExplorerActiveSlug: string | null = null
 
 function toggleFolder(evt: MouseEvent) {
   evt.stopPropagation()
@@ -323,8 +320,8 @@ function createFolderNode(
 
   // Next block (아래쪽 ⋯ + 이후 문서들)
   if (hasNextHidden) {
-    ul.appendChild(createEllipsisNode(folderPath, "next", expandNext))
     if (expandNext) {
+      // ✅ 먼저 숨겨진 이후 문서들을 다 보여주고
       for (let i = ctxEnd + 1; i < n; i++) {
         const child = children[i]
         const childNode = child.isFolder
@@ -332,6 +329,11 @@ function createFolderNode(
           : createFileNode(currentSlug, activeSlug, child)
         ul.appendChild(childNode)
       }
+      // ✅ 그 다음에 ⋯ 버튼을 맨 아래에 둔다 (펼친 상태)
+      ul.appendChild(createEllipsisNode(folderPath, "next", true))
+    } else {
+      // 접힌 상태에서는 기존처럼 context 바로 아래에 ⋯ 버튼
+      ul.appendChild(createEllipsisNode(folderPath, "next", false))
     }
   }
 
@@ -341,6 +343,10 @@ function createFolderNode(
 async function setupExplorer(currentSlug: FullSlug) {
   lastKnownSlug = currentSlug
   const activeSlug = normalizePaginationSlug(currentSlug)
+
+  const navigationChanged = lastExplorerActiveSlug !== (activeSlug as string)
+  lastExplorerActiveSlug = activeSlug as string
+
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
   for (const explorer of allExplorers) {
@@ -428,17 +434,29 @@ async function setupExplorer(currentSlug: FullSlug) {
       .getFolderPaths()
       .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
 
+    // ✅ CHANGE: 이동(nav)하면 항상 접힌 상태로 시작하도록
+    // - expandPrev/expandNext는 이전 저장값을 "읽을 수는 있지만"
+    // - navigationChanged인 경우에는 무조건 false로 덮어쓴다.
     currentExplorerState = folderPaths.map((path) => {
       const previousCollapsed = oldCollapsed.get(path)
       const previousExpandPrev = oldExpandPrev.get(path)
       const previousExpandNext = oldExpandNext.get(path)
+
       return {
         path,
-        collapsed: previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
-        expandPrev: previousExpandPrev ?? false,
-        expandNext: previousExpandNext ?? false,
+        collapsed:
+          previousCollapsed === undefined ? opts.folderDefaultState === "collapsed" : previousCollapsed,
+
+        // ✅ 핵심: 이동이면 false로 초기화, 아니면 기존값 유지(⋯ 클릭 재렌더링일 때 유지)
+        expandPrev: navigationChanged ? false : (previousExpandPrev ?? false),
+        expandNext: navigationChanged ? false : (previousExpandNext ?? false),
       }
     })
+
+    // ✅ CHANGE: 이동이면 저장값도 "접힘"으로 갱신해서 새로고침/뒤로가기에서도 접히게
+    if (navigationChanged && opts.useSavedState) {
+      localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+    }
 
     const explorerUl = explorer.querySelector(".explorer-ul")
     if (!explorerUl) continue
