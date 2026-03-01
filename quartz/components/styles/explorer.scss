@@ -275,3 +275,75 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
     overscroll-behavior: none;
   }
 }
+/* ========= Compact Explorer (⋯) ========= */
+:root {
+  /* theme-independent */
+  --ce-active-text: #84a59d;     /* 활성(청록 글자) */
+  --ce-light-bg: #faf8f8;        /* 라이트 배경(거의 흰색) */
+  --ce-light-text: #5f5e5e;      /* 라이트 비활성 글자(진한 회색) */
+  --ce-dark-text: #b6b6b7;       /* 다크 비활성 글자(연한 회색) */
+
+  /* 테두리는 기존 값 유지(원하면 여기만 조절) */
+  --ce-light-border: #e6e7ea;
+  --ce-dark-border: #2a2a2e;
+}
+
+/* 숨김 처리 */
+.explorer .ce-hidden {
+  display: none;
+}
+
+/* ⋯ 줄: 중앙 */
+.explorer li.ce-ellipsis {
+  width: 100%;
+  margin: 2px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* ⋯ 버튼: 폭 더 줄이고(요청), 둥근 pill */
+.explorer .ce-ellipsis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 20px;
+  padding: 0.08rem 0.34rem;
+
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.1;
+  font-weight: 700;
+
+  margin: 0 auto;
+}
+/* ✅ 접힘(비활성) — 라이트 */
+:root[saved-theme="light"] .explorer .ce-ellipsis-btn {
+  background-color: var(--ce-light-bg);
+  color: var(--ce-light-text);
+  border: 1px solid var(--ce-light-border);
+  box-shadow: none;
+}
+
+/* ✅ 접힘(비활성) — 다크 */
+:root[saved-theme="dark"] .explorer .ce-ellipsis-btn {
+  background-color: #161618;
+  color: var(--ce-dark-text);
+  border: 1px solid var(--ce-dark-border);
+  box-shadow: none;
+}
+
+/* ✅ 펼침(활성) — 배경/테두리는 그대로, 글자색만 청록으로 */
+:root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open {
+  background-color: var(--ce-light-bg);
+  border: 1px solid var(--ce-light-border);
+  color: var(--ce-active-text);
+  box-shadow: none;
+}
+
+:root[saved-theme="dark"] .explorer .ce-ellipsis-btn.is-open {
+  background-color: #161618;
+  border: 1px solid var(--ce-dark-border);
+  color: var(--ce-active-text);
+  box-shadow: none;
+}

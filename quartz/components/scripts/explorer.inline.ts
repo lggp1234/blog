@@ -1,5 +1,5 @@
 import { FileTrieNode } from "../../util/fileTrie"
-import { FullSlug, resolveRelative, simplifySlug } from "../../util/path"
+import { FullSlug, resolveRelative } from "../../util/path"
 import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 type MaybeHTMLElement = HTMLElement | undefined
@@ -7,6 +7,57 @@ type MaybeHTMLElement = HTMLElement | undefined
 function isGlobalHomeSlug(slug: string): boolean {
   // Quartz 버전에 따라 홈 slug가 "index" 또는 빈 문자열일 수 있어서 둘 다 처리
   return slug === "index" || slug === ""
+}
+
+function persistCurrentlyOpenFolders(explorer: HTMLElement) {
+  if (!currentExplorerState) return
+
+  const folderContainers = explorer.querySelectorAll(".folder-container") as NodeListOf<HTMLElement>
+
+  for (const folderContainer of folderContainers) {
+    const folderOuter = folderContainer.nextElementSibling as HTMLElement | null
+    if (!folderOuter || !folderOuter.classList.contains("folder-outer")) continue
+
+    const isOpen = folderOuter.classList.contains("open")
+    const folderKey =
+      folderContainer.dataset.folderkey ??
+      normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+
+    const st = currentExplorerState.find((x) => x.path === folderKey)
+    if (st) st.collapsed = !isOpen
+    else currentExplorerState.push({ path: folderKey, collapsed: !isOpen })
+  }
+
+  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+}
+
+function normalizeExplorerStatePath(path: string): string {
+  // Explorer state key must be stable across (en/ko) AND must not include trailing /index.
+  // Your content uses ordered prefixes like "1-...". We normalize each segment to just the number
+  // so that "1-study" and "1-학업" map to the same key ("1").
+  const raw = path.startsWith("/") ? path.slice(1) : path
+  const segs = raw.split("/").filter((s) => s.length > 0)
+
+  // drop trailing index (folder slugs are like .../index)
+  if (segs.at(-1) === "index") segs.pop()
+
+  const isLangRoot = (s: string) => s === "english" || s === "한국어버젼" || s === "한국어"
+
+  // keep language root itself unique (home page), but strip it for all descendants (for en<->ko sharing)
+  if (segs.length === 1 && isLangRoot(segs[0])) {
+    return segs[0]
+  }
+  if (segs.length >= 2 && isLangRoot(segs[0])) {
+    segs.shift()
+  }
+
+  // order-prefix normalization: "12-foo" -> "12"
+  const normalized = segs.map((seg) => {
+    const m = seg.match(/^(\d+)-/)
+    return m ? m[1] : seg
+  })
+
+  return normalized.join("/")
 }
 
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
@@ -79,10 +130,6 @@ function isKoreanRootNode(node: FileTrieNode): boolean {
   return node.isFolder && (node.slugSegment === "한국어버젼" || node.slugSegment === "한국어")
 }
 
-function isLanguageRootNode(node: FileTrieNode): boolean {
-  return isEnglishRootNode(node) || isKoreanRootNode(node)
-}
-
 // -------------------------------------------------------------------
 
 type FolderState = {
@@ -113,41 +160,43 @@ function toggleFolder(evt: MouseEvent) {
   const target = evt.target as MaybeHTMLElement
   if (!target) return
 
-  // Check if target was svg icon or button
   const isSvg = target.nodeName === "svg"
 
-  // corresponding <ul> element relative to clicked button/folder
+  // svg(folder-icon) 클릭이면 parent가 div.folder-container
+  // button 클릭이면 parentElement?.parentElement가 div.folder-container
   const folderContainer = (
-    isSvg
-      ? // svg -> div.folder-container
-        target.parentElement
-      : // button.folder-button -> div -> div.folder-container
-        target.parentElement?.parentElement
+    isSvg ? target.parentElement : target.parentElement?.parentElement
   ) as MaybeHTMLElement
   if (!folderContainer) return
+
   const childFolderContainer = folderContainer.nextElementSibling as MaybeHTMLElement
   if (!childFolderContainer) return
 
+  // 토글
   childFolderContainer.classList.toggle("open")
 
-  // Collapse folder container
   const isCollapsed = !childFolderContainer.classList.contains("open")
   setFolderState(childFolderContainer, isCollapsed)
 
-  const currentFolderState = currentExplorerState.find(
-    (item) => item.path === folderContainer.dataset.folderpath,
-  )
+  // 열렸을 때만 compact 적용
+  if (!isCollapsed) {
+    const ul = childFolderContainer.querySelector("ul") as HTMLUListElement | null
+    if (ul) applyCompactRuleToUl(ul)
+  }
+
+  // ✅ 상태 키는 무조건 "정규화 키"로 통일
+  const folderKey =
+    folderContainer.dataset.folderkey ??
+    normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+
+  const currentFolderState = currentExplorerState.find((item) => item.path === folderKey)
   if (currentFolderState) {
     currentFolderState.collapsed = isCollapsed
   } else {
-    currentExplorerState.push({
-      path: folderContainer.dataset.folderpath as FullSlug,
-      collapsed: isCollapsed,
-    })
+    currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
   }
 
-  const stringifiedFileTree = JSON.stringify(currentExplorerState)
-  localStorage.setItem("fileTree", stringifiedFileTree)
+  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
 }
 
 function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
@@ -180,7 +229,11 @@ function createFolderNode(
   const ul = folderOuter.querySelector("ul") as HTMLUListElement
 
   const folderPath = node.slug
+  const folderKey = normalizeExplorerStatePath(folderPath)
+
+  // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
+  folderContainer.dataset.folderkey = folderKey
 
   if (opts.folderClickBehavior === "link") {
     // Replace button with link for link behavior
@@ -198,14 +251,14 @@ function createFolderNode(
 
   // if the saved state is collapsed or the default state is collapsed
   const isCollapsed =
-    currentExplorerState.find((item) => item.path === folderPath)?.collapsed ??
+    currentExplorerState.find((item) => item.path === folderKey)?.collapsed ??
     opts.folderDefaultState === "collapsed"
 
   // if this folder is a prefix of the current path we
   // want to open it anyways
-  const simpleFolderPath = simplifySlug(folderPath)
+  const currentKey = normalizeExplorerStatePath(currentSlug)
   const folderIsPrefixOfCurrentSlug =
-    simpleFolderPath === currentSlug.slice(0, simpleFolderPath.length)
+    currentKey === folderKey || currentKey.startsWith(folderKey + "/")
 
   if (!isCollapsed || folderIsPrefixOfCurrentSlug) {
     folderOuter.classList.add("open")
@@ -217,8 +270,139 @@ function createFolderNode(
       : createFileNode(currentSlug, child)
     ul.appendChild(childNode)
   }
-
+  if (folderOuter.classList.contains("open")) {
+    applyCompactRuleToUl(ul)
+  }
   return li
+}
+
+function applyCompactRuleToUl(ul: HTMLUListElement) {
+  // (1) 이 UL의 "직계 파일 li"만 모음: <li><a ...></a></li>
+  const fileLis = Array.from(ul.children).filter((el): el is HTMLLIElement => {
+    if (!(el instanceof HTMLLIElement)) return false
+    if (el.classList.contains("ce-ellipsis")) return false
+    return el.firstElementChild?.tagName === "A"
+  })
+
+  // 파일이 적으면 굳이 접지 않음
+  if (fileLis.length <= 5) return
+
+  // (2) focus: 이 UL에서 active 파일이 있으면 그걸 기준, 없으면 0번(처음) 기준
+  const activeLi = ul.querySelector(":scope > li > a.active")?.closest("li") as HTMLLIElement | null
+  const focusIndex = activeLi ? fileLis.indexOf(activeLi) : 0
+
+  // (3) 이전에 만들어둔 ⋯ 제거(중복 방지)
+  ul.querySelectorAll(":scope > li.ce-ellipsis").forEach((n) => n.remove())
+
+  // (4) 펼침 상태는 UL dataset으로 유지(폴더 닫았다 열어도 유지되게)
+  let prevOpen = ul.dataset.cePrevOpen === "true"
+  let nextOpen = ul.dataset.ceNextOpen === "true"
+
+  const start = Math.max(0, focusIndex - 2)
+  const end = Math.min(fileLis.length - 1, focusIndex + 2)
+
+  const hasPrev = start > 0
+  const hasNext = end < fileLis.length - 1
+
+  let prevBtn: HTMLButtonElement | null = null
+  let nextBtn: HTMLButtonElement | null = null
+
+  // ✅ 기호 규칙
+  const PREV_CLOSED = "⊻"
+  const PREV_OPEN = "⊼"
+  const NEXT_CLOSED = "⊼"
+  const NEXT_OPEN = "⊻"
+
+  const update = () => {
+    for (let i = 0; i < fileLis.length; i++) {
+      const li = fileLis[i]
+      const inWindow = i >= start && i <= end
+      const inPrev = i < start
+      const inNext = i > end
+      const show = inWindow || (prevOpen && inPrev) || (nextOpen && inNext)
+      li.classList.toggle("ce-hidden", !show)
+    }
+
+    // 상태 저장
+    ul.dataset.cePrevOpen = String(prevOpen)
+    ul.dataset.ceNextOpen = String(nextOpen)
+
+    // ✅ 버튼 UI 동기화 (위/아래 서로 반대)
+    if (prevBtn) {
+      prevBtn.classList.toggle("is-open", prevOpen)
+      prevBtn.setAttribute("aria-expanded", String(prevOpen))
+      prevBtn.textContent = prevOpen ? PREV_OPEN : PREV_CLOSED
+    }
+    if (nextBtn) {
+      nextBtn.classList.toggle("is-open", nextOpen)
+      nextBtn.setAttribute("aria-expanded", String(nextOpen))
+      nextBtn.textContent = nextOpen ? NEXT_OPEN : NEXT_CLOSED
+    }
+  }
+
+  // (5) 위쪽 버튼
+  if (hasPrev) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-prev"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.setAttribute("aria-label", "이전 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+    btn.textContent = PREV_CLOSED
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      prevOpen = !prevOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+    ul.insertBefore(li, fileLis[0]) // 맨 위에
+    prevBtn = btn
+  } else {
+    prevOpen = false
+  }
+
+  // (6) 아래쪽 버튼 (맨 아래)
+  if (hasNext) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-next"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.setAttribute("aria-label", "이후 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+    btn.textContent = NEXT_CLOSED
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      nextOpen = !nextOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+    ul.appendChild(li) // 항상 맨 아래
+    nextBtn = btn
+  } else {
+    nextOpen = false
+  }
+
+  update()
+}
+
+function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
+  // 현재 "열려있는 폴더들"의 ul에 대해, 처음부터 compact 적용
+  const uls = explorer.querySelectorAll(".folder-outer.open > ul") as NodeListOf<HTMLUListElement>
+  for (const ul of uls) {
+    applyCompactRuleToUl(ul)
+  }
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
@@ -240,10 +424,18 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     // Get folder state from local storage
     const storageTree = localStorage.getItem("fileTree")
-    const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
-    const oldIndex = new Map<string, boolean>(
-      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.collapsed]),
-    )
+    const serializedExplorerState: FolderState[] =
+      storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
+
+    // If we changed the normalization rules (e.g., en/ko share the same numeric keys),
+    // multiple legacy entries can collapse into the same key. In that case we prefer "open"
+    // if ANY of them was open (i.e., collapsed=false).
+    const oldIndex = new Map<string, boolean>()
+    for (const entry of serializedExplorerState) {
+      const key = normalizeExplorerStatePath(entry.path)
+      const prev = oldIndex.get(key)
+      oldIndex.set(key, prev === undefined ? entry.collapsed : prev && entry.collapsed)
+    }
 
     const data = await fetchData
     const entries = [...Object.entries(data)] as [FullSlug, ContentDetails][]
@@ -304,11 +496,11 @@ async function setupExplorer(currentSlug: FullSlug) {
       .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
 
     currentExplorerState = folderPaths.map((path) => {
-      const previousState = oldIndex.get(path)
+      const key = normalizeExplorerStatePath(path)
+      const previousState = oldIndex.get(key)
       return {
-        path,
-        collapsed:
-          previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
+        path: key,
+        collapsed: previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
       }
     })
 
@@ -328,6 +520,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       fragment.appendChild(node)
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
+    applyCompactRuleToOpenFolders(explorer)
 
     // restore explorer scrollTop position if it exists
     const scrollTop = sessionStorage.getItem("explorerScrollTop")
@@ -371,11 +564,17 @@ async function setupExplorer(currentSlug: FullSlug) {
   }
 }
 
-document.addEventListener("prenav", async () => {
-  // save explorer scrollTop position
-  const explorer = document.querySelector(".explorer-ul")
-  if (!explorer) return
-  sessionStorage.setItem("explorerScrollTop", explorer.scrollTop.toString())
+document.addEventListener("prenav", () => {
+  const explorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
+
+  for (const ex of explorers) {
+    // 1) 스크롤 위치 저장(기존 기능 유지)
+    const ul = ex.querySelector(".explorer-ul") as HTMLElement | null
+    if (ul) sessionStorage.setItem("explorerScrollTop", ul.scrollTop.toString())
+
+    // 2) ✅ 현재 화면에서 열려있는 폴더 상태를 저장 (자동으로 열린 폴더 포함)
+    persistCurrentlyOpenFolders(ex)
+  }
 })
 
 document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
