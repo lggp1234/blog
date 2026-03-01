@@ -33,10 +33,34 @@ function parentFolderOf(slug: string): string {
   return parts.join("/")
 }
 
-function sortByTitleOrSlug(a: any, b: any) {
-  const aKey = (a?.frontmatter?.title ?? a?.slug ?? "").toString()
-  const bKey = (b?.frontmatter?.title ?? b?.slug ?? "").toString()
-  return aKey.localeCompare(bKey, ["ko", "en"], { numeric: true, sensitivity: "base" })
+// ✅ 탐색기와 동일한 기준: "실제 파일 경로(filePath) → 없으면 slug"로 정렬
+function physicalKeyFromFilePathOrSlug(p: any): string {
+  // Quartz allFiles 항목에는 보통 filePath가 들어있음(없으면 slug로 fallback)
+  const fp = (p?.filePath ?? p?.data?.filePath ?? "") as string
+
+  if (fp) {
+    const parts = fp.replace(/\\/g, "/").split("/").filter(Boolean)
+    const lastRaw = parts.at(-1) ?? ""
+    const last = lastRaw.replace(/\.(md|mdx)$/i, "")
+
+    // index.md / _index.md는 폴더 대표 파일이므로 "부모 폴더명"을 키로 사용
+    if (last === "index" || last === "_index") {
+      return (parts.at(-2) ?? "").toString()
+    }
+    return last.toString()
+  }
+
+  // fallback: slug에서 마지막 segment
+  let slug = String(p?.slug ?? "")
+  slug = slug.replace(/\/index$/, "")
+  const seg = slug.split("/").filter(Boolean).at(-1) ?? ""
+  return String(seg)
+}
+
+function sortByPhysicalPath(a: any, b: any) {
+  const ak = physicalKeyFromFilePathOrSlug(a)
+  const bk = physicalKeyFromFilePathOrSlug(b)
+  return ak.localeCompare(bk, ["ko", "en"], { numeric: true, sensitivity: "base" })
 }
 
 type Options = {
@@ -83,7 +107,7 @@ export default ((opts: Options) => {
         if (currentLang && getLangFromSlug(s) !== currentLang) return false
         return parentFolderOf(s) === currentParent // 같은 폴더의 직계 파일만
       })
-      .sort(sortByTitleOrSlug)
+      .sort(sortByPhysicalPath)
 
     const currentIdx = siblingPages.findIndex(
       (f) => stripTrailingIndex((f?.slug ?? "") as string) === currentNoIndex,
