@@ -3,4 +3,3 @@ lang: en
 altLangPath: /한국어버젼/
 title: English
 ---
-This page was created to test various new features being tried during the blog’s development stage, as well as their stability and safety. Please note that most of the documents here aren’t particularly meaningful.
