@@ -9,6 +9,24 @@ function isGlobalHomeSlug(slug: string): boolean {
   return slug === "index" || slug === ""
 }
 
+function normalizeExplorerStatePath(path: string): string {
+  // 안전하게 앞에 /가 붙는 경우도 제거
+  const p = path.startsWith("/") ? path.slice(1) : path
+
+  // english root
+  if (p === "english" || p === "english/index") return ""
+  if (p.startsWith("english/")) return p.slice("english/".length)
+
+  // korean roots
+  if (p === "한국어버젼" || p === "한국어버젼/index") return ""
+  if (p.startsWith("한국어버젼/")) return p.slice("한국어버젼/".length)
+
+  if (p === "한국어" || p === "한국어/index") return ""
+  if (p.startsWith("한국어/")) return p.slice("한국어/".length)
+
+  return p
+}
+
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
   const isHome = isGlobalHomeSlug(currentSlug)
   const currentLang = getLangFromSlug(currentSlug) // "en" | "ko" | null
@@ -138,9 +156,17 @@ function toggleFolder(evt: MouseEvent) {
   const isCollapsed = !childFolderContainer.classList.contains("open")
   setFolderState(childFolderContainer, isCollapsed)
 
-  const currentFolderState = currentExplorerState.find(
-    (item) => item.path === folderContainer.dataset.folderpath,
-  )
+  const folderKey = normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+
+  const currentFolderState = currentExplorerState.find((item) => item.path === folderKey)
+  if (currentFolderState) {
+    currentFolderState.collapsed = isCollapsed
+  } else {
+    currentExplorerState.push({
+      path: folderKey,
+      collapsed: isCollapsed,
+    })
+  }
   if (currentFolderState) {
     currentFolderState.collapsed = isCollapsed
   } else {
@@ -184,6 +210,8 @@ function createFolderNode(
   const ul = folderOuter.querySelector("ul") as HTMLUListElement
 
   const folderPath = node.slug
+  const folderKey = normalizeExplorerStatePath(folderPath)
+  folderContainer.dataset.folderpath = folderKey
   folderContainer.dataset.folderpath = folderPath
 
   if (opts.folderClickBehavior === "link") {
@@ -202,14 +230,14 @@ function createFolderNode(
 
   // if the saved state is collapsed or the default state is collapsed
   const isCollapsed =
-    currentExplorerState.find((item) => item.path === folderPath)?.collapsed ??
+    currentExplorerState.find((item) => item.path === folderKey)?.collapsed ??
     opts.folderDefaultState === "collapsed"
 
   // if this folder is a prefix of the current path we
   // want to open it anyways
-  const simpleFolderPath = simplifySlug(folderPath)
+  const currentKey = normalizeExplorerStatePath(currentSlug)
   const folderIsPrefixOfCurrentSlug =
-    simpleFolderPath === currentSlug.slice(0, simpleFolderPath.length)
+    currentKey === folderKey || currentKey.startsWith(folderKey + "/")
 
   if (!isCollapsed || folderIsPrefixOfCurrentSlug) {
     folderOuter.classList.add("open")
@@ -473,7 +501,10 @@ async function setupExplorer(currentSlug: FullSlug) {
     const storageTree = localStorage.getItem("fileTree")
     const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
     const oldIndex = new Map<string, boolean>(
-      serializedExplorerState.map((entry: FolderState) => [entry.path, entry.collapsed]),
+      serializedExplorerState.map((entry: FolderState) => [
+        normalizeExplorerStatePath(entry.path),
+        entry.collapsed,
+      ]),
     )
 
     const data = await fetchData
@@ -535,11 +566,11 @@ async function setupExplorer(currentSlug: FullSlug) {
       .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
 
     currentExplorerState = folderPaths.map((path) => {
-      const previousState = oldIndex.get(path)
+      const key = normalizeExplorerStatePath(path)
+      const previousState = oldIndex.get(key)
       return {
-        path,
-        collapsed:
-          previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
+        path: key,
+        collapsed: previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
       }
     })
 
