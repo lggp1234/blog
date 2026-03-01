@@ -10,18 +10,17 @@ function isGlobalHomeSlug(slug: string): boolean {
 }
 
 function normalizeExplorerStatePath(path: string): string {
-  // 안전하게 앞에 /가 붙는 경우도 제거
   const p = path.startsWith("/") ? path.slice(1) : path
 
-  // english root
-  if (p === "english" || p === "english/index") return ""
+  // english root는 "english"로 유지 (충돌 방지)
+  if (p === "english" || p === "english/index") return "english"
   if (p.startsWith("english/")) return p.slice("english/".length)
 
-  // korean roots
-  if (p === "한국어버젼" || p === "한국어버젼/index") return ""
+  // korean root도 고유 문자열로 유지
+  if (p === "한국어버젼" || p === "한국어버젼/index") return "한국어버젼"
   if (p.startsWith("한국어버젼/")) return p.slice("한국어버젼/".length)
 
-  if (p === "한국어" || p === "한국어/index") return ""
+  if (p === "한국어" || p === "한국어/index") return "한국어"
   if (p.startsWith("한국어/")) return p.slice("한국어/".length)
 
   return p
@@ -131,53 +130,43 @@ function toggleFolder(evt: MouseEvent) {
   const target = evt.target as MaybeHTMLElement
   if (!target) return
 
-  // Check if target was svg icon or button
   const isSvg = target.nodeName === "svg"
 
-  // corresponding <ul> element relative to clicked button/folder
+  // svg(folder-icon) 클릭이면 parent가 div.folder-container
+  // button 클릭이면 parentElement?.parentElement가 div.folder-container
   const folderContainer = (
-    isSvg
-      ? // svg -> div.folder-container
-        target.parentElement
-      : // button.folder-button -> div -> div.folder-container
-        target.parentElement?.parentElement
+    isSvg ? target.parentElement : target.parentElement?.parentElement
   ) as MaybeHTMLElement
   if (!folderContainer) return
+
   const childFolderContainer = folderContainer.nextElementSibling as MaybeHTMLElement
   if (!childFolderContainer) return
 
+  // 토글
   childFolderContainer.classList.toggle("open")
-  if (childFolderContainer.classList.contains("open")) {
+
+  const isCollapsed = !childFolderContainer.classList.contains("open")
+  setFolderState(childFolderContainer, isCollapsed)
+
+  // 열렸을 때만 compact 적용
+  if (!isCollapsed) {
     const ul = childFolderContainer.querySelector("ul") as HTMLUListElement | null
     if (ul) applyCompactRuleToUl(ul)
   }
 
-  // Collapse folder container
-  const isCollapsed = !childFolderContainer.classList.contains("open")
-  setFolderState(childFolderContainer, isCollapsed)
-
-  const folderKey = normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+  // ✅ 상태 키는 무조건 "정규화 키"로 통일
+  const folderKey =
+    folderContainer.dataset.folderkey ??
+    normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
 
   const currentFolderState = currentExplorerState.find((item) => item.path === folderKey)
   if (currentFolderState) {
     currentFolderState.collapsed = isCollapsed
   } else {
-    currentExplorerState.push({
-      path: folderKey,
-      collapsed: isCollapsed,
-    })
-  }
-  if (currentFolderState) {
-    currentFolderState.collapsed = isCollapsed
-  } else {
-    currentExplorerState.push({
-      path: folderContainer.dataset.folderpath as FullSlug,
-      collapsed: isCollapsed,
-    })
+    currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
   }
 
-  const stringifiedFileTree = JSON.stringify(currentExplorerState)
-  localStorage.setItem("fileTree", stringifiedFileTree)
+  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
 }
 
 function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
@@ -211,8 +200,10 @@ function createFolderNode(
 
   const folderPath = node.slug
   const folderKey = normalizeExplorerStatePath(folderPath)
-  folderContainer.dataset.folderpath = folderKey
+
+  // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
+  folderContainer.dataset.folderkey = folderKey
 
   if (opts.folderClickBehavior === "link") {
     // Replace button with link for link behavior
@@ -249,7 +240,9 @@ function createFolderNode(
       : createFileNode(currentSlug, child)
     ul.appendChild(childNode)
   }
-
+  if (folderOuter.classList.contains("open")) {
+    applyCompactRuleToUl(ul)
+  }
   return li
 }
 
@@ -591,7 +584,6 @@ async function setupExplorer(currentSlug: FullSlug) {
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
-    applyCompactNeighborWindow(explorer, currentSlug)
 
     // restore explorer scrollTop position if it exists
     const scrollTop = sessionStorage.getItem("explorerScrollTop")
