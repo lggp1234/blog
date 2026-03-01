@@ -87,7 +87,7 @@ export default (() => {
       /* ✅ 본문과 완전히 동일하게 */
       font-family: var(--bodyFont);
       font-size: 1em;          /* 부모(본문 기준)와 동일 */
-      font-weight: 400;        /* ✅ 굵기 고정 */
+      font-weight: var(--normalWeight, 400);      /* ✅ 굵기 고정 */
       font-style: normal;
       font-variant: normal;
       letter-spacing: normal;
