@@ -39,8 +39,10 @@ export const defaultContentPageLayout: PageLayout = {
             condition: (page) => page.fileData.slug !== "index",
           }),
           grow: true,
+          basis: "0",
+          align: "start",
         },
-        { Component: LanguageSwitch() },
+        { Component: LanguageSwitch(), shrink: false, align: "start" },
       ],
     }),
 
@@ -106,8 +108,8 @@ export const defaultListPageLayout: PageLayout = {
   beforeBody: [
     Component.Flex({
       components: [
-        { Component: Component.Breadcrumbs(), grow: true },
-        { Component: LanguageSwitch() },
+        { Component: Component.Breadcrumbs(), grow: true, basis: "0", align: "start" },
+        { Component: LanguageSwitch(), shrink: false, align: "start" },
       ],
     }),
     Component.ArticleTitle(),
