@@ -307,6 +307,12 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
   let prevBtn: HTMLButtonElement | null = null
   let nextBtn: HTMLButtonElement | null = null
 
+  // ✅ 기호 규칙
+  const PREV_CLOSED = "⊻"
+  const PREV_OPEN = "⊼"
+  const NEXT_CLOSED = "⊼"
+  const NEXT_OPEN = "⊻"
+
   const update = () => {
     for (let i = 0; i < fileLis.length; i++) {
       const li = fileLis[i]
@@ -321,11 +327,20 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
     ul.dataset.cePrevOpen = String(prevOpen)
     ul.dataset.ceNextOpen = String(nextOpen)
 
-    if (prevBtn) prevBtn.classList.toggle("is-open", prevOpen)
-    if (nextBtn) nextBtn.classList.toggle("is-open", nextOpen)
+    // ✅ 버튼 UI 동기화 (위/아래 서로 반대)
+    if (prevBtn) {
+      prevBtn.classList.toggle("is-open", prevOpen)
+      prevBtn.setAttribute("aria-expanded", String(prevOpen))
+      prevBtn.textContent = prevOpen ? PREV_OPEN : PREV_CLOSED
+    }
+    if (nextBtn) {
+      nextBtn.classList.toggle("is-open", nextOpen)
+      nextBtn.setAttribute("aria-expanded", String(nextOpen))
+      nextBtn.textContent = nextOpen ? NEXT_OPEN : NEXT_CLOSED
+    }
   }
 
-  // (5) 위쪽 ⋯
+  // (5) 위쪽 버튼
   if (hasPrev) {
     const li = document.createElement("li")
     li.className = "ce-ellipsis ce-prev"
@@ -333,7 +348,9 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
     const btn = document.createElement("button")
     btn.type = "button"
     btn.className = "ce-ellipsis-btn"
-    btn.textContent = "⋯"
+    btn.setAttribute("aria-label", "이전 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+    btn.textContent = PREV_CLOSED
 
     const onClick = (e: MouseEvent) => {
       e.preventDefault()
@@ -350,7 +367,7 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
     prevOpen = false
   }
 
-  // (6) 아래쪽 ⋯  (펼쳐지면 버튼이 아래로 “밀려 내려가도록” 맨 아래에 둠)
+  // (6) 아래쪽 버튼 (맨 아래)
   if (hasNext) {
     const li = document.createElement("li")
     li.className = "ce-ellipsis ce-next"
@@ -358,7 +375,9 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
     const btn = document.createElement("button")
     btn.type = "button"
     btn.className = "ce-ellipsis-btn"
-    btn.textContent = "⋯"
+    btn.setAttribute("aria-label", "이후 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+    btn.textContent = NEXT_CLOSED
 
     const onClick = (e: MouseEvent) => {
       e.preventDefault()
