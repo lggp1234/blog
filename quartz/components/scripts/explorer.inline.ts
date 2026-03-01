@@ -9,6 +9,28 @@ function isGlobalHomeSlug(slug: string): boolean {
   return slug === "index" || slug === ""
 }
 
+function persistCurrentlyOpenFolders(explorer: HTMLElement) {
+  if (!currentExplorerState) return
+
+  const folderContainers = explorer.querySelectorAll(".folder-container") as NodeListOf<HTMLElement>
+
+  for (const folderContainer of folderContainers) {
+    const folderOuter = folderContainer.nextElementSibling as HTMLElement | null
+    if (!folderOuter || !folderOuter.classList.contains("folder-outer")) continue
+
+    const isOpen = folderOuter.classList.contains("open")
+    const folderKey =
+      folderContainer.dataset.folderkey ??
+      normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+
+    const st = currentExplorerState.find((x) => x.path === folderKey)
+    if (st) st.collapsed = !isOpen
+    else currentExplorerState.push({ path: folderKey, collapsed: !isOpen })
+  }
+
+  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+}
+
 function normalizeExplorerStatePath(path: string): string {
   // Explorer state key must be stable across (en/ko) AND must not include trailing /index.
   // Your content uses ordered prefixes like "1-...". We normalize each segment to just the number
@@ -523,11 +545,17 @@ async function setupExplorer(currentSlug: FullSlug) {
   }
 }
 
-document.addEventListener("prenav", async () => {
-  // save explorer scrollTop position
-  const explorer = document.querySelector(".explorer-ul")
-  if (!explorer) return
-  sessionStorage.setItem("explorerScrollTop", explorer.scrollTop.toString())
+document.addEventListener("prenav", () => {
+  const explorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
+
+  for (const ex of explorers) {
+    // 1) 스크롤 위치 저장(기존 기능 유지)
+    const ul = ex.querySelector(".explorer-ul") as HTMLElement | null
+    if (ul) sessionStorage.setItem("explorerScrollTop", ul.scrollTop.toString())
+
+    // 2) ✅ 현재 화면에서 열려있는 폴더 상태를 저장 (자동으로 열린 폴더 포함)
+    persistCurrentlyOpenFolders(ex)
+  }
 })
 
 document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
