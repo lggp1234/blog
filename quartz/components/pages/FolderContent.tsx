@@ -23,13 +23,34 @@ interface FolderContentOptions {
 const nameFromSlug = (slug: string) =>
   slug.replace(/\/index$/, "").split("/").filter(Boolean).at(-1) ?? slug
 
+// ✅ 실제 파일/폴더명 정렬 키:
+// 1) filePath가 있으면 filePath에서 "진짜 이름"을 뽑음
+//    - .../index.md, .../_index.md면 부모 폴더명을 사용
+// 2) filePath가 없으면 slug에서 마지막 segment 사용
+const nameFromFilePathOrSlug = (p: QuartzPluginData): string => {
+  const fp = (p as any)?.filePath ? String((p as any).filePath) : ""
+  if (fp) {
+    const parts = fp.replace(/\\/g, "/").split("/").filter(Boolean)
+    const lastRaw = parts.at(-1) ?? ""
+    const last = lastRaw.replace(/\.(md|mdx)$/i, "")
+
+    if (last === "index" || last === "_index") {
+      return (parts.at(-2) ?? "").trim()
+    }
+    return last.trim()
+  }
+
+  return nameFromSlug(String(p.slug ?? "")).trim()
+}
+
 const alphabeticalFolderFirst: SortFn = (a, b) => {
   const aIsFolder = isFolderPath(a.slug ?? "")
   const bIsFolder = isFolderPath(b.slug ?? "")
   if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1
 
-  const aKey = aIsFolder ? nameFromSlug(a.slug ?? "") : (a.frontmatter?.title ?? a.slug ?? "")
-  const bKey = bIsFolder ? nameFromSlug(b.slug ?? "") : (b.frontmatter?.title ?? b.slug ?? "")
+  // ✅ 폴더/파일 모두 "실제 이름" 기준으로 정렬
+  const aKey = nameFromFilePathOrSlug(a)
+  const bKey = nameFromFilePathOrSlug(b)
 
   return aKey.localeCompare(bKey, ["ko", "en"], { numeric: true, sensitivity: "base" })
 }
