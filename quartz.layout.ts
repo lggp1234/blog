@@ -1,4 +1,4 @@
-  import { PageLayout, SharedLayout } from "./quartz/cfg"
+import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 import LanguageSwitch from "./quartz/components/LanguageSwitch"
 import FixFolderUrl from "./quartz/components/FixFolderUrl"
