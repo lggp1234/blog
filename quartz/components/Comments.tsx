@@ -79,15 +79,16 @@ export default ((opts: Options) => {
         const s = (f?.slug ?? "") as string
         if (!s) return false
         if (s.startsWith("tags/")) return false
-        if (s.endsWith("/index")) return false              // 폴더 index 제외
+        if (s.endsWith("/index")) return false // 폴더 index 제외
         if (currentLang && getLangFromSlug(s) !== currentLang) return false
-        return parentFolderOf(s) === currentParent           // 같은 폴더의 직계 파일만
+        return parentFolderOf(s) === currentParent // 같은 폴더의 직계 파일만
       })
       .sort(sortByTitleOrSlug)
 
     const currentIdx = siblingPages.findIndex(
       (f) => stripTrailingIndex((f?.slug ?? "") as string) === currentNoIndex,
     )
+
     const prevSlug: FullSlug | null =
       currentIdx > 0 ? (siblingPages[currentIdx - 1].slug as FullSlug) : null
     const nextSlug: FullSlug | null =
@@ -98,31 +99,37 @@ export default ((opts: Options) => {
     const prevLabel = currentLang === "ko" ? "‹ 이전 문서" : "‹ Prev"
     const nextLabel = currentLang === "ko" ? "이후 문서 ›" : "Next ›"
 
+    // ✅ "폴더에서 파일을 연 경우"에만 버튼 표시:
+    // - 같은 폴더에 직계 문서가 2개 이상 있고
+    // - 현재 문서가 그 목록에 포함될 때만
+    const shouldShowPrevNext = siblingPages.length >= 2 && currentIdx >= 0 && !currentSlug.endsWith("/index")
+
     return (
       <div class={classNames(displayClass, "comments-with-nav")}>
         <div class="giscus-navwrap">
-          {/* reactions 줄 “양옆에 있는 것처럼” 보이게 iframe 상단에 오버레이 */}
-          <nav class="giscus-prevnext" aria-label="Previous and Next document">
-            {prevSlug ? (
-              <a class="internal comment-nav-btn" href={resolveRelative(currentSlug, prevSlug)}>
-                {prevLabel}
-              </a>
-            ) : (
-              <span class="comment-nav-btn disabled" aria-disabled="true">
-                {prevLabel}
-              </span>
-            )}
+          {shouldShowPrevNext && (
+            <nav class="giscus-prevnext" aria-label="Previous and Next document">
+              {prevSlug ? (
+                <a class="internal comment-nav-btn" href={resolveRelative(currentSlug, prevSlug)}>
+                  {prevLabel}
+                </a>
+              ) : (
+                <span class="comment-nav-btn disabled" aria-disabled="true">
+                  {prevLabel}
+                </span>
+              )}
 
-            {nextSlug ? (
-              <a class="internal comment-nav-btn" href={resolveRelative(currentSlug, nextSlug)}>
-                {nextLabel}
-              </a>
-            ) : (
-              <span class="comment-nav-btn disabled" aria-disabled="true">
-                {nextLabel}
-              </span>
-            )}
-          </nav>
+              {nextSlug ? (
+                <a class="internal comment-nav-btn" href={resolveRelative(currentSlug, nextSlug)}>
+                  {nextLabel}
+                </a>
+              ) : (
+                <span class="comment-nav-btn disabled" aria-disabled="true">
+                  {nextLabel}
+                </span>
+              )}
+            </nav>
+          )}
 
           <div
             class="giscus"
@@ -136,9 +143,7 @@ export default ((opts: Options) => {
             data-input-position={opts.options.inputPosition ?? "bottom"}
             data-light-theme={opts.options.lightTheme ?? "light"}
             data-dark-theme={opts.options.darkTheme ?? "dark"}
-            data-theme-url={
-              opts.options.themeUrl ?? `https://${cfg.baseUrl ?? "example.com"}/static/giscus`
-            }
+            data-theme-url={opts.options.themeUrl ?? `https://${cfg.baseUrl ?? "example.com"}/static/giscus`}
             data-lang={opts.options.lang ?? "en"}
           ></div>
         </div>
