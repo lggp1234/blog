@@ -275,33 +275,12 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
     overscroll-behavior: none;
   }
 }
-
+/* ========= Compact Explorer (⋯) ========= */
 :root {
-  --ce-accent: #14b8a6; // 청록(활성)
-}
-
-/* 다크 모드 배경: 사용자가 준 #161618 */
-:root[saved-theme="dark"] .sidebar.left:has(.explorer) {
-  background-color: #161618;
-}
-:root[saved-theme="dark"] .explorer .explorer-content {
-  background-color: #161618;
-}
-
-/* 라이트 모드 배경은 흰색 */
-:root[saved-theme="light"] .sidebar.left:has(.explorer) {
-  background-color: #ffffff;
-}
-:root[saved-theme="light"] .explorer .explorer-content {
-  background-color: #ffffff;
-}
-
-/* 숨김 처리 */
-.explorer .ce-hidden {
-  display: none;
-}
-:root {
-  --ce-accent: #14b8a6; // 청록
+  --ce-accent: #14b8a6;          // 청록
+  --ce-accent-border: #3ad6c2;   // 청록보다 살짝 연한 테두리
+  --ce-light-border: #e6e7ea;    // 흰 배경에서 아주 연한 회색 테두리
+  --ce-dark-border: #2a2a2e;     // 다크 배경에서 약간 밝은 회색 테두리
 }
 
 /* 숨김 처리 */
@@ -317,44 +296,44 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   justify-content: center;
 }
 
-/* ⋯ 버튼 공통: 폭 줄이고 중앙 */
+/* ⋯ 버튼: 폭 더 줄이고(요청), 둥근 pill */
 .explorer .ce-ellipsis-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  min-width: 56px;
-  padding: 0.12rem 0.55rem;
+  /* ✅ 폭/패딩 줄임 */
+  min-width: 38px;
+  padding: 0.08rem 0.34rem;
 
   border-radius: 999px;
   cursor: pointer;
-  line-height: 1.2;
+  line-height: 1.1;
   font-weight: 700;
 
   margin: 0 auto;
 }
 
-/* ✅ 접힘(기본) — 라이트: 흰색 */
+/* 접힘(기본) — 라이트: 흰 배경 + 아주 연한 회색 테두리 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn {
   background-color: #ffffff;
   color: #000000;
-  border: 1px solid #000000;
+  border: 1px solid var(--ce-light-border);
 }
 
-/* ✅ 접힘(기본) — 다크: #161618 */
+/* 접힘(기본) — 다크: #161618 배경 + 배경보다 약간 밝은 회색 테두리 */
 :root[saved-theme="dark"] .explorer .ce-ellipsis-btn {
   background-color: #161618;
   color: #ffffff;
-  border: 1px solid #2a2a2e;
+  border: 1px solid var(--ce-dark-border);
 }
 
-
-/* ✅ 펼침(is-open) — 공통: 청록 */
-/* ✅ 펼침(is-open) — 공통: 청록 (라이트/다크 접힘 규칙보다 강하게) */
+/* 펼침(is-open) — 공통: 청록 배경 + "살짝 연한 청록" 테두리 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open,
 :root[saved-theme="dark"]  .explorer .ce-ellipsis-btn.is-open {
   background-color: var(--ce-accent);
   color: #ffffff;
-  border: 1px solid var(--ce-accent);
-  box-shadow: 0 0 0 1px var(--ce-accent);
+  border: 1px solid var(--ce-accent-border);
+  box-shadow: 0 0 0 1px var(--ce-accent-border);
 }
+/* ======================================= */
