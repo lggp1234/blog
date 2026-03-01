@@ -1,5 +1,5 @@
 import { FileTrieNode } from "../../util/fileTrie"
-import { FullSlug, resolveRelative, simplifySlug } from "../../util/path"
+import { FullSlug, resolveRelative } from "../../util/path"
 import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 type MaybeHTMLElement = HTMLElement | undefined
@@ -10,20 +10,32 @@ function isGlobalHomeSlug(slug: string): boolean {
 }
 
 function normalizeExplorerStatePath(path: string): string {
-  const p = path.startsWith("/") ? path.slice(1) : path
+  // Explorer state key must be stable across (en/ko) AND must not include trailing /index.
+  // Your content uses ordered prefixes like "1-...". We normalize each segment to just the number
+  // so that "1-study" and "1-학업" map to the same key ("1").
+  const raw = path.startsWith("/") ? path.slice(1) : path
+  const segs = raw.split("/").filter((s) => s.length > 0)
 
-  // english root는 "english"로 유지 (충돌 방지)
-  if (p === "english" || p === "english/index") return "english"
-  if (p.startsWith("english/")) return p.slice("english/".length)
+  // drop trailing index (folder slugs are like .../index)
+  if (segs.at(-1) === "index") segs.pop()
 
-  // korean root도 고유 문자열로 유지
-  if (p === "한국어버젼" || p === "한국어버젼/index") return "한국어버젼"
-  if (p.startsWith("한국어버젼/")) return p.slice("한국어버젼/".length)
+  const isLangRoot = (s: string) => s === "english" || s === "한국어버젼" || s === "한국어"
 
-  if (p === "한국어" || p === "한국어/index") return "한국어"
-  if (p.startsWith("한국어/")) return p.slice("한국어/".length)
+  // keep language root itself unique (home page), but strip it for all descendants (for en<->ko sharing)
+  if (segs.length === 1 && isLangRoot(segs[0])) {
+    return segs[0]
+  }
+  if (segs.length >= 2 && isLangRoot(segs[0])) {
+    segs.shift()
+  }
 
-  return p
+  // order-prefix normalization: "12-foo" -> "12"
+  const normalized = segs.map((seg) => {
+    const m = seg.match(/^(\d+)-/)
+    return m ? m[1] : seg
+  })
+
+  return normalized.join("/")
 }
 
 function updateExplorerTitle(explorer: HTMLElement, currentSlug: FullSlug) {
@@ -94,10 +106,6 @@ function isEnglishRootNode(node: FileTrieNode): boolean {
 
 function isKoreanRootNode(node: FileTrieNode): boolean {
   return node.isFolder && (node.slugSegment === "한국어버젼" || node.slugSegment === "한국어")
-}
-
-function isLanguageRootNode(node: FileTrieNode): boolean {
-  return isEnglishRootNode(node) || isKoreanRootNode(node)
 }
 
 // -------------------------------------------------------------------
@@ -356,123 +364,6 @@ function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
   }
 }
 
-function applyCompactNeighborWindow(explorer: HTMLElement, currentSlug: FullSlug) {
-  // 현재 활성 문서 링크 찾기
-  const activeLink = explorer.querySelector(".explorer-ul a.active") as HTMLAnchorElement | null
-  if (!activeLink) return
-
-  const activeLi = activeLink.closest("li") as HTMLLIElement | null
-  if (!activeLi) return
-
-  const parentUl = activeLi.parentElement as HTMLUListElement | null
-  if (!parentUl) return
-
-  // 같은 UL 레벨에서 "파일 li"만 추림 (li의 직계 자식이 <a>인 경우 = 파일)
-  const fileLis = Array.from(parentUl.children).filter((el): el is HTMLLIElement => {
-    if (!(el instanceof HTMLLIElement)) return false
-    if (el.classList.contains("ce-ellipsis")) return false
-    return el.firstElementChild?.tagName === "A"
-  })
-
-  // 파일이 6개 이하이면 (±2로 다 보이므로) 아무 것도 안 함
-  if (fileLis.length <= 5) return
-
-  // 혹시 SPA에서 같은 페이지 내 재실행될 경우를 대비해 기존 ⋯ 제거
-  parentUl.querySelectorAll(":scope > li.ce-ellipsis").forEach((n) => n.remove())
-
-  const activeIndex = fileLis.indexOf(activeLi)
-  if (activeIndex < 0) return
-
-  const start = Math.max(0, activeIndex - 2)
-  const end = Math.min(fileLis.length - 1, activeIndex + 2)
-
-  const hasPrev = start > 0              // file 1~3 근처면 prev 버튼 없음
-  const hasNext = end < fileLis.length - 1 // file 끝 근처면 next 버튼 없음
-
-  let prevOpen = false
-  let nextOpen = false
-
-  let prevBtn: HTMLButtonElement | null = null
-  let nextBtn: HTMLButtonElement | null = null
-
-  const update = () => {
-    for (let i = 0; i < fileLis.length; i++) {
-      const li = fileLis[i]
-      const inWindow = i >= start && i <= end
-      const inPrev = i < start
-      const inNext = i > end
-
-      const show = inWindow || (prevOpen && inPrev) || (nextOpen && inNext)
-      li.classList.toggle("ce-hidden", !show)
-    }
-
-    if (prevBtn) {
-      prevBtn.classList.toggle("is-open", prevOpen)
-      prevBtn.setAttribute("aria-expanded", String(prevOpen))
-    }
-    if (nextBtn) {
-      nextBtn.classList.toggle("is-open", nextOpen)
-      nextBtn.setAttribute("aria-expanded", String(nextOpen))
-    }
-  }
-
-  // 위쪽 ⋯ (이전 문서)
-  if (hasPrev) {
-    const li = document.createElement("li")
-    li.className = "ce-ellipsis ce-prev"
-
-    const btn = document.createElement("button")
-    btn.type = "button"
-    btn.className = "ce-ellipsis-btn"
-    btn.textContent = "⋯"
-    btn.setAttribute("aria-label", "이전 문서 펼치기/접기")
-    btn.setAttribute("aria-expanded", "false")
-
-    const onClick = (e: MouseEvent) => {
-      e.preventDefault()
-      prevOpen = !prevOpen
-      update()
-    }
-    btn.addEventListener("click", onClick)
-    window.addCleanup(() => btn.removeEventListener("click", onClick))
-
-    li.appendChild(btn)
-
-    // "항상 맨 위" 느낌: 첫 파일 li 앞에 삽입
-    parentUl.insertBefore(li, fileLis[0])
-    prevBtn = btn
-  }
-
-  // 아래쪽 ⋯ (이후 문서)
-  if (hasNext) {
-    const li = document.createElement("li")
-    li.className = "ce-ellipsis ce-next"
-
-    const btn = document.createElement("button")
-    btn.type = "button"
-    btn.className = "ce-ellipsis-btn"
-    btn.textContent = "⋯"
-    btn.setAttribute("aria-label", "이후 문서 펼치기/접기")
-    btn.setAttribute("aria-expanded", "false")
-
-    const onClick = (e: MouseEvent) => {
-      e.preventDefault()
-      nextOpen = !nextOpen
-      update()
-    }
-    btn.addEventListener("click", onClick)
-    window.addCleanup(() => btn.removeEventListener("click", onClick))
-
-    li.appendChild(btn)
-
-    // "펼치면 아래로 밀려 내려가도록": 맨 아래에 버튼을 둠 (later 파일들이 버튼 위에서 나타남)
-    parentUl.appendChild(li)
-    nextBtn = btn
-  }
-
-  update()
-}
-
 async function setupExplorer(currentSlug: FullSlug) {
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -492,13 +383,18 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     // Get folder state from local storage
     const storageTree = localStorage.getItem("fileTree")
-    const serializedExplorerState = storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
-    const oldIndex = new Map<string, boolean>(
-      serializedExplorerState.map((entry: FolderState) => [
-        normalizeExplorerStatePath(entry.path),
-        entry.collapsed,
-      ]),
-    )
+    const serializedExplorerState: FolderState[] =
+      storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
+
+    // If we changed the normalization rules (e.g., en/ko share the same numeric keys),
+    // multiple legacy entries can collapse into the same key. In that case we prefer "open"
+    // if ANY of them was open (i.e., collapsed=false).
+    const oldIndex = new Map<string, boolean>()
+    for (const entry of serializedExplorerState) {
+      const key = normalizeExplorerStatePath(entry.path)
+      const prev = oldIndex.get(key)
+      oldIndex.set(key, prev === undefined ? entry.collapsed : prev && entry.collapsed)
+    }
 
     const data = await fetchData
     const entries = [...Object.entries(data)] as [FullSlug, ContentDetails][]
