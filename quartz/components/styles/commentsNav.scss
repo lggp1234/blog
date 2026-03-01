@@ -1,0 +1,58 @@
+.comments-with-nav {
+  width: 100%;
+}
+
+/* Wrap giscus so we can overlay prev/next near the reactions row */
+.giscus-navwrap {
+  position: relative;
+}
+
+.giscus-prevnext {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  z-index: 5;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 12px;
+
+  pointer-events: none; /* iframe 클릭은 막지 않고, 버튼만 클릭되게 */
+}
+
+.comment-nav-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+
+  text-decoration: none;
+  user-select: none;
+
+  background: var(--light);
+  color: var(--dark);
+  border: 1px solid var(--lightgray);
+}
+
+:root[saved-theme="dark"] .comment-nav-btn {
+  background: #161618;
+  color: #ffffff;
+  border: 1px solid #2a2a2e;
+}
+
+.comment-nav-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.comment-nav-btn:not(.disabled):hover {
+  opacity: 0.9;
+}
