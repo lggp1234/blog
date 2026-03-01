@@ -278,7 +278,8 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 /* ========= Compact Explorer (⋯) ========= */
 :root {
   --ce-accent: #14b8a6;          // 청록
-  --ce-accent-border: #3ad6c2;   // 청록보다 살짝 연한 테두리
+  --ce-accent-border: #3ad6c2;   // (라이트) 펼침 테두리: 살짝 연한 청록
+  --ce-accent-border-dark: #0f8f83; // (다크) 펼침 테두리: 더 진한 청록 ✅
   --ce-light-border: #e6e7ea;    // 흰 배경에서 아주 연한 회색 테두리
   --ce-dark-border: #2a2a2e;     // 다크 배경에서 약간 밝은 회색 테두리
 }
@@ -302,7 +303,6 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   align-items: center;
   justify-content: center;
 
-  /* ✅ 폭/패딩 줄임 */
   min-width: 38px;
   padding: 0.08rem 0.34rem;
 
@@ -328,12 +328,18 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   border: 1px solid var(--ce-dark-border);
 }
 
-/* 펼침(is-open) — 공통: 청록 배경 + "살짝 연한 청록" 테두리 */
-:root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open,
-:root[saved-theme="dark"]  .explorer .ce-ellipsis-btn.is-open {
+/* 펼침(is-open) — 라이트: 청록 배경 + 연한 청록 테두리 */
+:root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open {
   background-color: var(--ce-accent);
   color: #ffffff;
   border: 1px solid var(--ce-accent-border);
   box-shadow: 0 0 0 1px var(--ce-accent-border);
 }
-/* ======================================= */
+
+/* 펼침(is-open) — 다크: 청록 배경 + 진한 청록 테두리 ✅ */
+:root[saved-theme="dark"] .explorer .ce-ellipsis-btn.is-open {
+  background-color: var(--ce-accent);
+  color: #ffffff;
+  border: 1px solid var(--ce-accent-border-dark);
+  box-shadow: 0 0 0 1px var(--ce-accent-border-dark);
+}
