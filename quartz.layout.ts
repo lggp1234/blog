@@ -3,6 +3,16 @@ import * as Component from "./quartz/components"
 import LanguageSwitch from "./quartz/components/LanguageSwitch"
 import FixFolderUrl from "./quartz/components/FixFolderUrl"
 
+function explorerNameKey(node: any): string {
+  const raw = (node?.slug ?? "").toString()
+
+  // 폴더는 보통 ".../index"로 들어오므로 index 제거
+  const noIndex = raw.endsWith("/index") ? raw.slice(0, -"/index".length) : raw
+
+  const parts = noIndex.split("/").filter(Boolean)
+  return (parts.at(-1) ?? "").trim()
+}
+
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
@@ -64,26 +74,20 @@ export const defaultContentPageLayout: PageLayout = {
       ],
     }),
     Component.Explorer({
-      // 파일만 title을 displayName으로 사용 (폴더는 건드리지 않음)
+      // (선택) 파일 표시 이름은 title 유지
       mapFn: (node) => {
         if (!node.isFolder && node.data?.title) {
           node.displayName = node.data.title
         }
       },
 
-  // 정렬 규칙:
-  // 1) 폴더 먼저
-  // 2) 폴더는 "폴더 이름(slugSegment)" 기준
-  // 3) 파일은 "표시 이름(displayName=title)" 기준
+      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug segment)" 기준
       sortFn: (a, b) => {
-     // 폴더가 파일보다 먼저 오도록
         if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
 
-        // ✅ 실제 폴더/파일명(슬러그 세그먼트)로 정렬
-        const ka = (a.slugSegment ?? "").toString()
-        const kb = (b.slugSegment ?? "").toString()
+        const ka = explorerNameKey(a)
+        const kb = explorerNameKey(b)
 
-        // 숫자 prefix(01, 2- 같은)가 있으면 자연스럽게 정렬되도록 numeric:true
         return ka.localeCompare(kb, ["ko", "en"], { numeric: true, sensitivity: "base" })
       },
     })
@@ -120,35 +124,21 @@ export const defaultListPageLayout: PageLayout = {
       ],
     }),
     Component.Explorer({
-      // 파일만 title을 displayName으로 사용 (폴더는 건드리지 않음)
+      // (선택) 파일 표시 이름은 title 유지
       mapFn: (node) => {
         if (!node.isFolder && node.data?.title) {
           node.displayName = node.data.title
         }
       },
 
-  // 정렬 규칙:
-  // 1) 폴더 먼저
-  // 2) 폴더는 "폴더 이름(slugSegment)" 기준
-  // 3) 파일은 "표시 이름(displayName=title)" 기준
+      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug segment)" 기준
       sortFn: (a, b) => {
         if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
 
-        if (a.isFolder && b.isFolder) {
-          const aFolder = (a.slugSegment ?? "").trim()
-          const bFolder = (b.slugSegment ?? "").trim()
-          return aFolder.localeCompare(bFolder, ["ko", "en"], {
-            numeric: true,
-            sensitivity: "base",
-          })
-        }
+        const ka = explorerNameKey(a)
+        const kb = explorerNameKey(b)
 
-        const aName = (a.displayName ?? "").trim()
-        const bName = (b.displayName ?? "").trim()
-        return aName.localeCompare(bName, ["ko", "en"], {
-          numeric: true,
-          sensitivity: "base",
-        })
+        return ka.localeCompare(kb, ["ko", "en"], { numeric: true, sensitivity: "base" })
       },
     })
   ],
