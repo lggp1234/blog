@@ -277,11 +277,15 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 }
 /* ========= Compact Explorer (⋯) ========= */
 :root {
-  --ce-accent: #14b8a6;          // 청록
-  --ce-accent-border: #3ad6c2;   // (라이트) 펼침 테두리: 살짝 연한 청록
-  --ce-accent-border-dark: #0f8f83; // (다크) 펼침 테두리: 더 진한 청록 ✅
-  --ce-light-border: #e6e7ea;    // 흰 배경에서 아주 연한 회색 테두리
-  --ce-dark-border: #2a2a2e;     // 다크 배경에서 약간 밝은 회색 테두리
+  /* theme-independent */
+  --ce-active-text: #84a59d;     /* 활성(청록 글자) */
+  --ce-light-bg: #faf8f8;        /* 라이트 배경(거의 흰색) */
+  --ce-light-text: #5f5e5e;      /* 라이트 비활성 글자(진한 회색) */
+  --ce-dark-text: #b6b6b7;       /* 다크 비활성 글자(연한 회색) */
+
+  /* 테두리는 기존 값 유지(원하면 여기만 조절) */
+  --ce-light-border: #e6e7ea;
+  --ce-dark-border: #2a2a2e;
 }
 
 /* 숨김 처리 */
@@ -313,30 +317,33 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 
   margin: 0 auto;
 }
-
-/* 접힘(기본) — 라이트: 흰 배경 + 아주 연한 회색 테두리 */
+/* ✅ 접힘(비활성) — 라이트 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn {
-  background-color: #ffffff;
-  color: #000000;
+  background-color: var(--ce-light-bg);
+  color: var(--ce-light-text);
   border: 1px solid var(--ce-light-border);
+  box-shadow: none;
 }
 
-/* 접힘(기본) — 다크: #161618 배경 + 배경보다 약간 밝은 회색 테두리 */
+/* ✅ 접힘(비활성) — 다크 */
 :root[saved-theme="dark"] .explorer .ce-ellipsis-btn {
   background-color: #161618;
-  color: #ffffff;
+  color: var(--ce-dark-text);
   border: 1px solid var(--ce-dark-border);
+  box-shadow: none;
 }
 
-/* ✅ 펼침(is-open) — 배경/테두리 색은 비활성 상태 유지 */
+/* ✅ 펼침(활성) — 배경/테두리는 그대로, 글자색만 청록으로 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open {
-  background-color: #ffffff;                 /* 비활성과 동일 */
-  border: 1px solid var(--ce-light-border);  /* 비활성과 동일 */
-  box-shadow: none;                          /* 청록 강조 제거 */
+  background-color: var(--ce-light-bg);
+  border: 1px solid var(--ce-light-border);
+  color: var(--ce-active-text);
+  box-shadow: none;
 }
 
 :root[saved-theme="dark"] .explorer .ce-ellipsis-btn.is-open {
-  background-color: #161618;                 /* 비활성과 동일 */
-  border: 1px solid var(--ce-dark-border);   /* 비활성과 동일 */
-  box-shadow: none;                          /* 청록 강조 제거 */
+  background-color: #161618;
+  border: 1px solid var(--ce-dark-border);
+  color: var(--ce-active-text);
+  box-shadow: none;
 }
