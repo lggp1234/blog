@@ -245,16 +245,12 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
                 {/* < : 10개 단위로 앞으로(이전 그룹) 이동 */}
                 {prevGroupHref ? (
-                  <a
-                    class="internal pagination-btn"
-                    href={prevGroupHref}
-                    aria-label="Previous 10 pages"
-                  >
-                    &lt;
+                  <a class="internal pagination-btn" href={prevGroupHref} aria-label="Previous 10 pages">
+                    ‹
                   </a>
                 ) : (
                   <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    &lt;
+                    ‹
                   </span>
                 )}
 
@@ -281,11 +277,11 @@ export default ((opts?: Partial<FolderContentOptions>) => {
                 {/* > : 10개 단위로 뒤로(다음 그룹) 이동 */}
                 {nextGroupHref ? (
                   <a class="internal pagination-btn" href={nextGroupHref} aria-label="Next 10 pages">
-                    &gt;
+                    ›
                   </a>
                 ) : (
                   <span class="pagination-btn pagination-disabled" aria-disabled="true">
-                    &gt;
+                    ›
                   </span>
                 )}
 
