@@ -59,19 +59,48 @@ export default (() => {
     // 현재 페이지가 folder index(slug가 .../index)면 alt도 folder URL로 강제
     const alt = slug?.endsWith("/index") ? ensureFolderUrl(rawAlt) : rawAlt
 
+    const isHome = slug === "index" || slug === ""
+
     return (
       <a
-        class="px-3 py-1 rounded-md border hover:opacity-80 whitespace-nowrap"
+        class={isHome ? "lang-switch lang-switch--home" : "lang-switch"}
         href={encodeURI(alt)}
         aria-label={`Switch to ${label}`}
       >
-        {label} →
+        <span class="lang-switch__label">{label}</span>
+        <span class="lang-switch__arrow" aria-hidden="true">→</span>
       </a>
     )
   }
 
   LanguageSwitch.css = `
-    /* 필요하면 버튼 스타일을 여기에서 커스터마이즈하세요 */
+    /* Keep the language switch on ONE line (prevents "한국어" and "→" splitting)
+       and align its baseline with the first breadcrumb line.
+    */
+    .lang-switch {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      /* Breadcrumbs container has margin-top: 0.75rem. Match it so both lines align. */
+      margin-top: 0.75rem;
+
+      font: inherit;
+      line-height: normal;
+      text-decoration: none;
+      color: var(--secondary);
+    }
+
+    .lang-switch:hover {
+      color: var(--tertiary);
+      opacity: 1;
+    }
+
+    .lang-switch--home {
+      margin-top: 0;
+    }
   `
 
   return LanguageSwitch
