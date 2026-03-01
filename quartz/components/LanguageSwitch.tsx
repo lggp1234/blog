@@ -87,10 +87,22 @@ export default (() => {
       /* Breadcrumbs container has margin-top: 0.75rem. Match it so both lines align. */
       margin-top: 0.75rem;
 
+      /* ✅ 핵심: 본문 폰트로 강제 */
       font: inherit;
+      font-family: var(--bodyFont);
+      font-weight: inherit;
       line-height: normal;
+
       text-decoration: none;
       color: var(--secondary);
+    }
+
+    /* label/arrow도 같은 폰트/두께를 확실히 상속 */
+    .lang-switch__label,
+    .lang-switch__arrow {
+      font: inherit;
+      font-family: var(--bodyFont);
+      font-weight: inherit;
     }
 
     .lang-switch:hover {
