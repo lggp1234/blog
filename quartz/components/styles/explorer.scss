@@ -336,21 +336,24 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 
 /* ✅ 접힘(기본) — 라이트: 흰색 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn {
-  background: #ffffff;
+  background-color: #ffffff;
   color: #000000;
   border: 1px solid #000000;
 }
 
 /* ✅ 접힘(기본) — 다크: #161618 */
 :root[saved-theme="dark"] .explorer .ce-ellipsis-btn {
-  background: #161618;
+  background-color: #161618;
   color: #ffffff;
   border: 1px solid #2a2a2e;
 }
 
+
 /* ✅ 펼침(is-open) — 공통: 청록 */
-.explorer .ce-ellipsis-btn.is-open {
-  background: var(--ce-accent);
+/* ✅ 펼침(is-open) — 공통: 청록 (라이트/다크 접힘 규칙보다 강하게) */
+:root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open,
+:root[saved-theme="dark"]  .explorer .ce-ellipsis-btn.is-open {
+  background-color: var(--ce-accent);
   color: #ffffff;
   border: 1px solid var(--ce-accent);
   box-shadow: 0 0 0 1px var(--ce-accent);
