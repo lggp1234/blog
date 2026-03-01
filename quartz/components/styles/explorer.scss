@@ -275,3 +275,53 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
     overscroll-behavior: none;
   }
 }
+
+:root {
+  --ce-accent: #14b8a6; // 청록(활성)
+}
+
+/* 다크 모드 배경: 사용자가 준 #161618 */
+:root[saved-theme="dark"] .sidebar.left:has(.explorer) {
+  background-color: #161618;
+}
+:root[saved-theme="dark"] .explorer .explorer-content {
+  background-color: #161618;
+}
+
+/* 라이트 모드 배경은 흰색 */
+:root[saved-theme="light"] .sidebar.left:has(.explorer) {
+  background-color: #ffffff;
+}
+:root[saved-theme="light"] .explorer .explorer-content {
+  background-color: #ffffff;
+}
+
+/* 숨김 처리 */
+.explorer .ce-hidden {
+  display: none;
+}
+
+/* ⋯ 버튼 */
+.explorer li.ce-ellipsis {
+  margin: 2px 0;
+}
+
+.explorer .ce-ellipsis-btn {
+  width: 100%;
+  display: block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 8px;
+  background: #ffffff;   /* 정상: 흰 배경 */
+  color: #000000;        /* 정상: 검은 글자 */
+  border: 1px solid #000000;
+  cursor: pointer;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.explorer .ce-ellipsis-btn.is-open {
+  background: #000000;   /* 반전: 검은 배경 */
+  color: #ffffff;        /* 반전: 흰 글자 */
+  border-color: var(--ce-accent);
+  box-shadow: 0 0 0 1px var(--ce-accent);
+}
