@@ -74,9 +74,6 @@ export default (() => {
   }
 
   LanguageSwitch.css = `
-    /* Keep the language switch on ONE line (prevents "한국어" and "→" splitting)
-       and align its baseline with the first breadcrumb line.
-    */
     .lang-switch {
       display: inline-flex;
       align-items: baseline;
@@ -84,25 +81,26 @@ export default (() => {
       white-space: nowrap;
       flex-shrink: 0;
 
-      /* Breadcrumbs container has margin-top: 0.75rem. Match it so both lines align. */
+      /* Breadcrumbs first line alignment (너가 쓰던 값 유지) */
       margin-top: 0.75rem;
 
-      /* ✅ 핵심: 본문 폰트로 강제 */
-      font: inherit;
+      /* ✅ 본문과 완전히 동일하게 */
       font-family: var(--bodyFont);
-      font-weight: inherit;
-      line-height: normal;
+      font-size: 1em;          /* 부모(본문 기준)와 동일 */
+      font-weight: 400;        /* ✅ 굵기 고정 */
+      font-style: normal;
+      font-variant: normal;
+      letter-spacing: normal;
+      line-height: inherit;    /* 본문 line-height를 그대로 */
+      text-rendering: optimizeLegibility;
 
       text-decoration: none;
       color: var(--secondary);
     }
 
-    /* label/arrow도 같은 폰트/두께를 확실히 상속 */
     .lang-switch__label,
     .lang-switch__arrow {
-      font: inherit;
-      font-family: var(--bodyFont);
-      font-weight: inherit;
+      font: inherit;           /* ✅ label/arrow도 완전 동일 */
     }
 
     .lang-switch:hover {
