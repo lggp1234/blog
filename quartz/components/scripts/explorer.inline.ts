@@ -9,6 +9,61 @@ function isGlobalHomeSlug(slug: string): boolean {
   return slug === "index" || slug === ""
 }
 
+
+function stripIndexFromSlug(slug: string): string {
+  return slug.endsWith("/index") ? slug.slice(0, -"/index".length) : slug
+}
+
+function rootSegmentOfSlug(slug: string): string {
+  const raw = slug.startsWith("/") ? slug.slice(1) : slug
+  return raw.split("/").filter(Boolean)[0] ?? ""
+}
+
+function isEscapedUnicodeSegment(seg: string): boolean {
+  // e.g., Ud55cUad6dUc5b4... (Quartz slugify removes '#')
+  return /^U[0-9A-Fa-f]{4}/.test(seg)
+}
+
+function isKoreanRootSegment(seg: string): boolean {
+  return seg === "한국어버젼" || seg === "한국어" || isEscapedUnicodeSegment(seg)
+}
+
+function isLangRootSegment(seg: string): boolean {
+  return seg === "english" || isKoreanRootSegment(seg)
+}
+
+function isTopLevelFolder(node: FileTrieNode): boolean {
+  if (!node.isFolder) return false
+  const noIndex = stripIndexFromSlug(node.slug)
+  return noIndex.split("/").filter(Boolean).length === 1
+}
+
+function safeEvalFn<T>(code: string | undefined, label: string): T | undefined {
+  try {
+    return new Function("return " + (code || "undefined"))() as T
+  } catch (e) {
+    console.warn(`[Explorer] failed to eval ${label}`, e)
+    return undefined
+  }
+}
+
+// ✅ "실제 파일/폴더명(파일시스템 segment)" 기준 정렬
+function physicalNameKey(n: any): string {
+  // private field지만 런타임에는 프로퍼티로 존재함
+  let s = String(n?.fileSegmentHint ?? n?.slugSegment ?? n?.displayName ?? "").trim()
+  s = s.replace(/\.(md|mdx)$/i, "")
+  return s
+}
+
+function physicalSort(a: any, b: any): number {
+  if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
+  return physicalNameKey(a).localeCompare(physicalNameKey(b), ["ko", "en"], {
+    numeric: true,
+    sensitivity: "base",
+  })
+}
+
+
 function persistCurrentlyOpenFolders(explorer: HTMLElement) {
   if (!currentExplorerState) return
 
@@ -34,26 +89,24 @@ function persistCurrentlyOpenFolders(explorer: HTMLElement) {
 function normalizeExplorerStatePath(path: string): string {
   // Explorer state key must be stable across (en/ko) AND must not include trailing /index.
   // Your content uses ordered prefixes like "1-...". We normalize each segment to just the number
-  // so that "1-study" and "1-학업" map to the same key ("1").
+  // so that "1-study" and "1-#Ud559#Uc5c5" (slugified) map to the same key ("1").
   const raw = path.startsWith("/") ? path.slice(1) : path
   const segs = raw.split("/").filter((s) => s.length > 0)
 
   // drop trailing index (folder slugs are like .../index)
   if (segs.at(-1) === "index") segs.pop()
 
-  const isLangRoot = (s: string) => s === "english" || s === "한국어버젼" || s === "한국어"
-
   // keep language root itself unique (home page), but strip it for all descendants (for en<->ko sharing)
-  if (segs.length === 1 && isLangRoot(segs[0])) {
+  if (segs.length === 1 && isLangRootSegment(segs[0])) {
     return segs[0]
   }
-  if (segs.length >= 2 && isLangRoot(segs[0])) {
+  if (segs.length >= 2 && isLangRootSegment(segs[0])) {
     segs.shift()
   }
 
   // order-prefix normalization: "12-foo" -> "12"
   const normalized = segs.map((seg) => {
-    const m = seg.match(/^(\d+)-/)
+    const m = seg.match(/^(\d+)[-\.]/) ?? seg.match(/^(\d+)-/)
     return m ? m[1] : seg
   })
 
@@ -92,9 +145,9 @@ interface ParsedOptions {
   folderClickBehavior: "collapse" | "link"
   folderDefaultState: "collapsed" | "open"
   useSavedState: boolean
-  sortFn: (a: FileTrieNode, b: FileTrieNode) => number
-  filterFn: (node: FileTrieNode) => boolean
-  mapFn: (node: FileTrieNode) => void
+  sortFn?: (a: FileTrieNode, b: FileTrieNode) => number
+  filterFn?: (node: FileTrieNode) => boolean
+  mapFn?: (node: FileTrieNode) => void
   order: ("sort" | "filter" | "map")[]
 }
 
@@ -102,32 +155,18 @@ interface ParsedOptions {
 type SiteLang = "en" | "ko"
 
 function getLangFromSlug(slug: string): SiteLang | null {
-  // English
-  if (slug === "english" || slug === "english/index" || slug.startsWith("english/")) return "en"
-
-  // Korean (현재 네 repo 기준: 한국어버젼)
-  if (
-    slug === "한국어버젼" ||
-    slug === "한국어버젼/index" ||
-    slug.startsWith("한국어버젼/")
-  ) {
-    return "ko"
-  }
-
-  // 혹시 일부 경로가 /한국어/ 로 남아있을 때 대비 (fallback)
-  if (slug === "한국어" || slug === "한국어/index" || slug.startsWith("한국어/")) {
-    return "ko"
-  }
-
+  const root = rootSegmentOfSlug(slug)
+  if (root === "english") return "en"
+  if (isKoreanRootSegment(root)) return "ko"
   return null
 }
 
 function isEnglishRootNode(node: FileTrieNode): boolean {
-  return node.isFolder && node.slugSegment === "english"
+  return isTopLevelFolder(node) && node.slugSegment === "english"
 }
 
 function isKoreanRootNode(node: FileTrieNode): boolean {
-  return node.isFolder && (node.slugSegment === "한국어버젼" || node.slugSegment === "한국어")
+  return isTopLevelFolder(node) && isKoreanRootSegment(node.slugSegment)
 }
 
 // -------------------------------------------------------------------
@@ -415,10 +454,13 @@ async function setupExplorer(currentSlug: FullSlug) {
       folderDefaultState: (explorer.dataset.collapsed || "collapsed") as "collapsed" | "open",
       useSavedState: explorer.dataset.savestate === "true",
       order: dataFns.order || ["filter", "map", "sort"],
-      sortFn: new Function("return " + (dataFns.sortFn || "undefined"))(),
-      filterFn: new Function("return " + (dataFns.filterFn || "undefined"))(),
-      mapFn: new Function("return " + (dataFns.mapFn || "undefined"))(),
+      sortFn: safeEvalFn(dataFns.sortFn, "sortFn"),
+      filterFn: safeEvalFn(dataFns.filterFn, "filterFn"),
+      mapFn: safeEvalFn(dataFns.mapFn, "mapFn"),
     }
+
+    // ✅ enforce physical-name sort (actual folder/file name)
+    opts.sortFn = physicalSort
 
     updateExplorerTitle(explorer, currentSlug)
 
@@ -443,16 +485,20 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     // Apply functions in order (기존 옵션 적용)
     for (const fn of opts.order) {
-      switch (fn) {
-        case "filter":
-          if (opts.filterFn) trie.filter(opts.filterFn)
-          break
-        case "map":
-          if (opts.mapFn) trie.map(opts.mapFn)
-          break
-        case "sort":
-          if (opts.sortFn) trie.sort(opts.sortFn)
-          break
+      try {
+        switch (fn) {
+          case "filter":
+            if (opts.filterFn) trie.filter(opts.filterFn)
+            break
+          case "map":
+            if (opts.mapFn) trie.map(opts.mapFn)
+            break
+          case "sort":
+            if (opts.sortFn) trie.sort(opts.sortFn)
+            break
+        }
+      } catch (e) {
+        console.warn(`[Explorer] failed during ${fn}`, e)
       }
     }
 
@@ -507,18 +553,32 @@ async function setupExplorer(currentSlug: FullSlug) {
     const explorerUl = explorer.querySelector(".explorer-ul")
     if (!explorerUl) continue
 
-    // (중요) 기존 내용 비우고 다시 그림
-    explorerUl.innerHTML = ""
-
     // Create and insert new content
-    const fragment = document.createDocumentFragment()
-    for (const child of renderRoot.children) {
-      const node = child.isFolder
-        ? createFolderNode(currentSlug, child, opts)
-        : createFileNode(currentSlug, child)
+    const isHome = isGlobalHomeSlug(currentSlug)
 
-      fragment.appendChild(node)
+    // Home(index)에서는 언어 선택(english/한국어)만 보이도록 (있으면)
+    let childrenToRender = renderRoot.children
+    if (isHome) {
+      const langRoots = renderRoot.children.filter((c) => isEnglishRootNode(c) || isKoreanRootNode(c))
+      if (langRoots.length > 0) childrenToRender = langRoots
     }
+
+    const fragment = document.createDocumentFragment()
+    try {
+      for (const child of childrenToRender) {
+        const node = child.isFolder
+          ? createFolderNode(currentSlug, child, opts)
+          : createFileNode(currentSlug, child)
+
+        fragment.appendChild(node)
+      }
+    } catch (e) {
+      console.error("[Explorer] failed to build explorer tree", e)
+      continue
+    }
+
+    // (중요) 전부 성공했을 때만 기존 내용 비우고 교체
+    explorerUl.innerHTML = ""
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
 
