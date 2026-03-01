@@ -3,16 +3,6 @@ import * as Component from "./quartz/components"
 import LanguageSwitch from "./quartz/components/LanguageSwitch"
 import FixFolderUrl from "./quartz/components/FixFolderUrl"
 
-function explorerNameKey(node: any): string {
-  const raw = (node?.slug ?? "").toString()
-
-  // 폴더는 보통 ".../index"로 들어오므로 index 제거
-  const noIndex = raw.endsWith("/index") ? raw.slice(0, -"/index".length) : raw
-
-  const parts = noIndex.split("/").filter(Boolean)
-  return (parts.at(-1) ?? "").trim()
-}
-
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
@@ -80,15 +70,21 @@ export const defaultContentPageLayout: PageLayout = {
           node.displayName = node.data.title
         }
       },
-
-      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug segment)" 기준
+  
+      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug 마지막 segment)" 기준
       sortFn: (a, b) => {
+        // 폴더 먼저
         if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
 
-        const ka = explorerNameKey(a)
-        const kb = explorerNameKey(b)
+        // ✅ 외부 함수 참조 금지 → 여기서 인라인으로 키 추출
+        const key = (n: any) => {
+          let raw = String(n?.slug ?? "")
+          if (raw.endsWith("/index")) raw = raw.slice(0, -"/index".length) // 폴더 slug 보정
+          const parts = raw.split("/").filter(Boolean)
+          return (parts.length ? parts[parts.length - 1] : "").trim()
+        }
 
-        return ka.localeCompare(kb, ["ko", "en"], { numeric: true, sensitivity: "base" })
+        return key(a).localeCompare(key(b), ["ko", "en"], { numeric: true, sensitivity: "base" })
       },
     })
   ],
@@ -130,15 +126,19 @@ export const defaultListPageLayout: PageLayout = {
           node.displayName = node.data.title
         }
       },
-
-      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug segment)" 기준
+    
+      // ✅ 정렬: 폴더 먼저 + 폴더/파일 모두 "실제 이름(slug 마지막 segment)" 기준
       sortFn: (a, b) => {
         if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
 
-        const ka = explorerNameKey(a)
-        const kb = explorerNameKey(b)
+        const key = (n: any) => {
+          let raw = String(n?.slug ?? "")
+          if (raw.endsWith("/index")) raw = raw.slice(0, -"/index".length)
+          const parts = raw.split("/").filter(Boolean)
+          return (parts.length ? parts[parts.length - 1] : "").trim()
+        }
 
-        return ka.localeCompare(kb, ["ko", "en"], { numeric: true, sensitivity: "base" })
+        return key(a).localeCompare(key(b), ["ko", "en"], { numeric: true, sensitivity: "base" })
       },
     })
   ],
