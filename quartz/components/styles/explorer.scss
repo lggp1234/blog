@@ -301,27 +301,58 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   display: none;
 }
 
-/* ⋯ 버튼 */
-.explorer li.ce-ellipsis {
-  margin: 2px 0;
+:root {
+  --ce-accent: #14b8a6; // 청록(활성/기본)
 }
 
-.explorer .ce-ellipsis-btn {
+/* 숨김 처리 */
+.explorer .ce-hidden {
+  display: none;
+}
+
+/* ⋯ 줄 자체는 전체폭 유지 */
+.explorer li.ce-ellipsis {
   width: 100%;
-  display: block;
-  padding: 0.1rem 0.45rem;
-  border-radius: 8px;
-  background: #ffffff;   /* 정상: 흰 배경 */
-  color: #000000;        /* 정상: 검은 글자 */
-  border: 1px solid #000000;
+  margin: 2px 0;
+  display: flex;
+  justify-content: center; /* 중앙 */
+}
+
+/* ⋯ 버튼: 폭 줄이고 중앙에 고정 */
+.explorer .ce-ellipsis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 좌우 폭 "적당히" 줄이기 */
+  min-width: 44px;
+  padding: 0.08rem 0.45rem;
+
+  border-radius: 999px;
   cursor: pointer;
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: 700;
+
+  /* ✅ 기본(접힘) 상태 색: 라이트/다크 모두 청록 */
+  background: var(--ce-accent);
+  color: #ffffff;
+  border: 1px solid var(--ce-accent);
+
+  /* 중앙 유지 (li가 flex지만 안전하게) */
+  margin: 0 auto;
 }
 
-.explorer .ce-ellipsis-btn.is-open {
-  background: #000000;   /* 반전: 검은 배경 */
-  color: #ffffff;        /* 반전: 흰 글자 */
+/* 펼친 상태: "반전" 느낌 유지 + 테두리 청록으로 활성 표시 */
+:root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open {
+  background: #000000;  /* 라이트에서 펼치면 검정 */
+  color: #ffffff;
+  border-color: var(--ce-accent);
+  box-shadow: 0 0 0 1px var(--ce-accent);
+}
+
+:root[saved-theme="dark"] .explorer .ce-ellipsis-btn.is-open {
+  background: #161618;  /* 다크에서 펼치면 #161618 */
+  color: #ffffff;
   border-color: var(--ce-accent);
   box-shadow: 0 0 0 1px var(--ce-accent);
 }
