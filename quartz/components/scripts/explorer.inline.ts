@@ -129,6 +129,10 @@ function toggleFolder(evt: MouseEvent) {
   if (!childFolderContainer) return
 
   childFolderContainer.classList.toggle("open")
+  if (childFolderContainer.classList.contains("open")) {
+    const ul = childFolderContainer.querySelector("ul") as HTMLUListElement | null
+    if (ul) applyCompactRuleToUl(ul)
+  }
 
   // Collapse folder container
   const isCollapsed = !childFolderContainer.classList.contains("open")
@@ -219,6 +223,116 @@ function createFolderNode(
   }
 
   return li
+}
+
+function applyCompactRuleToUl(ul: HTMLUListElement) {
+  // (1) 이 UL의 "직계 파일 li"만 모음: <li><a ...></a></li>
+  const fileLis = Array.from(ul.children).filter((el): el is HTMLLIElement => {
+    if (!(el instanceof HTMLLIElement)) return false
+    if (el.classList.contains("ce-ellipsis")) return false
+    return el.firstElementChild?.tagName === "A"
+  })
+
+  // 파일이 적으면 굳이 접지 않음
+  if (fileLis.length <= 5) return
+
+  // (2) focus: 이 UL에서 active 파일이 있으면 그걸 기준, 없으면 0번(처음) 기준
+  const activeLi = ul.querySelector(":scope > li > a.active")?.closest("li") as HTMLLIElement | null
+  const focusIndex = activeLi ? fileLis.indexOf(activeLi) : 0
+
+  // (3) 이전에 만들어둔 ⋯ 제거(중복 방지)
+  ul.querySelectorAll(":scope > li.ce-ellipsis").forEach((n) => n.remove())
+
+  // (4) 펼침 상태는 UL dataset으로 유지(폴더 닫았다 열어도 유지되게)
+  let prevOpen = ul.dataset.cePrevOpen === "true"
+  let nextOpen = ul.dataset.ceNextOpen === "true"
+
+  const start = Math.max(0, focusIndex - 2)
+  const end = Math.min(fileLis.length - 1, focusIndex + 2)
+
+  const hasPrev = start > 0
+  const hasNext = end < fileLis.length - 1
+
+  let prevBtn: HTMLButtonElement | null = null
+  let nextBtn: HTMLButtonElement | null = null
+
+  const update = () => {
+    for (let i = 0; i < fileLis.length; i++) {
+      const li = fileLis[i]
+      const inWindow = i >= start && i <= end
+      const inPrev = i < start
+      const inNext = i > end
+      const show = inWindow || (prevOpen && inPrev) || (nextOpen && inNext)
+      li.classList.toggle("ce-hidden", !show)
+    }
+
+    // 상태 저장
+    ul.dataset.cePrevOpen = String(prevOpen)
+    ul.dataset.ceNextOpen = String(nextOpen)
+
+    if (prevBtn) prevBtn.classList.toggle("is-open", prevOpen)
+    if (nextBtn) nextBtn.classList.toggle("is-open", nextOpen)
+  }
+
+  // (5) 위쪽 ⋯
+  if (hasPrev) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-prev"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.textContent = "⋯"
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      prevOpen = !prevOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+    ul.insertBefore(li, fileLis[0]) // 맨 위에
+    prevBtn = btn
+  } else {
+    prevOpen = false
+  }
+
+  // (6) 아래쪽 ⋯  (펼쳐지면 버튼이 아래로 “밀려 내려가도록” 맨 아래에 둠)
+  if (hasNext) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-next"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.textContent = "⋯"
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      nextOpen = !nextOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+    ul.appendChild(li) // 항상 맨 아래
+    nextBtn = btn
+  } else {
+    nextOpen = false
+  }
+
+  update()
+}
+
+function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
+  // 현재 "열려있는 폴더들"의 ul에 대해, 처음부터 compact 적용
+  const uls = explorer.querySelectorAll(".folder-outer.open > ul") as NodeListOf<HTMLUListElement>
+  for (const ul of uls) {
+    applyCompactRuleToUl(ul)
+  }
 }
 
 function applyCompactNeighborWindow(explorer: HTMLElement, currentSlug: FullSlug) {
@@ -445,6 +559,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       fragment.appendChild(node)
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
+    applyCompactRuleToOpenFolders(explorer)
     applyCompactNeighborWindow(explorer, currentSlug)
 
     // restore explorer scrollTop position if it exists
