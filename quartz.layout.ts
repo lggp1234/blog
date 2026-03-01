@@ -76,23 +76,15 @@ export const defaultContentPageLayout: PageLayout = {
   // 2) 폴더는 "폴더 이름(slugSegment)" 기준
   // 3) 파일은 "표시 이름(displayName=title)" 기준
       sortFn: (a, b) => {
+     // 폴더가 파일보다 먼저 오도록
         if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
 
-        if (a.isFolder && b.isFolder) {
-          const aFolder = (a.slugSegment ?? "").trim()
-          const bFolder = (b.slugSegment ?? "").trim()
-          return aFolder.localeCompare(bFolder, ["ko", "en"], {
-            numeric: true,
-            sensitivity: "base",
-          })
-        }
+        // ✅ 실제 폴더/파일명(슬러그 세그먼트)로 정렬
+        const ka = (a.slugSegment ?? "").toString()
+        const kb = (b.slugSegment ?? "").toString()
 
-        const aName = (a.displayName ?? "").trim()
-        const bName = (b.displayName ?? "").trim()
-        return aName.localeCompare(bName, ["ko", "en"], {
-          numeric: true,
-          sensitivity: "base",
-        })
+        // 숫자 prefix(01, 2- 같은)가 있으면 자연스럽게 정렬되도록 numeric:true
+        return ka.localeCompare(kb, ["ko", "en"], { numeric: true, sensitivity: "base" })
       },
     })
   ],
