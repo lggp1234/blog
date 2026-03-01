@@ -221,6 +221,123 @@ function createFolderNode(
   return li
 }
 
+function applyCompactNeighborWindow(explorer: HTMLElement, currentSlug: FullSlug) {
+  // 현재 활성 문서 링크 찾기
+  const activeLink = explorer.querySelector(".explorer-ul a.active") as HTMLAnchorElement | null
+  if (!activeLink) return
+
+  const activeLi = activeLink.closest("li") as HTMLLIElement | null
+  if (!activeLi) return
+
+  const parentUl = activeLi.parentElement as HTMLUListElement | null
+  if (!parentUl) return
+
+  // 같은 UL 레벨에서 "파일 li"만 추림 (li의 직계 자식이 <a>인 경우 = 파일)
+  const fileLis = Array.from(parentUl.children).filter((el): el is HTMLLIElement => {
+    if (!(el instanceof HTMLLIElement)) return false
+    if (el.classList.contains("ce-ellipsis")) return false
+    return el.firstElementChild?.tagName === "A"
+  })
+
+  // 파일이 6개 이하이면 (±2로 다 보이므로) 아무 것도 안 함
+  if (fileLis.length <= 5) return
+
+  // 혹시 SPA에서 같은 페이지 내 재실행될 경우를 대비해 기존 ⋯ 제거
+  parentUl.querySelectorAll(":scope > li.ce-ellipsis").forEach((n) => n.remove())
+
+  const activeIndex = fileLis.indexOf(activeLi)
+  if (activeIndex < 0) return
+
+  const start = Math.max(0, activeIndex - 2)
+  const end = Math.min(fileLis.length - 1, activeIndex + 2)
+
+  const hasPrev = start > 0              // file 1~3 근처면 prev 버튼 없음
+  const hasNext = end < fileLis.length - 1 // file 끝 근처면 next 버튼 없음
+
+  let prevOpen = false
+  let nextOpen = false
+
+  let prevBtn: HTMLButtonElement | null = null
+  let nextBtn: HTMLButtonElement | null = null
+
+  const update = () => {
+    for (let i = 0; i < fileLis.length; i++) {
+      const li = fileLis[i]
+      const inWindow = i >= start && i <= end
+      const inPrev = i < start
+      const inNext = i > end
+
+      const show = inWindow || (prevOpen && inPrev) || (nextOpen && inNext)
+      li.classList.toggle("ce-hidden", !show)
+    }
+
+    if (prevBtn) {
+      prevBtn.classList.toggle("is-open", prevOpen)
+      prevBtn.setAttribute("aria-expanded", String(prevOpen))
+    }
+    if (nextBtn) {
+      nextBtn.classList.toggle("is-open", nextOpen)
+      nextBtn.setAttribute("aria-expanded", String(nextOpen))
+    }
+  }
+
+  // 위쪽 ⋯ (이전 문서)
+  if (hasPrev) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-prev"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.textContent = "⋯"
+    btn.setAttribute("aria-label", "이전 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      prevOpen = !prevOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+
+    // "항상 맨 위" 느낌: 첫 파일 li 앞에 삽입
+    parentUl.insertBefore(li, fileLis[0])
+    prevBtn = btn
+  }
+
+  // 아래쪽 ⋯ (이후 문서)
+  if (hasNext) {
+    const li = document.createElement("li")
+    li.className = "ce-ellipsis ce-next"
+
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "ce-ellipsis-btn"
+    btn.textContent = "⋯"
+    btn.setAttribute("aria-label", "이후 문서 펼치기/접기")
+    btn.setAttribute("aria-expanded", "false")
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault()
+      nextOpen = !nextOpen
+      update()
+    }
+    btn.addEventListener("click", onClick)
+    window.addCleanup(() => btn.removeEventListener("click", onClick))
+
+    li.appendChild(btn)
+
+    // "펼치면 아래로 밀려 내려가도록": 맨 아래에 버튼을 둠 (later 파일들이 버튼 위에서 나타남)
+    parentUl.appendChild(li)
+    nextBtn = btn
+  }
+
+  update()
+}
+
 async function setupExplorer(currentSlug: FullSlug) {
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -328,6 +445,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       fragment.appendChild(node)
     }
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
+    applyCompactNeighborWindow(explorer, currentSlug)
 
     // restore explorer scrollTop position if it exists
     const scrollTop = sessionStorage.getItem("explorerScrollTop")
