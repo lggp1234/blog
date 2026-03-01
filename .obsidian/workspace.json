@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/99-연습-페이지/index.md",
+                "file": "content/english/99-Test-Page/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,10 +183,10 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/한국어버젼/99-연습-페이지/index.md",
     "content/한국어버젼/index.md",
     "content/english/99-Test-Page/index.md",
     "content/english/index.md",
-    "content/한국어버젼/99-연습-페이지/index.md",
     "content/한국어버젼/99-연습-페이지/1-연습1.md",
     "quartz/components/scripts/langswitch.inline.ts",
     "content/english/99-Test-Page/Untitled-8.md",
