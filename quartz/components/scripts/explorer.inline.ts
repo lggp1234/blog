@@ -9,6 +9,39 @@ const FILETREE_KEY = "fileTree.v2"          // 새 저장 키(언어 독립)
 const FILETREE_KEY_LEGACY = "fileTree"      // 기존 저장 키(마이그레이션용)
 const EXPLORER_UI_KEY = "explorerUi.v1"     // 탐색기 전체 접힘/펼침 상태 저장
 
+const EXPLORER_COMPACT_KEY = "explorerCompact.v1"
+
+type ExplorerCompactState = {
+  prevOpen: boolean
+  nextOpen: boolean
+}
+
+function readCompactStateMap(): Record<string, ExplorerCompactState> {
+  const raw = localStorage.getItem(EXPLORER_COMPACT_KEY)
+  if (!raw) return {}
+  try {
+    const parsed = JSON.parse(raw) as Record<string, ExplorerCompactState>
+    return parsed && typeof parsed === "object" ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeCompactStateMap(map: Record<string, ExplorerCompactState>) {
+  localStorage.setItem(EXPLORER_COMPACT_KEY, JSON.stringify(map))
+}
+
+function loadCompactState(folderKey: string): ExplorerCompactState | null {
+  const map = readCompactStateMap()
+  return map[folderKey] ?? null
+}
+
+function saveCompactState(folderKey: string, prevOpen: boolean, nextOpen: boolean) {
+  const map = readCompactStateMap()
+  map[folderKey] = { prevOpen, nextOpen }
+  writeCompactStateMap(map)
+}
+
 type ExplorerUiState = {
   desktopCollapsed: boolean
   mobileCollapsed: boolean
@@ -177,6 +210,26 @@ function persistCurrentlyOpenFolders(explorer: HTMLElement) {
   }
 
   localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
+}
+
+function persistCompactStateFromExplorer(explorer: HTMLElement) {
+  const map = readCompactStateMap()
+
+  const uls = explorer.querySelectorAll(".folder-outer > ul") as NodeListOf<HTMLUListElement>
+  for (const ul of uls) {
+    const folderKey = ul.dataset.ceFolderKey
+    if (!folderKey) continue
+
+    // dataset이 존재하는 UL만 저장 (compact가 한 번이라도 적용된 UL)
+    if (ul.dataset.cePrevOpen !== undefined || ul.dataset.ceNextOpen !== undefined) {
+      map[folderKey] = {
+        prevOpen: ul.dataset.cePrevOpen === "true",
+        nextOpen: ul.dataset.ceNextOpen === "true",
+      }
+    }
+  }
+
+  writeCompactStateMap(map)
 }
 
 function normalizeExplorerStatePathLegacy(path: string): string {
@@ -377,6 +430,7 @@ function createFolderNode(
   // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
   folderContainer.dataset.folderkey = folderKey
+  ul.dataset.ceFolderKey = folderKey
 
   if (opts.folderClickBehavior === "link") {
     // Replace button with link for link behavior
@@ -446,8 +500,17 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
   ul.querySelectorAll(":scope > li.ce-ellipsis").forEach((n) => n.remove())
 
   // (4) 펼침 상태는 UL dataset으로 유지(폴더 닫았다 열어도 유지되게)
+  const folderKey = ul.dataset.ceFolderKey
+  const saved = folderKey ? loadCompactState(folderKey) : null
+  
   let prevOpen = ul.dataset.cePrevOpen === "true"
   let nextOpen = ul.dataset.ceNextOpen === "true"
+
+  // DOM 재생성 직후에는 dataset이 비어있으니(localStorage로 복원)
+  if (saved) {
+    if (ul.dataset.cePrevOpen === undefined) prevOpen = !!saved.prevOpen
+    if (ul.dataset.ceNextOpen === undefined) nextOpen = !!saved.nextOpen
+  }
 
   const start = Math.max(0, focusIndex - 2)
   const end = Math.min(fileLis.length - 1, focusIndex + 2)
@@ -477,7 +540,11 @@ function applyCompactRuleToUl(ul: HTMLUListElement) {
     // 상태 저장
     ul.dataset.cePrevOpen = String(prevOpen)
     ul.dataset.ceNextOpen = String(nextOpen)
-
+    
+    if (folderKey) {
+      saveCompactState(folderKey, prevOpen, nextOpen)
+    }
+    
     // ✅ 버튼 UI 동기화 (위/아래 서로 반대)
     if (prevBtn) {
       prevBtn.classList.toggle("is-open", prevOpen)
@@ -763,6 +830,7 @@ document.addEventListener("prenav", () => {
 
     // 2) ✅ 현재 화면에서 열려있는 폴더 상태를 저장 (자동으로 열린 폴더 포함)
     persistCurrentlyOpenFolders(ex)
+    persistCompactStateFromExplorer(ex)
   }
 })
 
