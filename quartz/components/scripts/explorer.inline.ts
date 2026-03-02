@@ -4,6 +4,35 @@ import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 type MaybeHTMLElement = HTMLElement | undefined
 
+// --------------------- persisted state keys ---------------------
+const FILETREE_KEY = "fileTree.v2"          // 새 저장 키(언어 독립)
+const FILETREE_KEY_LEGACY = "fileTree"      // 기존 저장 키(마이그레이션용)
+const EXPLORER_UI_KEY = "explorerUi.v1"     // 탐색기 전체 접힘/펼침 상태 저장
+
+type ExplorerUiState = {
+  desktopCollapsed: boolean
+  mobileCollapsed: boolean
+}
+
+function readExplorerUiState(): ExplorerUiState {
+  const raw = localStorage.getItem(EXPLORER_UI_KEY)
+  if (!raw) return { desktopCollapsed: false, mobileCollapsed: true }
+  try {
+    const parsed = JSON.parse(raw) as Partial<ExplorerUiState>
+    return {
+      desktopCollapsed: parsed.desktopCollapsed ?? false,
+      mobileCollapsed: parsed.mobileCollapsed ?? true,
+    }
+  } catch {
+    return { desktopCollapsed: false, mobileCollapsed: true }
+  }
+}
+
+function writeExplorerUiState(next: Partial<ExplorerUiState>) {
+  const cur = readExplorerUiState()
+  localStorage.setItem(EXPLORER_UI_KEY, JSON.stringify({ ...cur, ...next }))
+}
+
 function isGlobalHomeSlug(slug: string): boolean {
   // Quartz 버전에 따라 홈 slug가 "index" 또는 빈 문자열일 수 있어서 둘 다 처리
   return slug === "index" || slug === ""
@@ -30,6 +59,70 @@ function isKoreanRootSegment(seg: string): boolean {
 
 function isLangRootSegment(seg: string): boolean {
   return seg === "english" || isKoreanRootSegment(seg)
+}
+
+function extractNumericPrefix(seg: string): string | null {
+  const m = seg.match(/^(\d+)[-\.]/) ?? seg.match(/^(\d+)-/)
+  return m ? m[1] : null
+}
+
+function folderIndexAmongFolders(parent: FileTrieNode, child: FileTrieNode): number {
+  let idx = 0
+  for (const c of parent.children) {
+    if (!c.isFolder) continue
+    if (c === child) return idx
+    idx++
+  }
+  return 0
+}
+
+function folderTokenFromNode(node: FileTrieNode, indexAmongFolders0: number): string {
+  // 언어 루트 폴더는 충돌 방지용으로 고정 토큰 사용
+  if (node.slugSegment === "english") return "lang-en"
+  if (isKoreanRootSegment(node.slugSegment)) return "lang-ko"
+
+  // 숫자 프리픽스(예: 1-study, 2-research)가 있으면 그걸 우선 사용
+  const hint = String((node as any)?.fileSegmentHint ?? node.slugSegment ?? "")
+  const n = extractNumericPrefix(hint)
+  if (n) return n
+
+  // 숫자 프리픽스가 없으면 “형제 폴더 중 몇 번째인지(1-based)”를 사용 (언어 독립)
+  return String(indexAmongFolders0 + 1)
+}
+
+function computeOpenFolderKeySet(renderRoot: FileTrieNode, currentSlug: FullSlug): Set<string> {
+  const open = new Set<string>()
+
+  const curSegs = stripIndexFromSlug(currentSlug).split("/").filter(Boolean)
+  const rootSegs = stripIndexFromSlug(renderRoot.slug).split("/").filter(Boolean)
+
+  // currentSlug를 renderRoot 기준 상대 경로로 만들기
+  let segs = curSegs
+  if (
+    rootSegs.length > 0 &&
+    segs.length >= rootSegs.length &&
+    rootSegs.every((s, i) => segs[i] === s)
+  ) {
+    segs = segs.slice(rootSegs.length)
+  }
+
+  let node: FileTrieNode = renderRoot
+  let key = ""
+
+  for (const seg of segs) {
+    const next = node.children.find((c) => c.slugSegment === seg)
+    if (!next) break
+    if (!next.isFolder) break
+
+    const i0 = folderIndexAmongFolders(node, next)
+    const token = folderTokenFromNode(next, i0)
+    key = key ? `${key}/${token}` : token
+    open.add(key)
+
+    node = next
+  }
+
+  return open
 }
 
 function isTopLevelFolder(node: FileTrieNode): boolean {
@@ -76,17 +169,17 @@ function persistCurrentlyOpenFolders(explorer: HTMLElement) {
     const isOpen = folderOuter.classList.contains("open")
     const folderKey =
       folderContainer.dataset.folderkey ??
-      normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
-
+      normalizeExplorerStatePathLegacy(folderContainer.dataset.folderpath || "")
+    
     const st = currentExplorerState.find((x) => x.path === folderKey)
     if (st) st.collapsed = !isOpen
     else currentExplorerState.push({ path: folderKey, collapsed: !isOpen })
   }
 
-  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+  localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
 }
 
-function normalizeExplorerStatePath(path: string): string {
+function normalizeExplorerStatePathLegacy(path: string): string {
   // Explorer state key must be stable across (en/ko) AND must not include trailing /index.
   // Your content uses ordered prefixes like "1-...". We normalize each segment to just the number
   // so that "1-study" and "1-#Ud559#Uc5c5" (slugified) map to the same key ("1").
@@ -177,19 +270,27 @@ type FolderState = {
 }
 
 let currentExplorerState: Array<FolderState>
+let savedCollapsedByKeyV2 = new Map<string, boolean>()
+let legacyCollapsedByKey = new Map<string, boolean>()
+let openFolderKeysForCurrentSlug = new Set<string>()
 function toggleExplorer(this: HTMLElement) {
   const nearestExplorer = this.closest(".explorer") as HTMLElement
   if (!nearestExplorer) return
+
   const explorerCollapsed = nearestExplorer.classList.toggle("collapsed")
   nearestExplorer.setAttribute(
     "aria-expanded",
     nearestExplorer.getAttribute("aria-expanded") === "true" ? "false" : "true",
   )
 
-  if (!explorerCollapsed) {
-    // Stop <html> from being scrollable when mobile explorer is open
+  // ✅ desktop/mobile 접힘 상태 저장
+  const isMobileBtn = this.dataset.mobile === "true"
+  writeExplorerUiState(isMobileBtn ? { mobileCollapsed: explorerCollapsed } : { desktopCollapsed: explorerCollapsed })
+
+  // ✅ scroll lock은 “모바일 탐색기 열림”일 때만 적용
+  if (isMobileBtn && !explorerCollapsed) {
     document.documentElement.classList.add("mobile-no-scroll")
-  } else {
+  } else if (isMobileBtn && explorerCollapsed) {
     document.documentElement.classList.remove("mobile-no-scroll")
   }
 }
@@ -226,7 +327,7 @@ function toggleFolder(evt: MouseEvent) {
   // ✅ 상태 키는 무조건 "정규화 키"로 통일
   const folderKey =
     folderContainer.dataset.folderkey ??
-    normalizeExplorerStatePath(folderContainer.dataset.folderpath || "")
+    normalizeExplorerStatePathLegacy(folderContainer.dataset.folderpath || "")
 
   const currentFolderState = currentExplorerState.find((item) => item.path === folderKey)
   if (currentFolderState) {
@@ -235,7 +336,7 @@ function toggleFolder(evt: MouseEvent) {
     currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
   }
 
-  localStorage.setItem("fileTree", JSON.stringify(currentExplorerState))
+  localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
 }
 
 function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
@@ -258,6 +359,8 @@ function createFolderNode(
   currentSlug: FullSlug,
   node: FileTrieNode,
   opts: ParsedOptions,
+  parentKey: string,
+  indexAmongFolders0: number,
 ): HTMLLIElement {
   const template = document.getElementById("template-folder") as HTMLTemplateElement
   const clone = template.content.cloneNode(true) as DocumentFragment
@@ -268,7 +371,8 @@ function createFolderNode(
   const ul = folderOuter.querySelector("ul") as HTMLUListElement
 
   const folderPath = node.slug
-  const folderKey = normalizeExplorerStatePath(folderPath)
+  const token = folderTokenFromNode(node, indexAmongFolders0)
+  const folderKey = parentKey ? `${parentKey}/${token}` : token
 
   // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
@@ -289,23 +393,31 @@ function createFolderNode(
   }
 
   // if the saved state is collapsed or the default state is collapsed
-  const isCollapsed =
-    currentExplorerState.find((item) => item.path === folderKey)?.collapsed ??
-    opts.folderDefaultState === "collapsed"
+  const persisted = savedCollapsedByKeyV2.get(folderKey)
+  const legacyKey = normalizeExplorerStatePathLegacy(folderPath)
+  const fromLegacy = legacyCollapsedByKey.get(legacyKey)
+  const isCollapsed = persisted ?? fromLegacy ?? opts.folderDefaultState === "collapsed"
 
-  // if this folder is a prefix of the current path we
-  // want to open it anyways
-  const currentKey = normalizeExplorerStatePath(currentSlug)
-  const folderIsPrefixOfCurrentSlug =
-    currentKey === folderKey || currentKey.startsWith(folderKey + "/")
+  if (persisted === undefined) {
+    savedCollapsedByKeyV2.set(folderKey, isCollapsed)
+  }
+
+  // currentExplorerState에도 엔트리 보장 (토글/프리네브 저장용)
+  if (!currentExplorerState.find((x) => x.path === folderKey)) {
+    currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
+  }
+
+  // 현재 페이지의 조상 폴더는 무조건 열리게
+  const folderIsPrefixOfCurrentSlug = openFolderKeysForCurrentSlug.has(folderKey)
 
   if (!isCollapsed || folderIsPrefixOfCurrentSlug) {
     folderOuter.classList.add("open")
   }
 
+  let folderChildIndex0 = 0
   for (const child of node.children) {
     const childNode = child.isFolder
-      ? createFolderNode(currentSlug, child, opts)
+      ? createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++)
       : createFileNode(currentSlug, child)
     ul.appendChild(childNode)
   }
@@ -464,19 +576,46 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     updateExplorerTitle(explorer, currentSlug)
 
-    // Get folder state from local storage
-    const storageTree = localStorage.getItem("fileTree")
-    const serializedExplorerState: FolderState[] =
-      storageTree && opts.useSavedState ? JSON.parse(storageTree) : []
+    // -------------------------------
+    // Load persisted folder state (v2 preferred, legacy fallback)
+    // -------------------------------
+    savedCollapsedByKeyV2 = new Map<string, boolean>()
+    legacyCollapsedByKey = new Map<string, boolean>()
+    openFolderKeysForCurrentSlug = new Set<string>()
 
-    // If we changed the normalization rules (e.g., en/ko share the same numeric keys),
-    // multiple legacy entries can collapse into the same key. In that case we prefer "open"
-    // if ANY of them was open (i.e., collapsed=false).
-    const oldIndex = new Map<string, boolean>()
-    for (const entry of serializedExplorerState) {
-      const key = normalizeExplorerStatePath(entry.path)
-      const prev = oldIndex.get(key)
-      oldIndex.set(key, prev === undefined ? entry.collapsed : prev && entry.collapsed)
+    const serializedV2: FolderState[] = (() => {
+      if (!opts.useSavedState) return []
+      const raw = localStorage.getItem(FILETREE_KEY)
+      if (!raw) return []
+      try {
+        return JSON.parse(raw) as FolderState[]
+      } catch {
+        return []
+      }
+    })()
+
+    currentExplorerState = Array.isArray(serializedV2) ? [...serializedV2] : []
+    for (const entry of currentExplorerState) {
+      if (!entry?.path) continue
+      savedCollapsedByKeyV2.set(String(entry.path), !!entry.collapsed)
+    }
+
+    const legacy: FolderState[] = (() => {
+      if (!opts.useSavedState) return []
+      const raw = localStorage.getItem(FILETREE_KEY_LEGACY)
+      if (!raw) return []
+      try {
+        return JSON.parse(raw) as FolderState[]
+      } catch {
+        return []
+      }
+    })()
+
+    for (const entry of legacy) {
+      const k = normalizeExplorerStatePathLegacy(String(entry?.path ?? ""))
+      if (!k) continue
+      const prev = legacyCollapsedByKey.get(k)
+      legacyCollapsedByKey.set(k, prev === undefined ? !!entry.collapsed : prev && !!entry.collapsed)
     }
 
     const data = await fetchData
@@ -534,21 +673,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       }
     }
 
-    // Get folder paths for state management
-    // (virtual root인 경우, 그 루트 폴더 자체는 렌더링 안 하므로 상태 목록에서도 제외)
-    const hiddenRootPath = renderRoot !== trie ? renderRoot.slug : null
-    const folderPaths = renderRoot
-      .getFolderPaths()
-      .filter((path) => (hiddenRootPath ? path !== hiddenRootPath : true))
-
-    currentExplorerState = folderPaths.map((path) => {
-      const key = normalizeExplorerStatePath(path)
-      const previousState = oldIndex.get(key)
-      return {
-        path: key,
-        collapsed: previousState === undefined ? opts.folderDefaultState === "collapsed" : previousState,
-      }
-    })
+    openFolderKeysForCurrentSlug = computeOpenFolderKeySet(renderRoot, currentSlug)
 
     const explorerUl = explorer.querySelector(".explorer-ul")
     if (!explorerUl) continue
@@ -565,9 +690,10 @@ async function setupExplorer(currentSlug: FullSlug) {
 
     const fragment = document.createDocumentFragment()
     try {
+      let topFolderIndex0 = 0
       for (const child of childrenToRender) {
         const node = child.isFolder
-          ? createFolderNode(currentSlug, child, opts)
+          ? createFolderNode(currentSlug, child, opts, "", topFolderIndex0++)
           : createFileNode(currentSlug, child)
 
         fragment.appendChild(node)
@@ -581,6 +707,9 @@ async function setupExplorer(currentSlug: FullSlug) {
     explorerUl.innerHTML = ""
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
+    if (opts.useSavedState) {
+      localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
+    }
 
     // restore explorer scrollTop position if it exists
     const scrollTop = sessionStorage.getItem("explorerScrollTop")
@@ -641,30 +770,43 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
   const currentSlug = e.detail.url
   await setupExplorer(currentSlug)
 
-  // if mobile hamburger is visible, collapse by default
-  for (const explorer of document.getElementsByClassName("explorer")) {
-    const mobileExplorer = explorer.querySelector(".mobile-explorer")
-    if (!mobileExplorer) return
-
-    if (mobileExplorer.checkVisibility()) {
-      explorer.classList.add("collapsed")
-      explorer.setAttribute("aria-expanded", "false")
-
-      // Allow <html> to be scrollable when mobile explorer is collapsed
+  const ui = readExplorerUiState()
+  
+  for (const ex of document.getElementsByClassName("explorer")) {
+    const explorer = ex as HTMLElement
+    const mobileBtn = explorer.querySelector(".mobile-explorer") as HTMLElement | null
+    if (!mobileBtn) continue
+  
+    const isMobile = mobileBtn.checkVisibility()
+    const shouldCollapse = isMobile ? ui.mobileCollapsed : ui.desktopCollapsed
+  
+    explorer.classList.toggle("collapsed", shouldCollapse)
+    explorer.setAttribute("aria-expanded", shouldCollapse ? "false" : "true")
+  
+    if (isMobile) {
+      document.documentElement.classList.toggle("mobile-no-scroll", !shouldCollapse)
+    } else {
       document.documentElement.classList.remove("mobile-no-scroll")
     }
-
-    mobileExplorer.classList.remove("hide-until-loaded")
+  
+    mobileBtn.classList.remove("hide-until-loaded")
   }
 })
 
 window.addEventListener("resize", function () {
-  // Desktop explorer opens by default, and it stays open when the window is resized
-  // to mobile screen size. Applies `no-scroll` to <html> in this edge case.
-  const explorer = document.querySelector(".explorer")
-  if (explorer && !explorer.classList.contains("collapsed")) {
-    document.documentElement.classList.add("mobile-no-scroll")
-    return
+  const explorer = document.querySelector(".explorer") as HTMLElement | null
+  if (!explorer) return
+
+  const mobileBtn = explorer.querySelector(".mobile-explorer") as HTMLElement | null
+  if (!mobileBtn) return
+
+  const isMobile = mobileBtn.checkVisibility()
+  const isOpen = !explorer.classList.contains("collapsed")
+
+  if (isMobile) {
+    document.documentElement.classList.toggle("mobile-no-scroll", isOpen)
+  } else {
+    document.documentElement.classList.remove("mobile-no-scroll")
   }
 })
 
