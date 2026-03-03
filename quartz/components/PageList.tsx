@@ -84,7 +84,12 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
                 <h3>
                   <a
                     href={resolveRelative(fileData.slug!, page.slug!)}
-                    class={folderButtons && isFolderPath(page.slug ?? "") ? "internal folder-special-btn" : "internal"}
+                    class={
+                      folderButtons &&
+                      ((page.frontmatter as any)?.__isFolder === true || isFolderPath(page.slug ?? ""))
+                        ? "internal folder-special-btn"
+                        : "internal"
+                    }
                   >
                     {title}
                   </a>
@@ -120,23 +125,28 @@ PageList.css = `
 }
 
 /* Special: folder entries as "buttons" (appearance only) */
+/* Special: folder entries as "buttons" (appearance only) */
 a.internal.folder-special-btn {
-  /* override default a.internal highlight */
-  background-color: #fff !important;
+  background-color: #fff !important; /* 요구사항 유지 */
   padding: 0.35rem 0.75rem !important;
   border-radius: 0.6rem !important;
 
-  /* keep typography (font/size/color) untouched */
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   text-align: left;
 
-  border: 1px solid var(--lightgray);
+  /* ✅ 배경이 흰색이라도 “버튼 윤곽”이 보이게 */
+  border: 1px solid rgba(0, 0, 0, 0.18) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06) !important;
+
+  /* 폰트/색/크기 건드리지 않음 */
+  text-decoration: none;
 }
 
 :root[saved-theme="dark"] a.internal.folder-special-btn {
-  background-color: #000 !important;
-  border-color: var(--gray);
+  background-color: #000 !important; /* 요구사항 유지 */
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 `
