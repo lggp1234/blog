@@ -237,6 +237,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             {/* ✅ only-subfolders면 limit/offset을 주지 않아서 전체 목록이 "주르륵" 뜸 */}
             <PageList
               {...listProps}
+              folderButtons={specialFolderButtons}
               offset={enablePagination ? (safePage - 1) * pageSize : undefined}
               limit={enablePagination ? pageSize : undefined}
             />
