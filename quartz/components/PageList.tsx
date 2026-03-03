@@ -56,9 +56,11 @@ type Props = {
   limit?: number
   offset?: number
   sort?: SortFn
+  /** If true, folder entries (index pages) render as "button-like" links */
+  folderButtons?: boolean
 } & QuartzComponentProps
 
-export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort }: Props) => {
+export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort, folderButtons }: Props) => {
   const sorter = sort ?? byDateAndAlphabeticalFolderFirst(cfg)
   let list = allFiles.sort(sorter)
 
@@ -80,7 +82,10 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                  <a
+                    href={resolveRelative(fileData.slug!, page.slug!)}
+                    class={folderButtons && isFolderPath(page.slug ?? "") ? "internal folder-special-btn" : "internal"}
+                  >
                     {title}
                   </a>
                 </h3>
@@ -112,5 +117,22 @@ PageList.css = `
 
 .section > .tags {
   margin: 0;
+}
+
+/* Special folder buttons on folder index pages */
+a.internal.folder-special-btn {
+  background-color: #fff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--lightgray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+:root[saved-theme="dark"] a.internal.folder-special-btn {
+  background-color: #000;
+  border-color: var(--gray);
 }
 `
