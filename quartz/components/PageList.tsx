@@ -56,7 +56,6 @@ type Props = {
   limit?: number
   offset?: number
   sort?: SortFn
-  /** If true, folder entries (index pages) render as button-like links */
   folderButtons?: boolean
 } & QuartzComponentProps
 
@@ -82,13 +81,9 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  {folderButtons &&
-                  (((page.frontmatter as any)?.__isFolder === true) || isFolderPath(page.slug ?? "")) ? (
+                  {folderButtons ? (
                     <span class="folder-special-btn-outer">
-                      <a
-                        href={resolveRelative(fileData.slug!, page.slug!)}
-                        class="internal folder-special-btn-link"
-                      >
+                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal folder-special-btn-link">
                         {title}
                       </a>
                     </span>
@@ -129,7 +124,7 @@ PageList.css = `
 }
 
 /* Special: folder entries as "buttons" (appearance only) */
-/* ✅ anchor가 아니라 OUTER에 버튼 외형을 주면 a.internal 전역 CSS와 충돌해도 절대 안 죽음 */
+/* ✅ a.internal 전역 스타일과 충돌해도 절대 안 죽게 OUTER에 외형 부여 */
 .folder-special-btn-outer {
   background-color: #fff;           /* 요구사항: 라이트 모드 흰색 */
   padding: 0.35rem 0.75rem;
@@ -140,12 +135,11 @@ PageList.css = `
   justify-content: flex-start;
   text-align: left;
 
-  /* 버튼 윤곽 */
   border: 1px solid rgba(0, 0, 0, 0.18);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
 }
 
-/* ✅ 안쪽 링크는 "글씨만" 유지 (타이포는 기본 title 그대로 상속) */
+/* ✅ 링크는 글씨만 (타이포는 Quartz 기본 title 그대로 상속) */
 a.internal.folder-special-btn-link {
   background: transparent !important;
   padding: 0 !important;
@@ -154,7 +148,6 @@ a.internal.folder-special-btn-link {
   text-decoration: none;
 }
 
-/* 다크 모드 */
 :root[saved-theme="dark"] .folder-special-btn-outer {
   background-color: #000;           /* 요구사항: 다크 모드 검은색 */
   border-color: rgba(255, 255, 255, 0.22);
