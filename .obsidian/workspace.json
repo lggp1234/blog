@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/물리학/통계역학/3-평형통계역학/강의1-통계역학의-동기.md",
+                "file": "content/english/1-study/1-physics/statistical-mechanics/7-furthertopics2-dsncs/index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "강의1-통계역학의-동기"
+              "title": "index"
             }
           }
         ]
@@ -183,6 +183,7 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/한국어버젼/1-학업/물리학/통계역학/3-평형통계역학/강의1-통계역학의-동기.md",
     "content/한국어버젼/1-학업/물리학/통계역학/7-번외-동역학계와복잡계/index.md",
     "content/한국어버젼/1-학업/물리학/통계역학/index.md",
     "content/한국어버젼/1-학업/물리학/통계역학/6-번외-연성물질물리학/index.md",
@@ -211,7 +212,6 @@
     "content/한국어버젼/1-학업/물리학/통계역학/3-평형통계역학/강의2-통계역학적-앙상블.md",
     "content/한국어버젼/1-학업/물리학/index.md",
     "content/english/1-study/1-physics/statistical-mechanics/index.md",
-    "content/english/1-study/1-physics/index.md",
     "content/english/1-study/1-physics/statistical-mechanics/7-furthertopics2-dsncs",
     "content/english/1-study/1-physics/statistical-mechanics/6-furthertopics1-smp",
     "content/english/1-study/1-physics/statistical-mechanics/5-non-equilibriumstatisticalmechanics",
