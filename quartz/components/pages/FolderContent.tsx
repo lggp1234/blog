@@ -93,6 +93,18 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
   const FolderContent: QuartzComponent = (props: QuartzComponentProps) => {
     const { tree, fileData, allFiles, cfg } = props
+    // ✅ index.md frontmatter에 Special: true면 하위 폴더 링크를 '버튼'처럼 보이게 함 (동작은 동일)
+    const specialFolderButtons = (() => {
+      const fm: any = (fileData as any)?.frontmatter ?? {}
+      const v = fm.Special ?? fm.special
+      if (typeof v === "boolean") return v
+      if (typeof v === "number") return v !== 0
+      if (typeof v === "string") {
+        const s = v.trim().toLowerCase()
+        return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+      }
+      return false
+    })()
 
     const trie = (props.ctx.trie ??= trieFromAllFiles(allFiles))
 
