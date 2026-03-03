@@ -94,9 +94,32 @@ export default ((opts?: Partial<FolderContentOptions>) => {
   const FolderContent: QuartzComponent = (props: QuartzComponentProps) => {
     const { tree, fileData, allFiles, cfg } = props
     // ✅ index.md frontmatter에 Special: true면 하위 폴더 링크를 '버튼'처럼 보이게 함 (동작은 동일)
+    // ✅ frontmatter의 "Special" 키를 대소문자/공백 상관없이 robust하게 읽기
     const specialFolderButtons = (() => {
       const fm: any = (fileData as any)?.frontmatter ?? {}
-      const v = fm.Special ?? fm.special
+
+      // 1) 보통 케이스
+      let v: any = fm.Special ?? fm.special
+
+      // 2) "Special : true"처럼 키에 공백이 섞여 들어가도 잡아내기
+      if (v === undefined) {
+        for (const [k, val] of Object.entries(fm)) {
+          if (String(k).trim().toLowerCase() === "special") {
+            v = val
+            break
+          }
+        }
+      }
+
+      // 3) (보험) cssclasses에 special-folder 넣어도 켜지게 하고 싶으면 사용 가능
+      //    index.md frontmatter에 cssclasses: [special-folder] 넣으면 강제로 ON
+      if (v === undefined) {
+        const cc = fm.cssclasses
+        if (Array.isArray(cc) && cc.some((x: any) => String(x).trim().toLowerCase() === "special-folder")) {
+          v = true
+        }
+      }
+
       if (typeof v === "boolean") return v
       if (typeof v === "number") return v !== 0
       if (typeof v === "string") {
@@ -231,7 +254,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
       <div class="popover-hint">
         {showFolderIntro && <article class={classes}>{content}</article>}
 
-        <div class="page-listing">
+        <div class="page-listing" data-special-buttons={specialFolderButtons ? "1" : "0"}>
           {options.showFolderCount && (
             <p>
               {i18n(cfg.locale).pages.folderContent.itemsUnderFolder({
