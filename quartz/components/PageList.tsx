@@ -82,17 +82,21 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  <a
-                    href={resolveRelative(fileData.slug!, page.slug!)}
-                    class={
-                      folderButtons &&
-                      ((page.frontmatter as any)?.__isFolder === true || isFolderPath(page.slug ?? ""))
-                        ? "internal folder-special-btn"
-                        : "internal"
-                    }
-                  >
-                    {title}
-                  </a>
+                  {folderButtons &&
+                  (((page.frontmatter as any)?.__isFolder === true) || isFolderPath(page.slug ?? "")) ? (
+                    <span class="folder-special-btn-outer">
+                      <a
+                        href={resolveRelative(fileData.slug!, page.slug!)}
+                        class="internal folder-special-btn-link"
+                      >
+                        {title}
+                      </a>
+                    </span>
+                  ) : (
+                    <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                      {title}
+                    </a>
+                  )}
                 </h3>
               </div>
               <ul class="tags">
@@ -125,28 +129,35 @@ PageList.css = `
 }
 
 /* Special: folder entries as "buttons" (appearance only) */
-/* Special: folder entries as "buttons" (appearance only) */
-a.internal.folder-special-btn {
-  background-color: #fff !important; /* 요구사항 유지 */
-  padding: 0.35rem 0.75rem !important;
-  border-radius: 0.6rem !important;
+/* ✅ anchor가 아니라 OUTER에 버튼 외형을 주면 a.internal 전역 CSS와 충돌해도 절대 안 죽음 */
+.folder-special-btn-outer {
+  background-color: #fff;           /* 요구사항: 라이트 모드 흰색 */
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.6rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   text-align: left;
 
-  /* ✅ 배경이 흰색이라도 “버튼 윤곽”이 보이게 */
-  border: 1px solid rgba(0, 0, 0, 0.18) !important;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06) !important;
+  /* 버튼 윤곽 */
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
 
-  /* 폰트/색/크기 건드리지 않음 */
+/* ✅ 안쪽 링크는 "글씨만" 유지 (타이포는 기본 title 그대로 상속) */
+a.internal.folder-special-btn-link {
+  background: transparent !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
   text-decoration: none;
 }
 
-:root[saved-theme="dark"] a.internal.folder-special-btn {
-  background-color: #000 !important; /* 요구사항 유지 */
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+/* 다크 모드 */
+:root[saved-theme="dark"] .folder-special-btn-outer {
+  background-color: #000;           /* 요구사항: 다크 모드 검은색 */
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 `
