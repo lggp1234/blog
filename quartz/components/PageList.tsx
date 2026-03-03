@@ -56,7 +56,7 @@ type Props = {
   limit?: number
   offset?: number
   sort?: SortFn
-  /** If true, folder entries (index pages) render as "button-like" links */
+  /** If true, folder entries (index pages) render as button-like links */
   folderButtons?: boolean
 } & QuartzComponentProps
 
@@ -119,20 +119,24 @@ PageList.css = `
   margin: 0;
 }
 
-/* Special folder buttons on folder index pages */
+/* Special: folder entries as "buttons" (appearance only) */
 a.internal.folder-special-btn {
-  background-color: #fff;
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.6rem;
-  border: 1px solid var(--lightgray);
+  /* override default a.internal highlight */
+  background-color: #fff !important;
+  padding: 0.35rem 0.75rem !important;
+  border-radius: 0.6rem !important;
+
+  /* keep typography (font/size/color) untouched */
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   text-align: left;
+
+  border: 1px solid var(--lightgray);
 }
 
 :root[saved-theme="dark"] a.internal.folder-special-btn {
-  background-color: #000;
+  background-color: #000 !important;
   border-color: var(--gray);
 }
 `
