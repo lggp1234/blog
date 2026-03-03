@@ -146,6 +146,11 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             const published = node.data.dates?.published ?? latestModified
             return {
               ...node.data,
+              // ✅ “이 항목은 폴더다” 플래그를 강제로 심어서 PageList가 확실히 버튼 처리하도록 함
+              frontmatter: {
+                ...(node.data.frontmatter ?? {}),
+                __isFolder: true,
+              },
               dates: {
                 created,
                 modified: latestModified,
@@ -165,6 +170,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             frontmatter: {
               title: node.displayName,
               tags: [],
+              // ✅ index.md가 없어도 폴더임을 확실히 표시
+              __isFolder: true,
             },
           }
         }
