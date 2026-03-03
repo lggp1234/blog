@@ -198,7 +198,19 @@ export default ((opts?: Partial<FolderContentOptions>) => {
       sort: options.sort,
       allFiles: allPagesInFolder,
     }
-
+    // ✅ frontmatter Special:true 이면, 하위 폴더(= index 페이지) 링크를 "버튼"처럼 렌더링
+    const specialFolderButtons = (() => {
+      const fm: any = fileData.frontmatter ?? {}
+      const v = fm.Special ?? fm.special
+      if (typeof v === "boolean") return v
+      if (typeof v === "number") return v !== 0
+      if (typeof v === "string") {
+        const s = v.trim().toLowerCase()
+        return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+      }
+      return false
+    })()
+    
     // Folder intro content (index.md body / description)
     const content = (
       (tree as Root).children.length === 0 ? fileData.description : htmlToJsx(fileData.filePath!, tree)
