@@ -11,7 +11,6 @@ import { concatenateResources } from "../../util/resources"
 import accordionScript from "../scripts/textAccordion.inline"
 import { trieFromAllFiles } from "../../util/ctx"
 import { FullSlug, isFolderPath, joinSegments, resolveRelative } from "../../util/path"
-import accordionScript from "../scripts/textAccordion.inline"
 
 interface FolderContentOptions {
   /** Whether to display number of folders */
@@ -244,124 +243,139 @@ export default ((opts?: Partial<FolderContentOptions>) => {
     const disablePaginationForOnlySubfolders = !hasDirectFile && hasDirectSubfolder
     const enablePagination = !disablePaginationForOnlySubfolders
 
-    // Build items under this folder
-    const allPagesInFolder: QuartzPluginData[] = folder.children
-      .map((node): QuartzPluginData | undefined => {
-        // 1) 폴더 항목: 폴더 날짜 = 하위(재귀) 최신 modified
-        if (node.isFolder && options.showSubfolders) {
-          const latestModified =
-            mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
-
-          if (node.data) {
-            const created = node.data.dates?.created ?? latestModified
-            const published = node.data.dates?.published ?? latestModified
-
-            const childIsSpecial = readSpecialFlag(node.data.frontmatter ?? {})
-            const childIsTextOnly = readTextFlag(node.data.frontmatter ?? {})
-            const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
-            
-            // Text: true + direct subfolders => accordion
-            const childHasDirectSubfolder = (node.children ?? []).some((c: any) => c?.isFolder)
-            const childIsTextAccordion = childIsTextOnly && !!node.data && childHasDirectSubfolder
-            
-            if (childIsTextAccordion && folderKey) {
-              const subNodes = (node.children ?? []).filter((c: any) => c?.isFolder)
-              subNodes.sort(physicalFolderSort) // ✅ 1.1 실제 폴더명 정렬
-            
-              const subPages: QuartzPluginData[] = subNodes
-                .map((sub: any): QuartzPluginData | undefined => {
-                  const latest = mostRecentModifiedInSubtree(sub) ?? sub.data?.dates?.modified ?? new Date()
-                  const created = sub.data?.dates?.created ?? latest
-                  const published = sub.data?.dates?.published ?? latest
-                  const subKey = computeFolderKeyForSlug(renderRootForKeys, sub.slug as FullSlug)
-            
-                  if (sub.data) {
-                    const subIsSpecial = readSpecialFlag(sub.data.frontmatter ?? {})
-                    return {
-                      ...sub.data,
-                      frontmatter: {
-                        ...(sub.data.frontmatter ?? {}),
-                        __isFolder: true,
-                        __specialButton: subIsSpecial,
-                        __textOnlyFolder: false,     // ✅ 1.2 하위 폴더는 Text:false UI로 강제
-                        __textAccordion: false,
-                        __folderKey: subKey,
-                      },
-                      dates: { created, modified: latest, published },
-                    }
-                  }
-            
-                  return {
-                    slug: sub.slug,
-                    dates: { created: latest, modified: latest, published: latest },
-                    frontmatter: {
-                      title: sub.displayName,
-                      tags: [],
-                      __isFolder: true,
-                      __specialButton: false,
-                      __textOnlyFolder: false,
-                      __textAccordion: false,
-                      __folderKey: subKey,
-                    },
-                  }
-                })
-                .filter((x): x is QuartzPluginData => x !== undefined)
-            
-              accordionChildrenByKey[folderKey] = subPages
-            }
-
-            return {
-              ...node.data,
-              frontmatter: {
-                ...(node.data.frontmatter ?? {}),
-                __isFolder: true,
-                __specialButton: childIsSpecial, 
-                __textOnlyFolder: childIsTextOnly,
-                __folderKey: folderKey,
-                __textAccordion: childIsTextAccordion,
-              },
-              dates: {
-                created,
-                modified: latestModified,
-                published,
-              },
-            }
-          }
-          
-          const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
-          // index.md 없는 폴더: synthetic 항목 생성
-          return {
-            slug: node.slug,
-            dates: {
-              created: latestModified,
-              modified: latestModified,
-              published: latestModified,
-            },
-            frontmatter: {
-              title: node.displayName,
-              tags: [],
-              __isFolder: true,
-              __specialButton: false, // index.md 없으면 Special 판단 불가 → false
-              __textOnlyFolder: false,
-              __folderKey: folderKey,
-              __textAccordion: false,
-            },
-          }
-        }
-
-        // 2) 일반 파일
-        if (node.data) return node.data
-
-        return undefined
+    // Build items under this folder (with Text:true virtual grouping)
+    const physicalNodeSort = (a: any, b: any) => {
+      if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1
+      return physicalNameKey(a).localeCompare(physicalNameKey(b), ["ko", "en"], {
+        numeric: true,
+        sensitivity: "base",
       })
-      .filter((p): p is QuartzPluginData => p !== undefined)
+    }
+    
+    const sortedChildren = [...(folder.children ?? [])].sort(physicalNodeSort)
+    
+    // total count (헤더+그룹 포함 “실제 항목 수”)
+    const totalItemCount = sortedChildren.filter((n: any) => {
+      if (n.isFolder) return options.showSubfolders
+      return !!n.data
+    }).length
+    
+    const displayPages: QuartzPluginData[] = []
+    
+    const makeFolderEntry = (node: any, forceTextFalse: boolean): QuartzPluginData => {
+      const latestModified = mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
+      const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
+    
+      if (node.data) {
+        const created = node.data.dates?.created ?? latestModified
+        const published = node.data.dates?.published ?? latestModified
+    
+        const isSpecial = readSpecialFlag(node.data.frontmatter ?? {})
+        const isTextOnly = forceTextFalse ? false : readTextFlag(node.data.frontmatter ?? {})
+    
+        return {
+          ...node.data,
+          frontmatter: {
+            ...(node.data.frontmatter ?? {}),
+            __isFolder: true,
+            __specialButton: isSpecial,
+            __textOnlyFolder: isTextOnly,
+            __folderKey: folderKey,
+            __textAccordion: false, // 여기서는 개별 폴더는 accordion 아님
+          },
+          dates: { created, modified: latestModified, published },
+        }
+      }
+    
+      // index.md 없는 폴더
+      return {
+        slug: node.slug,
+        dates: { created: latestModified, modified: latestModified, published: latestModified },
+        frontmatter: {
+          title: node.displayName,
+          tags: [],
+          __isFolder: true,
+          __specialButton: false,
+          __textOnlyFolder: false,
+          __folderKey: folderKey,
+          __textAccordion: false,
+        },
+      }
+    }
+    
+    // ✅ 핵심: Text:true 폴더는 “섹션 헤더”
+    //    -> 다음 Text:true 폴더가 나오기 전까지의 “형제 폴더들”을 가상 하위로 묶는다.
+    for (let i = 0; i < sortedChildren.length; i++) {
+      const node: any = sortedChildren[i]
+    
+      // 파일(직계) 유지
+      if (!node.isFolder) {
+        if (node.data) displayPages.push(node.data)
+        continue
+      }
+    
+      if (!options.showSubfolders) continue
+    
+      // 폴더 항목 만들기
+      const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
+    
+      if (node.data) {
+        const isTextHeader = readTextFlag(node.data.frontmatter ?? {})
+    
+        if (isTextHeader) {
+          // 다음 Text:true 헤더가 나오기 전까지 “폴더들”을 가상 하위로 수집
+          const groupedNodes: any[] = []
+          let j = i + 1
+          while (j < sortedChildren.length) {
+            const nxt: any = sortedChildren[j]
+            if (!nxt.isFolder) break // 파일 나오면 섹션 끊김(원하면 continue로 바꿀 수 있음)
+    
+            if (nxt.data && readTextFlag(nxt.data.frontmatter ?? {})) break // 다음 헤더 만나면 stop
+            groupedNodes.push(nxt)
+            j++
+          }
+    
+          const groupPages = groupedNodes.map((n) => makeFolderEntry(n, true)) // ✅ 1.2 하위는 Text:false UI 강제
+          if (groupPages.length > 0) {
+            // ✅ 1.1 실제 폴더명 정렬: 이미 sortedChildren 기반으로 수집되어 정렬된 상태
+            accordionChildrenByKey[folderKey] = groupPages
+          }
+    
+          // 헤더 자체는 Text-only 유지 + 그룹이 있으면 accordion 활성화
+          const latestModified = mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
+          const created = node.data.dates?.created ?? latestModified
+          const published = node.data.dates?.published ?? latestModified
+          const isSpecial = readSpecialFlag(node.data.frontmatter ?? {})
+    
+          displayPages.push({
+            ...node.data,
+            frontmatter: {
+              ...(node.data.frontmatter ?? {}),
+              __isFolder: true,
+              __specialButton: isSpecial,
+              __textOnlyFolder: true, // 헤더는 Text:true
+              __folderKey: folderKey,
+              __textAccordion: groupPages.length > 0, // ✅ 그룹이 있을 때만 버튼 동작
+            },
+            dates: { created, modified: latestModified, published },
+          })
+    
+          // ✅ groupedNodes를 top-level 목록에서 제거 (접힘 상태에서는 안 보이게)
+          i = j - 1
+          continue
+        }
+      }
+    
+      // 일반 폴더(헤더 아님)
+      displayPages.push(makeFolderEntry(node, false))
+    }
 
     // =========================
     // Pagination (static pages)
     // =========================
     const pageSize = options.pageSize ?? 10
     const totalPages = enablePagination
-      ? Math.max(1, Math.ceil(allPagesInFolder.length / pageSize))
+      ? Math.max(1, Math.ceil(displayPages.length / pageSize))
       : 1
     const safePage = enablePagination ? Math.min(Math.max(page, 1), totalPages) : 1
 
@@ -388,7 +402,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
     const listProps = {
       ...props,
       sort: options.sort,
-      allFiles: allPagesInFolder,
+      allFiles: displayPages,
     }
     
     // Folder intro content (index.md body / description)
@@ -408,7 +422,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
           {options.showFolderCount && (
             <p>
               {i18n(cfg.locale).pages.folderContent.itemsUnderFolder({
-                count: allPagesInFolder.length,
+                count: totalItemCount,
               })}
             </p>
           )}
