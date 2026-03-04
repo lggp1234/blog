@@ -834,15 +834,30 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     }
 
     let cut = lo
+
+    // (A) "다음 단어"의 1~2글자만 걸친 경우(예: PhysicsS...), 그 단어는 버리고 공백에서 끊는다
+    const prefixRaw = full.slice(0, cut)
+    const ws = prefixRaw.lastIndexOf(" ")
+    if (ws >= 0) {
+      const tailLen = prefixRaw.length - (ws + 1) // 마지막 공백 뒤에 남은 글자 수
+      if (tailLen <= 2) {
+        cut = ws + 1 // 공백까지 포함해서 끊기 => "Fundamental Physics "
+      }
+    }
+
     let prefix = full.slice(0, cut)
 
-    // 너무 끝부분 공백만 남지 않게 약간 정리
-    prefix = prefix.replace(/\s+$/g, "")
+    // (B) 끝 공백을 "지우지 말고" 유지(단, 여러 공백이면 1개로)
+    prefix = prefix.replace(/\s{2,}$/g, " ")
 
-    // 3) fade는 “마지막 단어(앞 공백 포함)”부터 시작: 이전 글자는 100% 유지
-    const lastSpace = prefix.lastIndexOf(" ")
-    const opaquePart = lastSpace >= 0 ? prefix.slice(0, lastSpace) : ""
-    const fadePart = lastSpace >= 0 ? prefix.slice(lastSpace) : prefix
+    // (C) fade는 "마지막 단어"부터 시작해야 하므로,
+    //     prefix가 공백으로 끝나도 마지막 단어를 찾을 때는 trimEnd() 기준으로 찾는다.
+    const trimmed = prefix.replace(/\s+$/g, "")
+    const wordStart = trimmed.lastIndexOf(" ")
+    const splitAt = wordStart >= 0 ? wordStart : 0
+
+    const opaquePart = splitAt > 0 ? prefix.slice(0, splitAt) : ""
+    const fadePart = splitAt > 0 ? prefix.slice(splitAt) : prefix
 
     el.classList.add("ce-truncated")
     // 4) hover하면 풀네임 확인
