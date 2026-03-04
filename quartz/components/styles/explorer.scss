@@ -116,11 +116,6 @@ button.desktop-explorer {
 }
 
 .explorer-content {
-  list-style: none;
-  overflow: hidden;
-  overflow-y: auto;
-  margin-top: 0.5rem;
-
   & ul {
     list-style: none;
     margin: 0;
@@ -131,24 +126,18 @@ button.desktop-explorer {
       color: var(--dark);
       opacity: 0.75;
       pointer-events: all;
-
-      &.active {
-        opacity: 1;
-        color: var(--tertiary);
-      }
-
-      & li .folder-title.active {
-        opacity: 1;
-        color: var(--tertiary);
-      }
     }
 
-    & li .folder-title.active {
+    & li > a.active {
       opacity: 1;
       color: var(--tertiary);
     }
-  }
 
+    & li .folder-title.active,
+    & li .folder-title--textonly.active {
+
+    }
+  }
   /* =========================================
      Explorer title truncation (no wrapping)
      - overflow => cut tail + custom "..." + fade
@@ -174,56 +163,55 @@ button.desktop-explorer {
     }
   }
   
-  /* a(파일), .folder-title(폴더 title) 공통 */
-  .ce-truncate {
-    display: block;        /* overflow 측정 & ellipsis를 위해 block */
-    max-width: 100%;
-    min-width: 0;
+  /* =========================================
+     JS-based truncation rendering
+     - no wrapping
+     - fade starts from last word span(.ce-fade)
+     - dots have opacity 0.8 / 0.7 / 0.6
+  ========================================= */
   
-    white-space: nowrap;   /* ✅ 줄바꿈 금지 */
-    overflow: hidden;
-    text-overflow: clip;   /* 기본 …(ellipsis) 대신 우리가 직접 그릴 것 */
-  }
+  .explorer-content {
+    /* 폴더/파일 제목이 flex 안에서 줄어들 수 있게 */
+    .folder-container,
+    .folder-container > div,
+    .folder-container .folder-button {
+      min-width: 0;
+      overflow: hidden;
+    }
   
-  /* overflow일 때만 fade + dots */
-  .ce-truncate.is-overflowing {
-    position: relative;
-    padding-right: 1.2em; /* dots 공간 확보 */
-  }
+    .ce-truncate {
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap; /* 줄바꿈 금지 */
+      overflow: hidden;
+      vertical-align: bottom;
+    }
   
-  /* 오른쪽 끝으로 갈수록 배경색으로 덮어쓰며 자연스럽게 페이드 */
-  .ce-truncate.is-overflowing::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
+    /* JS가 잘라서 span을 넣은 상태 */
+    .ce-truncate.ce-truncated {
+      /* hover tooltip은 JS에서 title로 처리 */
+    }
   
-    width: 2.2em;         /* 페이드 폭(원하면 1.8~2.6em 조절) */
-    height: 100%;
-    pointer-events: none;
+    .ce-prefix {
+      opacity: 1;
+    }
   
-    /* explorer 배경은 var(--light) 기반이라 그걸 사용 */
-    background: linear-gradient(to right, transparent, var(--light) 75%);
-  }
+    /* 3) 마지막 단어부터 fade 시작 (이 span 내부에서만 점점 사라짐) */
+    .ce-fade {
+      display: inline-block;
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+    }
   
-  /* dots: '.', '..', '...' 을 text-shadow로 만들고 각 dot 투명도(=opacity)를 다르게 */
-  .ce-truncate.is-overflowing::after {
-    content: ".";
-    position: absolute;
-    right: 0.15em;
-    top: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    pointer-events: none;
+    .ce-dots {
+      display: inline-block;
+      margin-left: 0.05em;
+    }
   
-    /* 1st dot: 80% 투명 => opacity 20% */
-    color: color-mix(in srgb, currentColor 20%, transparent);
-  
-    /* 2nd dot: 70% 투명 => opacity 30%, 3rd dot: 60% 투명 => opacity 40% */
-    text-shadow:
-      0.33em 0 0 color-mix(in srgb, currentColor 30%, transparent),
-      0.66em 0 0 color-mix(in srgb, currentColor 40%, transparent);
+    /* 3) 마지막 . opacity 60% (=> 0.6), 앞의 점들도 0.8/0.7 */
+    .ce-dots .d1 { opacity: 0.8; }
+    .ce-dots .d2 { opacity: 0.7; }
+    .ce-dots .d3 { opacity: 0.6; }
   }
 
   .folder-outer {
@@ -485,11 +473,23 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   }
 }
 
-/* Text-accordion folder: 열리면(활성) 청록(tertiary)로 */
-.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
-  color: var(--tertiary);
+/* ✅ Text: true 폴더는 아이콘을 제거해도 다른 폴더들과 제목 정렬이 맞도록 아이콘 폭만큼 왼쪽 패딩을 확보 */
+.folder-container.folder-text-only,
+.folder-container.folder-text-accordion {
+  padding-left: 17px; /* 12px(icon) + 5px(margin-right) */
 }
 
-.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-icon {
-  color: var(--tertiary);
+/* ✅ Text-accordion 폴더의 하위 항목은 '한 단계 더' 들여쓰지 않고, 부모와 같은 선상에서 나오게 */
+.folder-container.folder-text-accordion + .folder-outer > ul {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Text:true(=folder-text-accordion) 폴더가 열릴 때:
+   - 색상 변화 없음
+   - Bold만 적용 */
+.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
+  color: var(--secondary);     /* 기본 폴더 색 유지 */
+  font-weight: 700;            /* Bold */
 }

@@ -462,8 +462,9 @@ function createFolderNode(
   const isTextOnlyFolder = !forceNormalTextOnly && !!(node.data as any)?.textOnly
   const childrenForThisFolder = virtualChildren ?? node.children
   const isTextAccordionFolder = isTextOnlyFolder && childrenForThisFolder.some((c) => c.isFolder)
-  
-  if (isTextOnlyFolder && !isTextAccordionFolder) {
+
+  // ✅ Text: true 폴더는 펼침/접힘 아이콘(chevron) 없이 제목 클릭으로만 토글되게
+  if (isTextOnlyFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
     icon?.remove()
   }
@@ -752,16 +753,109 @@ function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
 function applyExplorerTitleTruncation(explorer: HTMLElement) {
   const targets = explorer.querySelectorAll(".ce-truncate") as NodeListOf<HTMLElement>
 
-  for (const el of targets) {
-    el.classList.remove("is-overflowing")
+  // reuse one canvas for measurement
+  const canvas = document.createElement("canvas")
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return
 
-    // display:none 상태면 측정 불가하니 건너뜀
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+
+  const getFont = (el: HTMLElement) => {
+    const st = getComputedStyle(el)
+    // canvas font shorthand (line-height 제외해도 측정은 충분히 정확)
+    return `${st.fontStyle} ${st.fontVariant} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`
+  }
+
+  const getLetterSpacingPx = (el: HTMLElement) => {
+    const st = getComputedStyle(el)
+    const ls = st.letterSpacing
+    if (!ls || ls === "normal") return 0
+    const v = parseFloat(ls)
+    return Number.isFinite(v) ? v : 0
+  }
+
+  const measure = (text: string, el: HTMLElement) => {
+    ctx.font = getFont(el)
+    const base = ctx.measureText(text).width
+    const ls = getLetterSpacingPx(el)
+    // letter-spacing 보정(대부분 0이지만 안전하게)
+    return base + Math.max(0, text.length - 1) * ls
+  }
+
+  for (const el of targets) {
+    // display:none이면 측정 불가
     if (el.offsetParent === null) continue
 
-    // scrollWidth > clientWidth면 overflow
-    if (el.scrollWidth > el.clientWidth + 1) {
-      el.classList.add("is-overflowing")
+    // 원본 저장 (한 번만)
+    if (!el.dataset.ceFullTitle) {
+      el.dataset.ceFullTitle = (el.textContent ?? "").trimEnd()
     }
+    const full = el.dataset.ceFullTitle ?? ""
+
+    // 먼저 원본 복원(재측정용)
+    el.classList.remove("ce-truncated")
+    el.removeAttribute("title")
+    el.textContent = full
+
+    const avail = el.clientWidth
+    if (avail <= 0) continue
+
+    const fullW = measure(full, el)
+    if (fullW <= avail + 0.5) {
+      // 안 넘치면 그대로
+      continue
+    }
+
+    // 넘치면: "prefix + ..." 가 딱 맞도록 prefix 길이 계산
+    const dots = "..."
+    const dotsW = measure(dots, el)
+
+    // 최소 공간도 안 되면 dots만
+    if (dotsW > avail) {
+      el.classList.add("ce-truncated")
+      el.setAttribute("title", full)
+      el.innerHTML =
+        `<span class="ce-prefix"></span>` +
+        `<span class="ce-fade"></span>` +
+        `<span class="ce-dots"><span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span></span>`
+      continue
+    }
+
+    let lo = 0
+    let hi = full.length
+
+    // 이진 탐색: full.slice(0, mid) + "..." 가 avail 이하가 되는 최대 mid 찾기
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi + 1) / 2)
+      const w = measure(full.slice(0, mid), el) + dotsW
+      if (w <= avail) lo = mid
+      else hi = mid - 1
+    }
+
+    let cut = lo
+    let prefix = full.slice(0, cut)
+
+    // 너무 끝부분 공백만 남지 않게 약간 정리
+    prefix = prefix.replace(/\s+$/g, "")
+
+    // 3) fade는 “마지막 단어(앞 공백 포함)”부터 시작: 이전 글자는 100% 유지
+    const lastSpace = prefix.lastIndexOf(" ")
+    const opaquePart = lastSpace >= 0 ? prefix.slice(0, lastSpace) : ""
+    const fadePart = lastSpace >= 0 ? prefix.slice(lastSpace) : prefix
+
+    el.classList.add("ce-truncated")
+    // 4) hover하면 풀네임 확인
+    el.setAttribute("title", full)
+
+    el.innerHTML =
+      `<span class="ce-prefix">${escapeHtml(opaquePart)}</span>` +
+      `<span class="ce-fade">${escapeHtml(fadePart)}</span>` +
+      `<span class="ce-dots">` +
+      `<span class="dot d1">.</span>` +
+      `<span class="dot d2">.</span>` +
+      `<span class="dot d3">.</span>` +
+      `</span>`
   }
 }
 
