@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/1-study/1-physics/00-0-Fundamental-Series/index.md",
+                "file": "content/english/1-study/1-physics/02-quantum-mechanics/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,8 +183,11 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
-    "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
+    "content/english/1-study/1-physics/00-classical-mechanics/index.md",
     "content/english/1-study/1-physics/00-0-Fundamental-Series/index.md",
+    "content/한국어버젼/1-학업/물리학/02-양자역학/index.md",
+    "content/한국어버젼/1-학업/물리학/00-고전역학/index.md",
+    "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
     "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론/index.md",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/10-통계역학/index.md",
@@ -210,11 +213,8 @@
     "content/한국어버젼/99-연습-페이지/무제/무제.md",
     "content/한국어버젼/99-연습-페이지/무제/무제",
     "content/한국어버젼/99-연습-페이지/연습/1-연습1.md",
-    "content/한국어버젼/99-연습-페이지/연습/2-연습2.md",
     "content/한국어버젼/99-연습-페이지/무제",
     "content/한국어버젼/99-연습-페이지/연습",
-    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/index.md",
-    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/lecture1-motivations-of-statistical-mechanics.md",
     "content/english/1-study/1-physics/150-furthertopics2-dsncs",
     "content/english/1-study/1-physics/150-furthertopics1-smp",
     "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics",
