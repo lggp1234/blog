@@ -6,6 +6,12 @@ const EVT = "quartz:folder-state"
 const ARROW_CLOSED = ">"
 const ARROW_OPEN = "∨"
 
+function safeEscape(s: string): string {
+  // @ts-ignore
+  if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(s)
+  return s.replace(/[^a-zA-Z0-9_\-]/g, (c) => `\\${c}`)
+}
+
 function readFileTreeState(): FolderState[] {
   const raw = localStorage.getItem(FILETREE_KEY)
   if (!raw) return []
@@ -23,7 +29,7 @@ function writeFileTreeState(next: FolderState[]) {
 
 function getCollapsed(folderKey: string): boolean {
   const st = readFileTreeState().find((x) => x?.path === folderKey)
-  return st ? !!st.collapsed : true // default collapsed
+  return st ? !!st.collapsed : true
 }
 
 function setCollapsed(folderKey: string, collapsed: boolean) {
@@ -35,9 +41,8 @@ function setCollapsed(folderKey: string, collapsed: boolean) {
 }
 
 function applyDom(folderKey: string, collapsed: boolean) {
-  // parent li (PageList.tsx에서 data-folderkey를 심어둠)
   const li = document.querySelector(
-    `li.section-li.is-accordion-parent[data-folderkey="${CSS.escape(folderKey)}"]`,
+    `li.section-li.is-accordion-parent[data-folderkey="${safeEscape(folderKey)}"]`,
   ) as HTMLElement | null
   if (!li) return
 
@@ -53,24 +58,26 @@ function applyDom(folderKey: string, collapsed: boolean) {
 }
 
 function setupTextAccordions() {
-  const buttons = document.querySelectorAll(".folder-text-accordion-btn[data-folderkey]") as NodeListOf<HTMLButtonElement>
+  const buttons = document.querySelectorAll(
+    ".folder-text-accordion-btn[data-folderkey]",
+  ) as NodeListOf<HTMLButtonElement>
 
   for (const btn of buttons) {
     const folderKey = btn.dataset.folderkey
     if (!folderKey) continue
 
-    // 초기 상태 적용 (Explorer와 같은 fileTree.v2 사용)
+    // 초기 상태 (Explorer와 같은 fileTree.v2 공유)
     applyDom(folderKey, getCollapsed(folderKey))
 
     const onClick = (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
-      const nextCollapsed = !getCollapsed(folderKey) // toggle
+      const nextCollapsed = !getCollapsed(folderKey)
       setCollapsed(folderKey, nextCollapsed)
       applyDom(folderKey, nextCollapsed)
 
-      // Explorer에 알림
+      // Explorer로 동기화 이벤트
       window.dispatchEvent(
         new CustomEvent(EVT, { detail: { folderKey, collapsed: nextCollapsed, source: "content" } }),
       )
@@ -84,7 +91,7 @@ function setupTextAccordions() {
     }
   }
 
-  // Explorer -> Content sync
+  // Explorer -> Content 동기화
   const onExternal = (ev: any) => {
     const d = ev?.detail
     if (!d || d.source !== "explorer") return
