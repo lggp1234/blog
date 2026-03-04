@@ -123,6 +123,10 @@ button.desktop-explorer {
     overscroll-behavior: contain;
 
     & li > a {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      
       color: var(--dark);
       opacity: 0.75;
       pointer-events: all;
