@@ -93,20 +93,6 @@ const readSpecialFlag = (frontmatter: any): boolean => {
     }
   }
 
-  const readTextFlag = (frontmatter: any): boolean => {
-  if (!frontmatter) return false
-
-  let v: any = frontmatter.Text ?? frontmatter.text
-
-  if (v === undefined) {
-    for (const [k, val] of Object.entries(frontmatter)) {
-      if (String(k).trim().toLowerCase() === "text") {
-        v = val
-        break
-      }
-    }
-  }
-
   if (typeof v === "boolean") return v
   if (typeof v === "number") return v !== 0
   if (typeof v === "string") {
@@ -115,16 +101,6 @@ const readSpecialFlag = (frontmatter: any): boolean => {
   }
   return false
 }
-
-  if (typeof v === "boolean") return v
-  if (typeof v === "number") return v !== 0
-  if (typeof v === "string") {
-    const s = v.trim().toLowerCase()
-    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
-  }
-  return false
-}
-
 const readTextFlag = (frontmatter: any): boolean => {
   if (!frontmatter) return false
 
@@ -149,6 +125,84 @@ const readTextFlag = (frontmatter: any): boolean => {
   return false
 }
 
+// ------------------------------
+// Explorer-sync folder key (language-independent)
+// - Must match explorer.inline.ts folderKey logic
+// ------------------------------
+
+const stripIndexFromSlug = (slug: string): string =>
+  slug.endsWith("/index") ? slug.slice(0, -"/index".length) : slug
+
+const rootSegmentOfSlug = (slug: string): string => {
+  const raw = slug.startsWith("/") ? slug.slice(1) : slug
+  return raw.split("/").filter(Boolean)[0] ?? ""
+}
+
+const isEscapedUnicodeSegment = (seg: string): boolean => /^U[0-9A-Fa-f]{4}/.test(seg)
+const isKoreanRootSegment = (seg: string): boolean =>
+  seg === "한국어버젼" || seg === "한국어" || isEscapedUnicodeSegment(seg)
+
+const extractNumericPrefix = (seg: string): string | null => {
+  const m = seg.match(/^(\d+)[-\.]/) ?? seg.match(/^(\d+)-/)
+  return m ? m[1] : null
+}
+
+// physical folder name key (NOT title)
+const physicalNameKey = (n: any): string => {
+  let s = String(n?.fileSegmentHint ?? n?.slugSegment ?? n?.displayName ?? "").trim()
+  s = s.replace(/\.(md|mdx)$/i, "")
+  return s
+}
+
+const physicalFolderSort = (a: any, b: any): number =>
+  physicalNameKey(a).localeCompare(physicalNameKey(b), ["ko", "en"], { numeric: true, sensitivity: "base" })
+
+const folderIndexAmongFoldersPhysical = (parent: any, child: any): number => {
+  const folders = (parent?.children ?? []).filter((c: any) => c?.isFolder)
+  folders.sort(physicalFolderSort)
+  return Math.max(0, folders.findIndex((c: any) => c === child))
+}
+
+const folderTokenFromNode = (node: any, indexAmongFolders0: number): string => {
+  const hint = physicalNameKey(node)
+  const n = extractNumericPrefix(hint)
+  if (n) return n
+  return String(indexAmongFolders0 + 1)
+}
+
+const selectRenderRootForSlug = (trie: any, currentSlug: FullSlug): any => {
+  const seg0 = rootSegmentOfSlug(stripIndexFromSlug(currentSlug))
+  if (!seg0) return trie
+  if (seg0 === "english" || isKoreanRootSegment(seg0)) {
+    const langRoot = (trie.children ?? []).find((c: any) => c?.isFolder && c?.slugSegment === seg0)
+    if (langRoot) return langRoot
+  }
+  return trie
+}
+
+const computeFolderKeyForSlug = (renderRoot: any, targetSlug: FullSlug): string => {
+  const curSegs = stripIndexFromSlug(String(targetSlug)).split("/").filter(Boolean)
+  const rootSegs = stripIndexFromSlug(String(renderRoot?.slug ?? "")).split("/").filter(Boolean)
+
+  let segs = curSegs
+  if (rootSegs.length > 0 && segs.length >= rootSegs.length && rootSegs.every((s, i) => segs[i] === s)) {
+    segs = segs.slice(rootSegs.length)
+  }
+
+  let node = renderRoot
+  let key = ""
+  for (const seg of segs) {
+    const next = (node?.children ?? []).find((c: any) => c?.slugSegment === seg)
+    if (!next || !next.isFolder) break
+
+    const i0 = folderIndexAmongFoldersPhysical(node, next)
+    const token = folderTokenFromNode(next, i0)
+    key = key ? `${key}/${token}` : token
+    node = next
+  }
+  return key
+}
+
 export default ((opts?: Partial<FolderContentOptions>) => {
   const options: FolderContentOptions = {
     ...defaultOptions,
@@ -168,6 +222,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
     // baseSlug: foo/bar/index -> baseFolder: foo/bar
     const baseFolder = baseSlug.replace(/\/index$/, "")
+    const renderRootForKeys = selectRenderRootForSlug(trie, fileData.slug! as FullSlug)
+    const accordionChildrenByKey: Record<string, QuartzPluginData[]> = {}
 
     // =========================================================
     // ✅ "index.md 제외하고 파일이 없고 하위 폴더만 있는지" 판별
@@ -199,7 +255,58 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             const published = node.data.dates?.published ?? latestModified
 
             const childIsSpecial = readSpecialFlag(node.data.frontmatter ?? {})
-            const childIsTextOnly = readTextFlag(node.data.frontmatter ?? {}) 
+            const childIsTextOnly = readTextFlag(node.data.frontmatter ?? {})
+            const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
+            
+            // Text: true + direct subfolders => accordion
+            const childHasDirectSubfolder = (node.children ?? []).some((c: any) => c?.isFolder)
+            const childIsTextAccordion = childIsTextOnly && !!node.data && childHasDirectSubfolder
+            
+            if (childIsTextAccordion && folderKey) {
+              const subNodes = (node.children ?? []).filter((c: any) => c?.isFolder)
+              subNodes.sort(physicalFolderSort) // ✅ 1.1 실제 폴더명 정렬
+            
+              const subPages: QuartzPluginData[] = subNodes
+                .map((sub: any): QuartzPluginData | undefined => {
+                  const latest = mostRecentModifiedInSubtree(sub) ?? sub.data?.dates?.modified ?? new Date()
+                  const created = sub.data?.dates?.created ?? latest
+                  const published = sub.data?.dates?.published ?? latest
+                  const subKey = computeFolderKeyForSlug(renderRootForKeys, sub.slug as FullSlug)
+            
+                  if (sub.data) {
+                    const subIsSpecial = readSpecialFlag(sub.data.frontmatter ?? {})
+                    return {
+                      ...sub.data,
+                      frontmatter: {
+                        ...(sub.data.frontmatter ?? {}),
+                        __isFolder: true,
+                        __specialButton: subIsSpecial,
+                        __textOnlyFolder: false,     // ✅ 1.2 하위 폴더는 Text:false UI로 강제
+                        __textAccordion: false,
+                        __folderKey: subKey,
+                      },
+                      dates: { created, modified: latest, published },
+                    }
+                  }
+            
+                  return {
+                    slug: sub.slug,
+                    dates: { created: latest, modified: latest, published: latest },
+                    frontmatter: {
+                      title: sub.displayName,
+                      tags: [],
+                      __isFolder: true,
+                      __specialButton: false,
+                      __textOnlyFolder: false,
+                      __textAccordion: false,
+                      __folderKey: subKey,
+                    },
+                  }
+                })
+                .filter((x): x is QuartzPluginData => x !== undefined)
+            
+              accordionChildrenByKey[folderKey] = subPages
+            }
 
             return {
               ...node.data,
@@ -208,6 +315,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
                 __isFolder: true,
                 __specialButton: childIsSpecial, 
                 __textOnlyFolder: childIsTextOnly,
+                __folderKey: folderKey,
+                __textAccordion: childIsTextAccordion,
               },
               dates: {
                 created,
@@ -231,6 +340,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
               __isFolder: true,
               __specialButton: false, // index.md 없으면 Special 판단 불가 → false
               __textOnlyFolder: false,
+              __folderKey: folderKey,
+              __textAccordion: false,
             },
           }
         }
@@ -303,6 +414,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             {/* ✅ only-subfolders면 limit/offset을 주지 않아서 전체 목록이 "주르륵" 뜸 */}
             <PageList
               {...listProps}
+              accordionChildrenByKey={accordionChildrenByKey}
               offset={enablePagination ? (safePage - 1) * pageSize : undefined}
               limit={enablePagination ? pageSize : undefined}
             />
@@ -382,5 +494,6 @@ export default ((opts?: Partial<FolderContentOptions>) => {
   }
 
   FolderContent.css = concatenateResources(style, PageList.css)
+  FolderContent.afterDOMLoaded = accordionScript
   return FolderContent
 }) satisfies QuartzComponentConstructor
