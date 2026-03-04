@@ -242,6 +242,40 @@ button.desktop-explorer {
     padding-left: 0.8rem;
     border-left: 1px solid var(--lightgray);
   }
+
+  /* =========================================
+     Folder title truncation fix:
+     - folders are rendered inside flex/button
+     - without min-width:0, text won't shrink -> no overflow detected
+  ========================================= */
+  
+  .explorer-content {
+    /* 폴더 한 줄(container)에서 제목 영역이 폭을 줄일 수 있어야 함 */
+    .folder-container {
+      min-width: 0; /* ✅ flex item shrink 허용 */
+    }
+  
+    /* template-folder 안 구조에서 titleContainer 역할을 하는 div */
+    .folder-container > div {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden; /* ✅ 자식의 overflow를 클립 */
+    }
+  
+    /* collapse behavior일 때 제목이 button.folder-button 안에 있음 */
+    .folder-container .folder-button {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+  
+    /* 실제 텍스트 요소(폴더 제목) */
+    .folder-container .folder-title,
+    .folder-container .folder-title--textonly {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }  
 }
 
 .folder-container {
