@@ -136,6 +136,11 @@ button.desktop-explorer {
         opacity: 1;
         color: var(--tertiary);
       }
+
+      & li .folder-title.active {
+        opacity: 1;
+        color: var(--tertiary);
+      }
     }
 
     & li .folder-title.active {
