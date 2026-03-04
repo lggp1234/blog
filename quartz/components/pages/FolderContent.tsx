@@ -240,7 +240,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
       <div class="popover-hint">
         {showFolderIntro && <article class={classes}>{content}</article>}
 
-        <div class="page-listing" data-special-buttons={specialFolderButtons ? "1" : "0"}>
+        <div class="page-listing">
           {options.showFolderCount && (
             <p>
               {i18n(cfg.locale).pages.folderContent.itemsUnderFolder({
