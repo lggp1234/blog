@@ -286,7 +286,7 @@ a.internal.folder-special-btn-link {
   color: var(--secondary);
 }
 
-/* 1.2 활성(펼침) 색: 평범한 “활성 폴더” 청록(tertiary) */
+/* ✅ (요구) Text:true 폴더가 활성(펼침)일 때 색 변화 없이 Underline만 */
 li.section-li.is-open .folder-text-accordion-btn {
   color: var(--tertiary);
 }
