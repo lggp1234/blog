@@ -149,6 +149,83 @@ button.desktop-explorer {
     }
   }
 
+  /* =========================================
+     Explorer title truncation (no wrapping)
+     - overflow => cut tail + custom "..." + fade
+  ========================================= */
+  
+  /* flex 안에서 ellipsis가 동작하려면 shrink 허용이 필요 */
+  .folder-container {
+    min-width: 0;
+  
+    & > div {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+  
+    & div > button {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+  
+    & div > a {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
+  
+  /* a(파일), .folder-title(폴더 title) 공통 */
+  .ce-truncate {
+    display: block;        /* overflow 측정 & ellipsis를 위해 block */
+    max-width: 100%;
+    min-width: 0;
+  
+    white-space: nowrap;   /* ✅ 줄바꿈 금지 */
+    overflow: hidden;
+    text-overflow: clip;   /* 기본 …(ellipsis) 대신 우리가 직접 그릴 것 */
+  }
+  
+  /* overflow일 때만 fade + dots */
+  .ce-truncate.is-overflowing {
+    position: relative;
+    padding-right: 1.2em; /* dots 공간 확보 */
+  }
+  
+  /* 오른쪽 끝으로 갈수록 배경색으로 덮어쓰며 자연스럽게 페이드 */
+  .ce-truncate.is-overflowing::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+  
+    width: 2.2em;         /* 페이드 폭(원하면 1.8~2.6em 조절) */
+    height: 100%;
+    pointer-events: none;
+  
+    /* explorer 배경은 var(--light) 기반이라 그걸 사용 */
+    background: linear-gradient(to right, transparent, var(--light) 75%);
+  }
+  
+  /* dots: '.', '..', '...' 을 text-shadow로 만들고 각 dot 투명도(=opacity)를 다르게 */
+  .ce-truncate.is-overflowing::after {
+    content: ".";
+    position: absolute;
+    right: 0.15em;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  
+    /* 1st dot: 80% 투명 => opacity 20% */
+    color: color-mix(in srgb, currentColor 20%, transparent);
+  
+    /* 2nd dot: 70% 투명 => opacity 30%, 3rd dot: 60% 투명 => opacity 40% */
+    text-shadow:
+      0.33em 0 0 color-mix(in srgb, currentColor 30%, transparent),
+      0.66em 0 0 color-mix(in srgb, currentColor 40%, transparent);
+  }
+
   .folder-outer {
     display: grid;
     grid-template-rows: 0fr;
