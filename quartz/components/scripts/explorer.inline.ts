@@ -11,6 +11,38 @@ const EXPLORER_UI_KEY = "explorerUi.v1"     // 탐색기 전체 접힘/펼침 �
 
 const EXPLORER_COMPACT_KEY = "explorerCompact.v1"
 
+// --------------------- Text Accordion sync ---------------------
+const FOLDER_STATE_EVT = "quartz:folder-state"
+const ACC_ARROW_CLOSED = ">"
+const ACC_ARROW_OPEN = "∨"
+
+type FolderStateEvtDetail = {
+  folderKey: string
+  collapsed: boolean
+  source: "explorer" | "content"
+}
+
+function cssEscape(s: string): string {
+  // @ts-ignore
+  if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(s)
+  return s.replace(/[^a-zA-Z0-9_\-]/g, (c) => `\\${c}`)
+}
+
+/** folderContainer가 text-accordion일 때만 title 앞에 > / ∨ 를 갱신 */
+function updateTextAccordionTitle(folderContainer: HTMLElement, collapsed: boolean) {
+  if (!folderContainer.classList.contains("folder-text-accordion")) return
+
+  const titleEl = folderContainer.querySelector(".folder-title") as HTMLElement | null
+  if (!titleEl) return
+
+  const base =
+    titleEl.dataset.baseTitle ??
+    (titleEl.textContent ?? "").replace(/^[>∨]\s+/, "")
+
+  titleEl.dataset.baseTitle = base
+  titleEl.textContent = `${collapsed ? ACC_ARROW_CLOSED : ACC_ARROW_OPEN} ${base}`
+}
+
 type ExplorerCompactState = {
   prevOpen: boolean
   nextOpen: boolean
@@ -350,46 +382,47 @@ function toggleExplorer(this: HTMLElement) {
 
 function toggleFolder(evt: MouseEvent) {
   evt.stopPropagation()
-  const target = evt.target as MaybeHTMLElement
+  const target = evt.target as HTMLElement | null
   if (!target) return
 
-  const isSvg = target.nodeName === "svg"
-
-  // svg(folder-icon) 클릭이면 parent가 div.folder-container
-  // button 클릭이면 parentElement?.parentElement가 div.folder-container
-  const folderContainer = (
-    isSvg ? target.parentElement : target.parentElement?.parentElement
-  ) as MaybeHTMLElement
+  // ✅ 어떤 내부 엘리먼트를 눌러도 folder-container를 정확히 찾기
+  const folderContainer = target.closest(".folder-container") as HTMLElement | null
   if (!folderContainer) return
 
-  const childFolderContainer = folderContainer.nextElementSibling as MaybeHTMLElement
-  if (!childFolderContainer) return
+  const folderOuter = folderContainer.nextElementSibling as HTMLElement | null
+  if (!folderOuter || !folderOuter.classList.contains("folder-outer")) return
 
   // 토글
-  childFolderContainer.classList.toggle("open")
-
-  const isCollapsed = !childFolderContainer.classList.contains("open")
-  setFolderState(childFolderContainer, isCollapsed)
+  folderOuter.classList.toggle("open")
+  const isCollapsed = !folderOuter.classList.contains("open")
 
   // 열렸을 때만 compact 적용
   if (!isCollapsed) {
-    const ul = childFolderContainer.querySelector("ul") as HTMLUListElement | null
+    const ul = folderOuter.querySelector("ul") as HTMLUListElement | null
     if (ul) applyCompactRuleToUl(ul)
   }
 
-  // ✅ 상태 키는 무조건 "정규화 키"로 통일
+  // ✅ 상태 키는 무조건 v2 folderKey로 통일
   const folderKey =
     folderContainer.dataset.folderkey ??
     normalizeExplorerStatePathLegacy(folderContainer.dataset.folderpath || "")
 
-  const currentFolderState = currentExplorerState.find((item) => item.path === folderKey)
-  if (currentFolderState) {
-    currentFolderState.collapsed = isCollapsed
-  } else {
-    currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
-  }
+  // ✅ text-accordion이면 제목의 > / ∨ 갱신
+  updateTextAccordionTitle(folderContainer, isCollapsed)
+
+  // currentExplorerState 업데이트
+  const st = currentExplorerState.find((item) => item.path === folderKey)
+  if (st) st.collapsed = isCollapsed
+  else currentExplorerState.push({ path: folderKey, collapsed: isCollapsed })
 
   localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
+
+  // ✅ 본문(PageList)과 즉시 동기화 이벤트 발행
+  window.dispatchEvent(
+    new CustomEvent<FolderStateEvtDetail>(FOLDER_STATE_EVT, {
+      detail: { folderKey, collapsed: isCollapsed, source: "explorer" },
+    }),
+  )
 }
 
 function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElement {
@@ -414,6 +447,7 @@ function createFolderNode(
   opts: ParsedOptions,
   parentKey: string,
   indexAmongFolders0: number,
+  forceNormalTextOnly: boolean = false,
 ): HTMLLIElement {
   const template = document.getElementById("template-folder") as HTMLTemplateElement
   const clone = template.content.cloneNode(true) as DocumentFragment
@@ -426,7 +460,13 @@ function createFolderNode(
   const folderPath = node.slug
   const token = folderTokenFromNode(node, indexAmongFolders0)
   const folderKey = parentKey ? `${parentKey}/${token}` : token
-  const isTextOnlyFolder = !!(node.data as any)?.textOnly
+  
+  // ✅ 직계 자식들은 "일반 폴더처럼" 보이게 강제할 수 있음
+  const isTextOnlyFolder = !forceNormalTextOnly && !!(node.data as any)?.textOnly
+  
+  // ✅ Text:true + (직계 하위 폴더 존재) => Text Accordion Folder
+  const isTextAccordionFolder = isTextOnlyFolder && node.children.some((c) => c.isFolder)
+  
   if (isTextOnlyFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
     icon?.remove()
@@ -437,33 +477,42 @@ function createFolderNode(
   folderContainer.dataset.folderkey = folderKey
   ul.dataset.ceFolderKey = folderKey
 
-  // -------------------------------
-  // Folder title rendering
-  // - normal folders: follow opts.folderClickBehavior (link vs collapse)
-  // - text-only folders: NO LINK (non-clickable label)
-  // -------------------------------
-  if (isTextOnlyFolder) {
-    // Replace the button with a plain <span> (no link, no toggle on title)
-    const button = titleContainer.querySelector(".folder-button") as HTMLElement
-    const span = document.createElement("span")
-    span.className = "folder-title folder-title--textonly"
-    span.textContent = node.displayName
-    button.replaceWith(span)
-    folderContainer.classList.add("folder-text-only")
-  } else if (opts.folderClickBehavior === "link") {
-    // Replace button with link for link behavior
-    const button = titleContainer.querySelector(".folder-button") as HTMLElement
-    const a = document.createElement("a")
-    a.href = resolveRelative(currentSlug, folderPath)
-    a.dataset.for = folderPath
-    a.className = "folder-title"
-    a.textContent = node.displayName
-    button.replaceWith(a)
-  } else {
-    // collapse behavior: keep the button and set its inner title
-    const span = titleContainer.querySelector(".folder-title") as HTMLElement
-    span.textContent = node.displayName
-  }
+// -------------------------------
+// Folder title rendering
+// - normal folders: follow opts.folderClickBehavior (link vs collapse)
+// - text-only folders (no children): NO LINK (non-clickable label)
+// - text-accordion folders (has children): KEEP BUTTON + show > / ∨
+// -------------------------------
+if (isTextOnlyFolder && !isTextAccordionFolder) {
+  // Replace the button with a plain <span> (no link, no toggle on title)
+  const button = titleContainer.querySelector(".folder-button") as HTMLElement
+  const span = document.createElement("span")
+  span.className = "folder-title folder-title--textonly"
+  span.textContent = node.displayName
+  button.replaceWith(span)
+  folderContainer.classList.add("folder-text-only")
+} else if (isTextAccordionFolder) {
+  // ✅ Text Accordion: keep button (even if behavior === "link")
+  const span = titleContainer.querySelector(".folder-title") as HTMLElement
+  span.dataset.baseTitle = node.displayName
+  span.textContent = `${ACC_ARROW_CLOSED} ${node.displayName}`
+
+  folderContainer.classList.add("folder-text-only")
+  folderContainer.classList.add("folder-text-accordion")
+} else if (opts.folderClickBehavior === "link") {
+  // Replace button with link for link behavior
+  const button = titleContainer.querySelector(".folder-button") as HTMLElement
+  const a = document.createElement("a")
+  a.href = resolveRelative(currentSlug, folderPath)
+  a.dataset.for = folderPath
+  a.className = "folder-title"
+  a.textContent = node.displayName
+  button.replaceWith(a)
+} else {
+  // collapse behavior: keep the button and set its inner title
+  const span = titleContainer.querySelector(".folder-title") as HTMLElement
+  span.textContent = node.displayName
+}
 
   // if the saved state is collapsed or the default state is collapsed
   const persisted = savedCollapsedByKeyV2.get(folderKey)
@@ -487,10 +536,12 @@ function createFolderNode(
     folderOuter.classList.add("open")
   }
 
+  updateTextAccordionTitle(folderContainer, !folderOuter.classList.contains("open"))
+
   let folderChildIndex0 = 0
   for (const child of node.children) {
     const childNode = child.isFolder
-      ? createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++)
+      ? createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++, isTextAccordionFolder)
       : createFileNode(currentSlug, child)
     ul.appendChild(childNode)
   }
@@ -829,6 +880,17 @@ async function setupExplorer(currentSlug: FullSlug) {
       }
     }
 
+    if (opts.folderClickBehavior === "link") {
+      const accButtons = explorer.querySelectorAll(
+        ".folder-container.folder-text-accordion .folder-button",
+      ) as NodeListOf<HTMLElement>
+
+      for (const button of accButtons) {
+        button.addEventListener("click", toggleFolder)
+        window.addCleanup(() => button.removeEventListener("click", toggleFolder))
+      }
+    }
+
     const folderIcons = explorer.getElementsByClassName(
       "folder-icon",
     ) as HTMLCollectionOf<HTMLElement>
@@ -836,6 +898,43 @@ async function setupExplorer(currentSlug: FullSlug) {
       icon.addEventListener("click", toggleFolder)
       window.addCleanup(() => icon.removeEventListener("click", toggleFolder))
     }
+    // ✅ 본문(PageList) -> Explorer 동기화
+    const onExternalFolderState = (ev: Event) => {
+      const e = ev as CustomEvent<FolderStateEvtDetail>
+      const d = e.detail
+      if (!d || d.source !== "content") return
+    
+      const folderKey = String(d.folderKey ?? "")
+      if (!folderKey) return
+      const collapsed = !!d.collapsed
+    
+      const container = explorer.querySelector(
+        `.folder-container[data-folderkey="${cssEscape(folderKey)}"]`,
+      ) as HTMLElement | null
+      if (!container) return
+    
+      const outer = container.nextElementSibling as HTMLElement | null
+      if (!outer || !outer.classList.contains("folder-outer")) return
+    
+      if (collapsed) outer.classList.remove("open")
+      else outer.classList.add("open")
+    
+      updateTextAccordionTitle(container, collapsed)
+    
+      if (!collapsed) {
+        const ul = outer.querySelector("ul") as HTMLUListElement | null
+        if (ul) applyCompactRuleToUl(ul)
+      }
+    
+      const st = currentExplorerState.find((x) => x.path === folderKey)
+      if (st) st.collapsed = collapsed
+      else currentExplorerState.push({ path: folderKey, collapsed })
+    
+      localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
+    }
+    
+    window.addEventListener(FOLDER_STATE_EVT, onExternalFolderState as EventListener)
+    window.addCleanup(() => window.removeEventListener(FOLDER_STATE_EVT, onExternalFolderState as EventListener))
   }
 }
 
