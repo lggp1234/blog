@@ -518,7 +518,12 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   }
   // if the saved state is collapsed or the default state is collapsed
   const folderTitleEl = folderContainer.querySelector(".folder-title") as HTMLElement | null
-  const persisted = savedCollapsedByKeyV2.get(folderKey)
+  // ✅ 폴더/파일 동일하게 truncate 대상 지정
+  // (폴더는 title이 button/span/a 형태로 갈라져서 selector를 넓게 잡는다)
+  const folderTitleEl = folderContainer.querySelector(
+    ".folder-title, .folder-title--textonly",
+  ) as HTMLElement | null
+  folderTitleEl?.classList.add("ce-truncate")
   const legacyKey = normalizeExplorerStatePathLegacy(folderPath)
   const fromLegacy = legacyCollapsedByKey.get(legacyKey)
   const isCollapsed = persisted ?? fromLegacy ?? opts.folderDefaultState === "collapsed"
