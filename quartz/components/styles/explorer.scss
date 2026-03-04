@@ -116,11 +116,6 @@ button.desktop-explorer {
 }
 
 .explorer-content {
-  list-style: none;
-  overflow: hidden;
-  overflow-y: auto;
-  margin-top: 0.5rem;
-
   & ul {
     list-style: none;
     margin: 0;
@@ -131,24 +126,18 @@ button.desktop-explorer {
       color: var(--dark);
       opacity: 0.75;
       pointer-events: all;
-
-      &.active {
-        opacity: 1;
-        color: var(--tertiary);
-      }
-
-      & li .folder-title.active {
-        opacity: 1;
-        color: var(--tertiary);
-      }
     }
 
-    & li .folder-title.active {
+    & li > a.active {
       opacity: 1;
       color: var(--tertiary);
     }
-  }
 
+    & li .folder-title.active,
+    & li .folder-title--textonly.active {
+
+    }
+  }
   /* =========================================
      Explorer title truncation (no wrapping)
      - overflow => cut tail + custom "..." + fade
@@ -497,11 +486,10 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   border-left: 0;
 }
 
-/* Text-accordion folder: 열리면(활성) 청록(tertiary)로 */
+/* Text:true(=folder-text-accordion) 폴더가 열릴 때:
+   - 색상 변화 없음
+   - Bold만 적용 */
 .explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
-  color: var(--tertiary);
-}
-
-.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-icon {
-  color: var(--tertiary);
+  color: var(--secondary);     /* 기본 폴더 색 유지 */
+  font-weight: 700;            /* Bold */
 }
