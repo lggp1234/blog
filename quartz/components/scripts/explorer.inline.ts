@@ -462,8 +462,9 @@ function createFolderNode(
   const isTextOnlyFolder = !forceNormalTextOnly && !!(node.data as any)?.textOnly
   const childrenForThisFolder = virtualChildren ?? node.children
   const isTextAccordionFolder = isTextOnlyFolder && childrenForThisFolder.some((c) => c.isFolder)
-  
-  if (isTextOnlyFolder && !isTextAccordionFolder) {
+
+  // ✅ Text: true 폴더는 펼침/접힘 아이콘(chevron) 없이 제목 클릭으로만 토글되게
+  if (isTextOnlyFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
     icon?.remove()
   }
