@@ -181,8 +181,9 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "bf750706b3ad40fc",
+  "active": "814e75f6c08ac4b1",
   "lastOpenFiles": [
+    "quartz/components/scripts/textAccordion.inline.ts",
     "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
     "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index.md",
     "content/english/1-study/1-physics/130-phasetransitionandcriticalphenomena/index.md",
@@ -208,7 +209,6 @@
     "content/english/1-study/1-physics/index.md",
     "content/한국어버젼/1-학업/물리학/index.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의2-통계역학적-앙상블.md",
-    "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의1-통계역학의-동기.md",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/무제",
     "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론",
