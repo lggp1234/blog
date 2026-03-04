@@ -8,8 +8,10 @@ import { i18n } from "../../i18n"
 import { QuartzPluginData } from "../../plugins/vfile"
 import { ComponentChildren, Fragment } from "preact"
 import { concatenateResources } from "../../util/resources"
+import accordionScript from "../scripts/textAccordion.inline"
 import { trieFromAllFiles } from "../../util/ctx"
 import { FullSlug, isFolderPath, joinSegments, resolveRelative } from "../../util/path"
+import accordionScript from "../scripts/textAccordion.inline"
 
 interface FolderContentOptions {
   /** Whether to display number of folders */
