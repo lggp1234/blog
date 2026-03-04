@@ -71,9 +71,10 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
       {list.map((page) => {
         const title = page.frontmatter?.title
         const tags = page.frontmatter?.tags ?? []
-        const isTextOnlyFolder =
-          isFolderPath(page.slug ?? "") &&
-          Boolean(((page.frontmatter as any)?.Text ?? (page.frontmatter as any)?.text) === true)
+        const fm: any = page.frontmatter ?? {}
+        const isFolder = fm.__isFolder === true || isFolderPath(page.slug ?? "")
+        const isTextOnlyFolder = isFolder && fm.__textOnlyFolder === true
+        const isSpecialFolder = isFolder && fm.__specialButton === true
 
         return (
           <li class="section-li">
@@ -83,31 +84,19 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  {(() => {
-                    const fm: any = page.frontmatter ?? {}
-                    const isFolder = fm.__isFolder === true || isFolderPath(page.slug ?? "")
-                    const isTextOnlyFolder = isFolder && (fm.Text === true || fm.text === true) // ✅ 추가
-                    const isSpecialFolder = isFolder && fm.__specialButton === true
-                
-                    if (isTextOnlyFolder) {
-                      return <span class="folder-text-only">{title}</span>
-                    }
-                
-                    return isSpecialFolder ? (
-                      <span class="folder-special-btn-outer">
-                        <a
-                          href={resolveRelative(fileData.slug!, page.slug!)}
-                          class="internal folder-special-btn-link"
-                        >
-                          {title}
-                        </a>
-                      </span>
-                    ) : (
-                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                  {isTextOnlyFolder ? (
+                    <span class="folder-text-only">{title}</span>
+                  ) : isSpecialFolder ? (
+                    <span class="folder-special-btn-outer">
+                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal folder-special-btn-link">
                         {title}
                       </a>
-                    )
-                  })()}
+                    </span>
+                  ) : (
+                    <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                      {title}
+                    </a>
+                  )}
                 </h3>
               </div>
               <ul class="tags">
