@@ -82,7 +82,7 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
         const isSpecialFolder = isFolder && fm.__specialButton === true
 
         return (
-          <li class="section-li">
+          <li class={`section-li${isTextAccordion ? " is-accordion-parent" : ""}`} data-folderkey={isTextAccordion ? folderKey : undefined}>
             <div class={`section${isTextOnlyFolder ? " section-text-only" : ""}`}>
               <p class="meta">
                 {!isTextOnlyFolder && page.dates && <Date date={getDate(cfg, page)!} locale={cfg.locale} />}
@@ -118,7 +118,55 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               {isTextAccordion && children && (
                 <div class="text-accordion-children" data-folderkey={folderKey} aria-hidden={"true"}>
                   <ul class="section-ul section-ul--nested">
-                    {children.map(/* ... */)}
+                    {children.map((child) => {
+                      const ctitle = child.frontmatter?.title
+                      const ctags = child.frontmatter?.tags ?? []
+                      const cfm: any = child.frontmatter ?? {}
+                      const cIsFolder = cfm.__isFolder === true || isFolderPath(child.slug ?? "")
+                      const cIsTextOnlyFolder = cIsFolder && cfm.__textOnlyFolder === true // (FolderContent에서 false로 강제해둠)
+                      const cIsSpecialFolder = cIsFolder && cfm.__specialButton === true
+              
+                      return (
+                        <li class="section-li">
+                          <div class={`section${cIsTextOnlyFolder ? " section-text-only" : ""}`}>
+                            <p class="meta">
+                              {!cIsTextOnlyFolder && child.dates && <Date date={getDate(cfg, child)!} locale={cfg.locale} />}
+                            </p>
+              
+                            <div class="desc">
+                              <h3>
+                                {cIsTextOnlyFolder ? (
+                                  <span class="folder-text-only">{ctitle}</span>
+                                ) : cIsSpecialFolder ? (
+                                  <span class="folder-special-btn-outer">
+                                    <a
+                                      href={resolveRelative(fileData.slug!, child.slug!)}
+                                      class="internal folder-special-btn-link"
+                                    >
+                                      {ctitle}
+                                    </a>
+                                  </span>
+                                ) : (
+                                  <a href={resolveRelative(fileData.slug!, child.slug!)} class="internal">
+                                    {ctitle}
+                                  </a>
+                                )}
+                              </h3>
+                            </div>
+              
+                            <ul class="tags">
+                              {ctags.map((tag) => (
+                                <li>
+                                  <a class="internal tag-link" href={resolveRelative(fileData.slug!, `tags/${tag}` as FullSlug)}>
+                                    {tag}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}
@@ -232,7 +280,7 @@ a.internal.folder-special-btn-link {
   margin-top: 0.25rem;
 }
 
-.text-accordion-li.is-open > .text-accordion-children {
+.section-li.is-accordion-parent.is-open .text-accordion-children {
   display: block;
 }
 
