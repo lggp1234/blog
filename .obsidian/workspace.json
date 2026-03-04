@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/물리학/00-고전역학/강의1-뉴턴역학.md",
+                "file": "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "강의1-뉴턴역학"
+              "title": "index"
             }
           }
         ]
@@ -183,27 +183,27 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
-    "content/한국어버젼/1-학업/물리학/00-고전역학/index.md",
-    "content/한국어버젼/1-학업/물리학/00-고전역학/강의1-뉴턴역학.md",
-    "content/english/1-study/1-physics/00-classical-mechanics/lecture1-newtonian-mechanics.md",
+    "content/english/1-study/1-physics/100-thermalphysics/index.md",
+    "content/english/1-study/1-physics/110-kinetictheory/index.md",
+    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/index.md",
+    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/lecture2-statistical-ensemble.md",
+    "content/english/1-study/1-physics/130-phasetransitionandcriticalphenomena/index.md",
+    "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index.md",
+    "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
+    "content/한국어버젼/1-학업/물리학/150-번외-동역학계와복잡계/index.md",
     "content/한국어버젼/1-학업/물리학/02-양자역학/양자역학에서의-수학적-표기법.md",
+    "content/한국어버젼/1-학업/물리학/00-고전역학/강의1-뉴턴역학.md",
+    "content/한국어버젼/1-학업/물리학/00-고전역학/index.md",
+    "content/english/1-study/1-physics/00-classical-mechanics/lecture1-newtonian-mechanics.md",
     "content/english/1-study/1-physics/02-quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
     "content/english/1-study/1-physics/02-quantum-mechanics/index.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의2-통계역학적-앙상블.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의1-통계역학의-동기.md",
     "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/lecture1-motivations-of-statistical-mechanics.md",
-    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/lecture2-statistical-ensemble.md",
-    "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
-    "content/한국어버젼/1-학업/물리학/150-번외-동역학계와복잡계/index.md",
-    "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index.md",
     "content/한국어버젼/1-학업/물리학/140-비평형통계역학/index.md",
-    "content/english/1-study/1-physics/130-phasetransitionandcriticalphenomena/index.md",
     "content/한국어버젼/1-학업/물리학/130-상전이와임계현상/index.md",
-    "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/index.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/index.md",
-    "content/english/1-study/1-physics/110-kinetictheory/index.md",
     "content/한국어버젼/1-학업/물리학/110-동적이론/index.md",
-    "content/english/1-study/1-physics/100-thermalphysics/index.md",
     "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
     "content/한국어버젼/1-학업/물리학/100-열역학/index.md",
     "content/한국어버젼/1-학업/물리학/02-양자역학/index.md",
