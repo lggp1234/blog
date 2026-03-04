@@ -448,6 +448,7 @@ function createFolderNode(
   parentKey: string,
   indexAmongFolders0: number,
   forceNormalTextOnly: boolean = false,
+  virtualChildren: FileTrieNode[] | null = null, 
 ): HTMLLIElement {
   const template = document.getElementById("template-folder") as HTMLTemplateElement
   const clone = template.content.cloneNode(true) as DocumentFragment
@@ -463,9 +464,8 @@ function createFolderNode(
   
   // ✅ 직계 자식들은 "일반 폴더처럼" 보이게 강제할 수 있음
   const isTextOnlyFolder = !forceNormalTextOnly && !!(node.data as any)?.textOnly
-  
-  // ✅ Text:true + (직계 하위 폴더 존재) => Text Accordion Folder
-  const isTextAccordionFolder = isTextOnlyFolder && node.children.some((c) => c.isFolder)
+  const childrenForThisFolder = virtualChildren ?? node.children
+  const isTextAccordionFolder = isTextOnlyFolder && childrenForThisFolder.some((c) => c.isFolder)
   
   if (isTextOnlyFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
@@ -538,11 +538,53 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
 
   updateTextAccordionTitle(folderContainer, !folderOuter.classList.contains("open"))
 
+  const kids = childrenForThisFolder
   let folderChildIndex0 = 0
-  for (const child of node.children) {
-    const childNode = child.isFolder
-      ? createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++, isTextAccordionFolder)
-      : createFileNode(currentSlug, child)
+  
+  for (let i = 0; i < kids.length; i++) {
+    const child = kids[i]
+  
+    if (!child.isFolder) {
+      ul.appendChild(createFileNode(currentSlug, child))
+      continue
+    }
+  
+    // forceNormalTextOnly면(accordion 내부) 헤더 grouping 금지
+    const childIsHeader = !forceNormalTextOnly && !!(child.data as any)?.textOnly
+  
+    if (childIsHeader) {
+      // ✅ 다음 헤더 전까지의 “형제 폴더들”을 가상 하위로 묶기
+      const grouped: FileTrieNode[] = []
+      let j = i + 1
+      let skippedFolderCount = 0
+  
+      while (j < kids.length) {
+        const nxt = kids[j]
+        if (!nxt.isFolder) break
+        if (!!(nxt.data as any)?.textOnly) break
+        grouped.push(nxt)
+        j++
+        skippedFolderCount++
+      }
+  
+      const headerNode = createFolderNode(
+        currentSlug,
+        child,
+        opts,
+        folderKey,
+        folderChildIndex0++,
+        false,
+        grouped.length > 0 ? grouped : null,
+      )
+      ul.appendChild(headerNode)
+  
+      // ✅ 부모 레벨에서 grouped 폴더들은 렌더하지 않음
+      // (folderChildIndex0는 원래 구조 유지 목적이면 여기에 skippedFolderCount만큼 증가시킬 수도 있음)
+      i = j - 1
+      continue
+    }
+  
+    const childNode = createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++, isTextAccordionFolder)
     ul.appendChild(childNode)
   }
   if (folderOuter.classList.contains("open")) {
