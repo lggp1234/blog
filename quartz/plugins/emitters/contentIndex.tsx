@@ -40,6 +40,28 @@ const defaultOptions: Options = {
   includeEmptyFiles: true,
 }
 
+function readTextFlag(frontmatter: any): boolean {
+  if (!frontmatter) return false
+
+  let v: any = (frontmatter as any).Text ?? (frontmatter as any).text
+  if (v === undefined) {
+    for (const [k, val] of Object.entries(frontmatter)) {
+      if (String(k).trim().toLowerCase() === "text") {
+        v = val
+        break
+      }
+    }
+  }
+
+  if (typeof v === "boolean") return v
+  if (typeof v === "number") return v !== 0
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+  }
+  return false
+}
+
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndexMap): string {
   const base = cfg.baseUrl ?? ""
   const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<url>
@@ -111,9 +133,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
             links: file.data.links ?? [],
             tags: file.data.frontmatter?.tags ?? [],
             content: file.data.text ?? "",
-            textOnly:
-              (file.data.frontmatter as any)?.Text === true ||
-              (file.data.frontmatter as any)?.text === true,
+            textOnly: readTextFlag(file.data.frontmatter ?? {}),
             richContent: opts?.rssFullHtml
               ? escapeHTML(toHtml(tree as Root, { allowDangerousHtml: true }))
               : undefined,
