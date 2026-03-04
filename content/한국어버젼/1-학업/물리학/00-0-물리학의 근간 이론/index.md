@@ -1,6 +1,6 @@
 ---
 lang: ko
-altLangPath:
+altLangPath: /english/1-study/1-physics/00-0-Fundamental-Series/index
 title: 물리학의 근간 이론
 Text: "true"
 ---

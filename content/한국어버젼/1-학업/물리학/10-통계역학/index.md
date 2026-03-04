@@ -1,6 +1,6 @@
 ---
 lang: ko
-altLangPath: /english/1-study/1-physics/statistical-mechanics/3-equilibriumstatisticalmechanics/index/
+altLangPath: /english/1-study/1-physics/10-Statistical-Mechanics/index
 title: ⭐ 통계역학
 Text: "true"
 ---
