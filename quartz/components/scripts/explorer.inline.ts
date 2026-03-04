@@ -427,6 +427,10 @@ function createFolderNode(
   const token = folderTokenFromNode(node, indexAmongFolders0)
   const folderKey = parentKey ? `${parentKey}/${token}` : token
   const isTextOnlyFolder = !!(node.data as any)?.textOnly
+  if (isTextOnlyFolder) {
+    const icon = folderContainer.querySelector(".folder-icon")
+    icon?.remove()
+  }
 
   // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
