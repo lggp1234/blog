@@ -399,6 +399,8 @@ function toggleFolder(evt: MouseEvent) {
     const ul = folderOuter.querySelector("ul") as HTMLUListElement | null
     if (ul) applyCompactRuleToUl(ul)
   }
+  const explorer = folderContainer.closest(".explorer") as HTMLElement | null
+  if (explorer) applyExplorerTitleTruncation(explorer)
 
   // ✅ 상태 키는 무조건 v2 folderKey로 통일
   const folderKey =
@@ -834,28 +836,32 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     }
 
     let cut = lo
-
-    // (A) "다음 단어"의 1~2글자만 걸친 경우(예: PhysicsS...), 그 단어는 버리고 공백에서 끊는다
-    const prefixRaw = full.slice(0, cut)
-    const ws = prefixRaw.lastIndexOf(" ")
-    if (ws >= 0) {
-      const tailLen = prefixRaw.length - (ws + 1) // 마지막 공백 뒤에 남은 글자 수
-      if (tailLen <= 2) {
-        cut = ws + 1 // 공백까지 포함해서 끊기 => "Fundamental Physics "
+    
+    // (1) cut 지점이 "단어 중간"이면 마지막 공백(단어 경계)로 되돌린다.
+    //     - 예: "Fundamental PhysicsSer" 같은 케이스 제거
+    //     - 조건: cut-1이 공백이 아니고, cut 위치도 공백이 아니면 단어 중간
+    if (cut > 0 && cut < full.length) {
+      const prev = full[cut - 1]
+      const next = full[cut]
+      const inWord = prev !== " " && next !== " "
+      if (inWord) {
+        const ws = full.lastIndexOf(" ", cut - 1)
+        if (ws >= 0) cut = ws + 1 // ✅ 공백을 포함해서 끊기 => "Physics "
       }
     }
-
+    
     let prefix = full.slice(0, cut)
-
-    // (B) 끝 공백을 "지우지 말고" 유지(단, 여러 공백이면 1개로)
+    
+    // (2) 끝 공백을 없애지 말고 유지하되, 여러 공백이면 1개로만 정리
     prefix = prefix.replace(/\s{2,}$/g, " ")
-
-    // (C) fade는 "마지막 단어"부터 시작해야 하므로,
-    //     prefix가 공백으로 끝나도 마지막 단어를 찾을 때는 trimEnd() 기준으로 찾는다.
+    
+    // (3) fade는 "마지막 단어(앞 공백 포함)"부터 시작.
+    //     prefix가 공백으로 끝나도 단어 경계 탐색은 trimEnd 기준으로 하되,
+    //     실제 출력은 prefix(공백 포함)를 유지한다.
     const trimmed = prefix.replace(/\s+$/g, "")
-    const wordStart = trimmed.lastIndexOf(" ")
-    const splitAt = wordStart >= 0 ? wordStart : 0
-
+    const ws2 = trimmed.lastIndexOf(" ")
+    const splitAt = ws2 >= 0 ? ws2 : 0
+    
     const opaquePart = splitAt > 0 ? prefix.slice(0, splitAt) : ""
     const fadePart = splitAt > 0 ? prefix.slice(splitAt) : prefix
 
