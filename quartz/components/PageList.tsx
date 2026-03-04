@@ -56,10 +56,9 @@ type Props = {
   limit?: number
   offset?: number
   sort?: SortFn
-  folderButtons?: boolean
 } & QuartzComponentProps
 
-export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort, folderButtons }: Props) => {
+export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort }: Props) => {
   const sorter = sort ?? byDateAndAlphabeticalFolderFirst(cfg)
   let list = allFiles.sort(sorter)
 
@@ -81,17 +80,23 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  {folderButtons ? (
-                    <span class="folder-special-btn-outer">
-                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal folder-special-btn-link">
+                  {(() => {
+                    const fm: any = page.frontmatter ?? {}
+                    const isFolder = fm.__isFolder === true || isFolderPath(page.slug ?? "")
+                    const isSpecialFolder = isFolder && fm.__specialButton === true
+                
+                    return isSpecialFolder ? (
+                      <span class="folder-special-btn-outer">
+                        <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal folder-special-btn-link">
+                          {title}
+                        </a>
+                      </span>
+                    ) : (
+                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
                         {title}
                       </a>
-                    </span>
-                  ) : (
-                    <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
-                      {title}
-                    </a>
-                  )}
+                    )
+                  })()}
                 </h3>
               </div>
               <ul class="tags">
