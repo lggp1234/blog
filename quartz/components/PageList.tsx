@@ -123,11 +123,11 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
                       const ctags = child.frontmatter?.tags ?? []
                       const cfm: any = child.frontmatter ?? {}
                       const cIsFolder = cfm.__isFolder === true || isFolderPath(child.slug ?? "")
-                      const cIsTextOnlyFolder = cIsFolder && cfm.__textOnlyFolder === true // (FolderContent에서 false로 강제해둠)
+                      const cIsTextOnlyFolder = cIsFolder && cfm.__textOnlyFolder === true
                       const cIsSpecialFolder = cIsFolder && cfm.__specialButton === true
               
                       return (
-                        <li class="section-li">
+                        <li class={`section-li${isTextAccordion ? " is-accordion-parent" : ""}`} data-folderkey={isTextAccordion ? folderKey : undefined}>
                           <div class={`section${cIsTextOnlyFolder ? " section-text-only" : ""}`}>
                             <p class="meta">
                               {!cIsTextOnlyFolder && child.dates && <Date date={getDate(cfg, child)!} locale={cfg.locale} />}
@@ -139,10 +139,7 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
                                   <span class="folder-text-only">{ctitle}</span>
                                 ) : cIsSpecialFolder ? (
                                   <span class="folder-special-btn-outer">
-                                    <a
-                                      href={resolveRelative(fileData.slug!, child.slug!)}
-                                      class="internal folder-special-btn-link"
-                                    >
+                                    <a href={resolveRelative(fileData.slug!, child.slug!)} class="internal folder-special-btn-link">
                                       {ctitle}
                                     </a>
                                   </span>
