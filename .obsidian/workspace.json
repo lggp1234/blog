@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
+                "file": "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의1-통계역학의-동기.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "강의1-통계역학의-동기"
             }
           }
         ]
@@ -183,6 +183,7 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
     "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index.md",
     "content/english/1-study/1-physics/130-phasetransitionandcriticalphenomena/index.md",
     "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/index.md",
@@ -208,7 +209,6 @@
     "content/한국어버젼/1-학업/물리학/index.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의2-통계역학적-앙상블.md",
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/강의1-통계역학의-동기.md",
-    "content/한국어버젼/1-학업/물리학/02-양자역학/양자역학에서의-수학적-표기법.md",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/무제",
     "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론",
