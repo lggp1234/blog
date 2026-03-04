@@ -754,48 +754,42 @@ function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
 
 function applyExplorerTitleTruncation(explorer: HTMLElement) {
   const targets = explorer.querySelectorAll(".ce-truncate") as NodeListOf<HTMLElement>
+  if (targets.length === 0) return
 
-  // reuse one canvas for measurement
-  const canvas = document.createElement("canvas")
-  const ctx = canvas.getContext("2d")
-  if (!ctx) return
+  // DOM 기반 측정용 hidden span (canvas 오차/letter-spacing 문제 제거)
+  const meas = document.createElement("span")
+  meas.style.position = "fixed"
+  meas.style.left = "-999999px"
+  meas.style.top = "0"
+  meas.style.visibility = "hidden"
+  meas.style.whiteSpace = "nowrap"
+  meas.style.pointerEvents = "none"
+  document.body.appendChild(meas)
 
-  const escapeHtml = (s: string) =>
+  const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
-  const getFont = (el: HTMLElement) => {
+  const measure = (text: string, el: HTMLElement): number => {
     const st = getComputedStyle(el)
-    // canvas font shorthand (line-height 제외해도 측정은 충분히 정확)
-    return `${st.fontStyle} ${st.fontVariant} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`
+    meas.style.font = `${st.fontStyle} ${st.fontVariant} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`
+    meas.style.letterSpacing = st.letterSpacing
+    meas.style.textTransform = st.textTransform
+    meas.textContent = text
+    return meas.getBoundingClientRect().width
   }
 
-  const getLetterSpacingPx = (el: HTMLElement) => {
-    const st = getComputedStyle(el)
-    const ls = st.letterSpacing
-    if (!ls || ls === "normal") return 0
-    const v = parseFloat(ls)
-    return Number.isFinite(v) ? v : 0
-  }
-
-  const measure = (text: string, el: HTMLElement) => {
-    ctx.font = getFont(el)
-    const base = ctx.measureText(text).width
-    const ls = getLetterSpacingPx(el)
-    // letter-spacing 보정(대부분 0이지만 안전하게)
-    return base + Math.max(0, text.length - 1) * ls
-  }
+  const dots = "..."
+  const EPS = 0.5 // 픽셀 오차 허용치(너무 일찍 잘리는 문제 완화)
 
   for (const el of targets) {
-    // display:none이면 측정 불가
+    // display:none 상태면 측정 불가
     if (el.offsetParent === null) continue
 
-    // 원본 저장 (한 번만)
-    if (!el.dataset.ceFullTitle) {
-      el.dataset.ceFullTitle = (el.textContent ?? "").trimEnd()
-    }
+    // 원문 저장(한 번만)
+    if (!el.dataset.ceFullTitle) el.dataset.ceFullTitle = el.textContent ?? ""
     const full = el.dataset.ceFullTitle ?? ""
 
-    // 먼저 원본 복원(재측정용)
+    // 매번 원문으로 복원 후 재측정 (펼침/폰트 로딩 후 변화 대응)
     el.classList.remove("ce-truncated")
     el.removeAttribute("title")
     el.textContent = full
@@ -803,81 +797,66 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     const avail = el.clientWidth
     if (avail <= 0) continue
 
+    // (3) 공간 충분한데 ... 끊는 문제 방지:
+    // 실제 DOM 측정으로 full이 들어가면 절대 truncation하지 않는다
     const fullW = measure(full, el)
-    if (fullW <= avail + 0.5) {
-      // 안 넘치면 그대로
+    if (fullW <= avail + EPS) {
       continue
     }
 
-    // 넘치면: "prefix + ..." 가 딱 맞도록 prefix 길이 계산
-    const dots = "..."
     const dotsW = measure(dots, el)
-
-    // 최소 공간도 안 되면 dots만
-    if (dotsW > avail) {
+    if (dotsW > avail + EPS) {
+      // 극단적으로 좁으면 점만
       el.classList.add("ce-truncated")
       el.setAttribute("title", full)
       el.innerHTML =
         `<span class="ce-prefix"></span>` +
         `<span class="ce-fade"></span>` +
-        `<span class="ce-dots"><span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span></span>`
+        `<span class="ce-dots">` +
+        `<span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span>` +
+        `</span>`
       continue
     }
 
+    // (1) 글자 기준으로 최대 cut 찾기: prefix + "..." 가 avail 이하가 되는 최대 prefix 길이
     let lo = 0
     let hi = full.length
-
-    // 이진 탐색: full.slice(0, mid) + "..." 가 avail 이하가 되는 최대 mid 찾기
     while (lo < hi) {
       const mid = Math.floor((lo + hi + 1) / 2)
       const w = measure(full.slice(0, mid), el) + dotsW
-      if (w <= avail) lo = mid
+      if (w <= avail + EPS) lo = mid
       else hi = mid - 1
     }
 
-    let cut = lo
-    
-    // (1) cut 지점이 "단어 중간"이면 마지막 공백(단어 경계)로 되돌린다.
-    //     - 예: "Fundamental PhysicsSer" 같은 케이스 제거
-    //     - 조건: cut-1이 공백이 아니고, cut 위치도 공백이 아니면 단어 중간
-    if (cut > 0 && cut < full.length) {
-      const prev = full[cut - 1]
-      const next = full[cut]
-      const inWord = prev !== " " && next !== " "
-      if (inWord) {
-        const ws = full.lastIndexOf(" ", cut - 1)
-        if (ws >= 0) cut = ws + 1 // ✅ 공백을 포함해서 끊기 => "Physics "
-      }
-    }
-    
-    let prefix = full.slice(0, cut)
-    
-    // (2) 끝 공백을 없애지 말고 유지하되, 여러 공백이면 1개로만 정리
+    let prefix = full.slice(0, lo)
+
+    // (2) 공백 처리(중요):
+    // - 절대 trim 하지 않음 (끝이 공백이면 " ...")
+    // - 다만 trailing 공백이 여러 개면 1개로만 줄임
     prefix = prefix.replace(/\s{2,}$/g, " ")
-    
-    // (3) fade는 "마지막 단어(앞 공백 포함)"부터 시작.
-    //     prefix가 공백으로 끝나도 단어 경계 탐색은 trimEnd 기준으로 하되,
-    //     실제 출력은 prefix(공백 포함)를 유지한다.
+
+    // fade는 “마지막 단어(앞 공백 포함)부터” 시작 (이전 글자 100% 유지)
+    // prefix가 공백으로 끝나도 출력은 prefix 그대로 유지하되,
+    // 단어 경계 탐색만 trimEnd 기준으로 한다.
     const trimmed = prefix.replace(/\s+$/g, "")
-    const ws2 = trimmed.lastIndexOf(" ")
-    const splitAt = ws2 >= 0 ? ws2 : 0
-    
+    const ws = trimmed.lastIndexOf(" ")
+    const splitAt = ws >= 0 ? ws : 0
+
     const opaquePart = splitAt > 0 ? prefix.slice(0, splitAt) : ""
     const fadePart = splitAt > 0 ? prefix.slice(splitAt) : prefix
 
     el.classList.add("ce-truncated")
-    // 4) hover하면 풀네임 확인
-    el.setAttribute("title", full)
+    el.setAttribute("title", full) // (4) hover 시 풀네임 확인
 
     el.innerHTML =
-      `<span class="ce-prefix">${escapeHtml(opaquePart)}</span>` +
-      `<span class="ce-fade">${escapeHtml(fadePart)}</span>` +
+      `<span class="ce-prefix">${esc(opaquePart)}</span>` +
+      `<span class="ce-fade">${esc(fadePart)}</span>` +
       `<span class="ce-dots">` +
-      `<span class="dot d1">.</span>` +
-      `<span class="dot d2">.</span>` +
-      `<span class="dot d3">.</span>` +
+      `<span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span>` +
       `</span>`
   }
+
+  meas.remove()
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
@@ -1032,6 +1011,10 @@ async function setupExplorer(currentSlug: FullSlug) {
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
     applyExplorerTitleTruncation(explorer)
+    const anyDoc = document as any
+    if (anyDoc.fonts?.ready) {
+      anyDoc.fonts.ready.then(() => applyExplorerTitleTruncation(explorer))
+    }
     if (opts.useSavedState) {
       localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
     }
