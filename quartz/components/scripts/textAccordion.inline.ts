@@ -80,16 +80,18 @@ function setupTextAccordions() {
       setCollapsed(folderKey, nextCollapsed)
       setDomForKey(folderKey, nextCollapsed)
 
-      try {
-        window.dispatchEvent(
-          new CustomEvent(EVT, { detail: { folderKey, collapsed: nextCollapsed, source: "content" } }),
-        )
-      } catch {}
+      window.dispatchEvent(
+        new CustomEvent(EVT, { detail: { folderKey, collapsed: nextCollapsed, source: "content" } }),
+      )
     }
 
     btn.addEventListener("click", onClick)
+    // ✅ addCleanup은 nav 이후에 정의되므로, 여기서는 안전하지만 그래도 방어적으로
     // @ts-ignore
-    window.addCleanup(() => btn.removeEventListener("click", onClick))
+    if (typeof window.addCleanup === "function") {
+      // @ts-ignore
+      window.addCleanup(() => btn.removeEventListener("click", onClick))
+    }
   }
 
   const onExternal = (e: any) => {
@@ -105,8 +107,18 @@ function setupTextAccordions() {
 
   window.addEventListener(EVT, onExternal)
   // @ts-ignore
-  window.addCleanup(() => window.removeEventListener(EVT, onExternal))
+  if (typeof window.addCleanup === "function") {
+    // @ts-ignore
+    window.addCleanup(() => window.removeEventListener(EVT, onExternal))
+  }
 }
 
-setupTextAccordions()
-document.addEventListener("nav", () => setupTextAccordions())
+// ✅ 핵심 수정: 즉시 실행 금지 (addCleanup/nav 준비되기 전 실행되면 전체 스크립트가 터져 Explorer가 죽음)
+// Quartz SPA는 nav 이벤트를 “맨 마지막”에 발행하므로, 여기서 등록만 해두면 초기 로딩도 정상 동작함.
+document.addEventListener("nav", () => {
+  try {
+    setupTextAccordions()
+  } catch (e) {
+    console.error("[TextAccordion] setup failed", e)
+  }
+})
