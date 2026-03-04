@@ -426,13 +426,27 @@ function createFolderNode(
   const folderPath = node.slug
   const token = folderTokenFromNode(node, indexAmongFolders0)
   const folderKey = parentKey ? `${parentKey}/${token}` : token
+  const isTextOnlyFolder = !!(node.data as any)?.textOnly
 
   // 원본 경로(혹시 필요할 수 있어) + 정규화 키(상태 저장용)를 분리해서 저장
   folderContainer.dataset.folderpath = folderPath
   folderContainer.dataset.folderkey = folderKey
   ul.dataset.ceFolderKey = folderKey
 
-  if (opts.folderClickBehavior === "link") {
+  // -------------------------------
+  // Folder title rendering
+  // - normal folders: follow opts.folderClickBehavior (link vs collapse)
+  // - text-only folders: NO LINK (non-clickable label)
+  // -------------------------------
+  if (isTextOnlyFolder) {
+    // Replace the button with a plain <span> (no link, no toggle on title)
+    const button = titleContainer.querySelector(".folder-button") as HTMLElement
+    const span = document.createElement("span")
+    span.className = "folder-title folder-title--textonly"
+    span.textContent = node.displayName
+    button.replaceWith(span)
+    folderContainer.classList.add("folder-text-only")
+  } else if (opts.folderClickBehavior === "link") {
     // Replace button with link for link behavior
     const button = titleContainer.querySelector(".folder-button") as HTMLElement
     const a = document.createElement("a")
@@ -442,6 +456,7 @@ function createFolderNode(
     a.textContent = node.displayName
     button.replaceWith(a)
   } else {
+    // collapse behavior: keep the button and set its inner title
     const span = titleContainer.querySelector(".folder-title") as HTMLElement
     span.textContent = node.displayName
   }
