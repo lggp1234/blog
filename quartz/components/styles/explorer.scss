@@ -484,6 +484,19 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   }
 }
 
+/* ✅ Text: true 폴더는 아이콘을 제거해도 다른 폴더들과 제목 정렬이 맞도록 아이콘 폭만큼 왼쪽 패딩을 확보 */
+.folder-container.folder-text-only,
+.folder-container.folder-text-accordion {
+  padding-left: 17px; /* 12px(icon) + 5px(margin-right) */
+}
+
+/* ✅ Text-accordion 폴더의 하위 항목은 '한 단계 더' 들여쓰지 않고, 부모와 같은 선상에서 나오게 */
+.folder-container.folder-text-accordion + .folder-outer > ul {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
+}
+
 /* Text-accordion folder: 열리면(활성) 청록(tertiary)로 */
 .explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
   color: var(--tertiary);
