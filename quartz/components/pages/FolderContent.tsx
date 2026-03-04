@@ -10,7 +10,6 @@ import { ComponentChildren, Fragment } from "preact"
 import { concatenateResources } from "../../util/resources"
 import { trieFromAllFiles } from "../../util/ctx"
 import { FullSlug, isFolderPath, joinSegments, resolveRelative } from "../../util/path"
-import accordionScript from "../scripts/textAccordion.inline"
 
 interface FolderContentOptions {
   /** Whether to display number of folders */
@@ -99,6 +98,39 @@ const readSpecialFlag = (frontmatter: any): boolean => {
 
   let v: any = frontmatter.Text ?? frontmatter.text
 
+  if (v === undefined) {
+    for (const [k, val] of Object.entries(frontmatter)) {
+      if (String(k).trim().toLowerCase() === "text") {
+        v = val
+        break
+      }
+    }
+  }
+
+  if (typeof v === "boolean") return v
+  if (typeof v === "number") return v !== 0
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+  }
+  return false
+}
+
+  if (typeof v === "boolean") return v
+  if (typeof v === "number") return v !== 0
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+  }
+  return false
+}
+
+const readTextFlag = (frontmatter: any): boolean => {
+  if (!frontmatter) return false
+
+  let v: any = frontmatter.Text ?? frontmatter.text
+
+  // 키가 Text/text가 아닌 형태(공백/대소문자 등)로 들어와도 Special처럼 잡기
   if (v === undefined) {
     for (const [k, val] of Object.entries(frontmatter)) {
       if (String(k).trim().toLowerCase() === "text") {
