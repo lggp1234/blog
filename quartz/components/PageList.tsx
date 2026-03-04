@@ -322,10 +322,19 @@ li.section-li.is-open .folder-text-accordion-icon {
   padding: 0;
   list-style: none;
 }
+/* children 항목들 사이 간격: 기본 section-ul과 유사하게 */
+.section-ul.section-ul--nested > .section-li {
+  margin-top: 0.55rem;   /* 기본 리스트의 항목 간격 느낌 */
+}
+
+.section-ul.section-ul--nested > .section-li:first-child {
+  margin-top: 0;         /* 첫 항목은 간격 없이 시작 */
+}
+
 
 /* children wrapper도 왼쪽 들여쓰기/여백 제거 */
 .text-accordion-children {
-  margin: 0;
+  margin-top: 0.85rem;   /* ✅ blog-4(14) 기본 느낌에 가장 가까운 값 */
   padding: 0;
 }
 `
