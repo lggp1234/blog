@@ -13,8 +13,6 @@ const EXPLORER_COMPACT_KEY = "explorerCompact.v1"
 
 // --------------------- Text Accordion sync ---------------------
 const FOLDER_STATE_EVT = "quartz:folder-state"
-const ACC_ARROW_CLOSED = ">"
-const ACC_ARROW_OPEN = "∨"
 
 type FolderStateEvtDetail = {
   folderKey: string
@@ -407,9 +405,6 @@ function toggleFolder(evt: MouseEvent) {
     folderContainer.dataset.folderkey ??
     normalizeExplorerStatePathLegacy(folderContainer.dataset.folderpath || "")
 
-  // ✅ text-accordion이면 제목의 > / ∨ 갱신
-  updateTextAccordionTitle(folderContainer, isCollapsed)
-
   // currentExplorerState 업데이트
   const st = currentExplorerState.find((item) => item.path === folderKey)
   if (st) st.collapsed = isCollapsed
@@ -467,7 +462,7 @@ function createFolderNode(
   const childrenForThisFolder = virtualChildren ?? node.children
   const isTextAccordionFolder = isTextOnlyFolder && childrenForThisFolder.some((c) => c.isFolder)
   
-  if (isTextOnlyFolder) {
+  if (isTextOnlyFolder && !isTextAccordionFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
     icon?.remove()
   }
@@ -492,12 +487,9 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   button.replaceWith(span)
   folderContainer.classList.add("folder-text-only")
 } else if (isTextAccordionFolder) {
-  // ✅ Text Accordion: keep button (even if behavior === "link")
   const span = titleContainer.querySelector(".folder-title") as HTMLElement
-  span.dataset.baseTitle = node.displayName
-  span.textContent = `${ACC_ARROW_CLOSED} ${node.displayName}`
+  span.textContent = node.displayName
 
-  folderContainer.classList.add("folder-text-only")
   folderContainer.classList.add("folder-text-accordion")
 } else if (opts.folderClickBehavior === "link") {
   // Replace button with link for link behavior
@@ -535,8 +527,6 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   if (!isCollapsed || folderIsPrefixOfCurrentSlug) {
     folderOuter.classList.add("open")
   }
-
-  updateTextAccordionTitle(folderContainer, !folderOuter.classList.contains("open"))
 
   const kids = childrenForThisFolder
   let folderChildIndex0 = 0
@@ -960,8 +950,6 @@ async function setupExplorer(currentSlug: FullSlug) {
     
       if (collapsed) outer.classList.remove("open")
       else outer.classList.add("open")
-    
-      updateTextAccordionTitle(container, collapsed)
     
       if (!collapsed) {
         const ul = outer.querySelector("ul") as HTMLUListElement | null
