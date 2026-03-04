@@ -23,10 +23,6 @@ interface FolderContentOptions {
 const nameFromSlug = (slug: string) =>
   slug.replace(/\/index$/, "").split("/").filter(Boolean).at(-1) ?? slug
 
-// ✅ 실제 파일/폴더명 정렬 키:
-// 1) filePath가 있으면 filePath에서 "진짜 이름"을 뽑음
-//    - .../index.md, .../_index.md면 부모 폴더명을 사용
-// 2) filePath가 없으면 slug에서 마지막 segment 사용
 const nameFromFilePathOrSlug = (p: QuartzPluginData): string => {
   const fp = (p as any)?.filePath ? String((p as any).filePath) : ""
   if (fp) {
@@ -83,6 +79,29 @@ const parseFolderPagination = (slug: string) => {
   return { baseSlug: `${m[1]}/index`, page: parseInt(m[2], 10) }
 }
 
+const readSpecialFlag = (frontmatter: any): boolean => {
+  if (!frontmatter) return false
+
+  let v: any = frontmatter.Special ?? frontmatter.special
+
+  if (v === undefined) {
+    for (const [k, val] of Object.entries(frontmatter)) {
+      if (String(k).trim().toLowerCase() === "special") {
+        v = val
+        break
+      }
+    }
+  }
+
+  if (typeof v === "boolean") return v
+  if (typeof v === "number") return v !== 0
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+  }
+  return false
+}
+
 export default ((opts?: Partial<FolderContentOptions>) => {
   const options: FolderContentOptions = {
     ...defaultOptions,
@@ -93,41 +112,6 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
   const FolderContent: QuartzComponent = (props: QuartzComponentProps) => {
     const { tree, fileData, allFiles, cfg } = props
-    // ✅ index.md frontmatter에 Special: true면 하위 폴더 링크를 '버튼'처럼 보이게 함 (동작은 동일)
-    // ✅ frontmatter의 "Special" 키를 대소문자/공백 상관없이 robust하게 읽기
-    const specialFolderButtons = (() => {
-      const fm: any = (fileData as any)?.frontmatter ?? {}
-
-      // 1) 보통 케이스
-      let v: any = fm.Special ?? fm.special
-
-      // 2) "Special : true"처럼 키에 공백이 섞여 들어가도 잡아내기
-      if (v === undefined) {
-        for (const [k, val] of Object.entries(fm)) {
-          if (String(k).trim().toLowerCase() === "special") {
-            v = val
-            break
-          }
-        }
-      }
-
-      // 3) (보험) cssclasses에 special-folder 넣어도 켜지게 하고 싶으면 사용 가능
-      //    index.md frontmatter에 cssclasses: [special-folder] 넣으면 강제로 ON
-      if (v === undefined) {
-        const cc = fm.cssclasses
-        if (Array.isArray(cc) && cc.some((x: any) => String(x).trim().toLowerCase() === "special-folder")) {
-          v = true
-        }
-      }
-
-      if (typeof v === "boolean") return v
-      if (typeof v === "number") return v !== 0
-      if (typeof v === "string") {
-        const s = v.trim().toLowerCase()
-        return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
-      }
-      return false
-    })()
 
     const trie = (props.ctx.trie ??= trieFromAllFiles(allFiles))
 
@@ -163,16 +147,18 @@ export default ((opts?: Partial<FolderContentOptions>) => {
           const latestModified =
             mostRecentModifiedInSubtree(node) ?? node.data?.dates?.modified ?? new Date()
 
-          // 폴더에 index.md가 있는 경우(node.data 존재): 기존 데이터 유지 + modified만 덮어쓰기
           if (node.data) {
             const created = node.data.dates?.created ?? latestModified
             const published = node.data.dates?.published ?? latestModified
+
+            const childIsSpecial = readSpecialFlag(node.data.frontmatter ?? {})
+
             return {
               ...node.data,
-              // ✅ “이 항목은 폴더다” 플래그를 강제로 심어서 PageList가 확실히 버튼 처리하도록 함
               frontmatter: {
                 ...(node.data.frontmatter ?? {}),
                 __isFolder: true,
+                __specialButton: childIsSpecial, 
               },
               dates: {
                 created,
@@ -193,8 +179,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             frontmatter: {
               title: node.displayName,
               tags: [],
-              // ✅ index.md가 없어도 폴더임을 확실히 표시
               __isFolder: true,
+              __specialButton: false, // index.md 없으면 Special 판단 불가 → false
             },
           }
         }
@@ -267,7 +253,6 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             {/* ✅ only-subfolders면 limit/offset을 주지 않아서 전체 목록이 "주르륵" 뜸 */}
             <PageList
               {...listProps}
-              folderButtons={specialFolderButtons}
               offset={enablePagination ? (safePage - 1) * pageSize : undefined}
               limit={enablePagination ? pageSize : undefined}
             />
