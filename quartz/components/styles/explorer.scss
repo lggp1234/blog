@@ -347,3 +347,19 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   color: var(--ce-active-text);
   box-shadow: none;
 }
+
+/* -----------------------------
+   Text-only folder (index.md: Text: true)
+   - label is rendered as <span> (no link)
+   - keep the same typography as other folder titles
+------------------------------ */
+.folder-container.folder-text-only {
+  & .folder-title--textonly {
+    font-family: var(--headerFont);
+    font-size: 0.95rem;
+    font-weight: $semiBoldWeight;
+    line-height: 1.5rem;
+    color: var(--secondary);
+    cursor: default;
+  }
+}
