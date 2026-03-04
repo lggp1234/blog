@@ -56,9 +56,10 @@ type Props = {
   limit?: number
   offset?: number
   sort?: SortFn
+  accordionChildrenByKey?: Record<string, QuartzPluginData[]>
 } & QuartzComponentProps
 
-export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort }: Props) => {
+export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offset, sort, accordionChildrenByKey }: Props) => {
   const sorter = sort ?? byDateAndAlphabeticalFolderFirst(cfg)
   let list = allFiles.sort(sorter)
 
@@ -74,6 +75,10 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
         const fm: any = page.frontmatter ?? {}
         const isFolder = fm.__isFolder === true || isFolderPath(page.slug ?? "")
         const isTextOnlyFolder = isFolder && fm.__textOnlyFolder === true
+        const folderKey = typeof fm.__folderKey === "string" ? fm.__folderKey : ""
+        const children = folderKey ? accordionChildrenByKey?.[folderKey] : undefined
+        const isTextAccordion =
+          isTextOnlyFolder && fm.__textAccordion === true && Array.isArray(children) && children.length > 0
         const isSpecialFolder = isFolder && fm.__specialButton === true
 
         return (
@@ -84,7 +89,17 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
               </p>
               <div class="desc">
                 <h3>
-                  {isTextOnlyFolder ? (
+                  {isTextAccordion ? (
+                    <button
+                      type="button"
+                      class="folder-text-accordion-btn"
+                      data-folderkey={folderKey}
+                      aria-expanded={"false"}
+                    >
+                      <span class="folder-text-accordion-arrow">&gt;</span>
+                      <span class="folder-text-only">{title}</span>
+                    </button>
+                  ) : isTextOnlyFolder ? (
                     <span class="folder-text-only">{title}</span>
                   ) : isSpecialFolder ? (
                     <span class="folder-special-btn-outer">
@@ -99,6 +114,15 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
                   )}
                 </h3>
               </div>
+              
+              {isTextAccordion && children && (
+                <div class="text-accordion-children" data-folderkey={folderKey} aria-hidden={"true"}>
+                  <ul class="section-ul section-ul--nested">
+                    {children.map(/* ... */)}
+                  </ul>
+                </div>
+              )}
+              
               <ul class="tags">
                 {tags.map((tag) => (
                   <li>
@@ -179,5 +203,40 @@ a.internal.folder-special-btn-link {
 
 .section.section-text-only .desc {
   text-align: center;
+}
+
+/* Text: true + has subfolders -> accordion button */
+.folder-text-accordion-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* Text-only 스타일(가운데) 유지 */
+  gap: 0.35rem;
+
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.folder-text-accordion-arrow {
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+.text-accordion-children {
+  display: none;
+  margin-top: 0.25rem;
+}
+
+.text-accordion-li.is-open > .text-accordion-children {
+  display: block;
+}
+
+.section-ul.section-ul--nested {
+  margin-left: 1.25rem; /* “아래에 쭉” 보이되 약간만 들여쓰기 */
 }
 `
