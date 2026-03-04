@@ -506,6 +506,15 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   span.textContent = node.displayName
 }
 
+  // ✅ 폴더 페이지 자체가 현재 페이지인 경우에도 active 표시
+  // (파일 링크(<a>)만 active가 붙던 문제를 해결)
+  const isActiveFolderPage =
+    stripIndexFromSlug(String(currentSlug)) === stripIndexFromSlug(String(folderPath))
+
+  if (isActiveFolderPage) {
+    const titleEl = folderContainer.querySelector(".folder-title") as HTMLElement | null
+    titleEl?.classList.add("active")
+  }
   // if the saved state is collapsed or the default state is collapsed
   const persisted = savedCollapsedByKeyV2.get(folderKey)
   const legacyKey = normalizeExplorerStatePathLegacy(folderPath)
@@ -576,6 +585,14 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   
     const childNode = createFolderNode(currentSlug, child, opts, folderKey, folderChildIndex0++, isTextAccordionFolder)
     ul.appendChild(childNode)
+  }
+  if (ul.querySelector(".active")) {
+    folderOuter.classList.add("open")
+
+    // 상태도 "열림"으로 동기화(다음 nav 때도 따라오게)
+    savedCollapsedByKeyV2.set(folderKey, false)
+    const st2 = currentExplorerState.find((x) => x.path === folderKey)
+    if (st2) st2.collapsed = false
   }
   if (folderOuter.classList.contains("open")) {
     applyCompactRuleToUl(ul)
