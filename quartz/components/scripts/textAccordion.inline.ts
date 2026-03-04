@@ -3,15 +3,6 @@ type FolderState = { path: string; collapsed: boolean }
 const FILETREE_KEY = "fileTree.v2"
 const EVT = "quartz:folder-state"
 
-const ARROW_CLOSED = ">"
-const ARROW_OPEN = "∨"
-
-function safeEscape(s: string): string {
-  // @ts-ignore
-  if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(s)
-  return s.replace(/[^a-zA-Z0-9_\-]/g, (c) => `\\${c}`)
-}
-
 function readFileTreeState(): FolderState[] {
   const raw = localStorage.getItem(FILETREE_KEY)
   if (!raw) return []
@@ -29,7 +20,7 @@ function writeFileTreeState(next: FolderState[]) {
 
 function getCollapsed(folderKey: string): boolean {
   const st = readFileTreeState().find((x) => x?.path === folderKey)
-  return st ? !!st.collapsed : true
+  return st ? !!st.collapsed : true // default collapsed
 }
 
 function setCollapsed(folderKey: string, collapsed: boolean) {
@@ -41,20 +32,21 @@ function setCollapsed(folderKey: string, collapsed: boolean) {
 }
 
 function applyDom(folderKey: string, collapsed: boolean) {
-  const li = document.querySelector(
-    `li.section-li.is-accordion-parent[data-folderkey="${safeEscape(folderKey)}"]`,
-  ) as HTMLElement | null
+  // 버튼 기준으로 가장 가까운 section-li를 찾아 open 클래스 토글
+  const btn = document.querySelector(
+    `.folder-text-accordion-btn[data-folderkey="${CSS.escape(folderKey)}"]`,
+  ) as HTMLButtonElement | null
+  if (!btn) return
+
+  const li = btn.closest("li.section-li") as HTMLElement | null
   if (!li) return
 
-  const btn = li.querySelector(".folder-text-accordion-btn") as HTMLButtonElement | null
-  const arrow = li.querySelector(".folder-text-accordion-arrow") as HTMLElement | null
   const children = li.querySelector(".text-accordion-children") as HTMLElement | null
-
   const open = !collapsed
+
   li.classList.toggle("is-open", open)
-  if (btn) btn.setAttribute("aria-expanded", String(open))
+  btn.setAttribute("aria-expanded", String(open))
   if (children) children.setAttribute("aria-hidden", String(!open))
-  if (arrow) arrow.textContent = open ? ARROW_OPEN : ARROW_CLOSED
 }
 
 function setupTextAccordions() {
@@ -66,7 +58,7 @@ function setupTextAccordions() {
     const folderKey = btn.dataset.folderkey
     if (!folderKey) continue
 
-    // 초기 상태 (Explorer와 같은 fileTree.v2 공유)
+    // 초기 상태 반영
     applyDom(folderKey, getCollapsed(folderKey))
 
     const onClick = (e: MouseEvent) => {
