@@ -363,3 +363,12 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
     cursor: default;
   }
 }
+
+/* Text-accordion folder: 열리면(활성) 청록(tertiary)로 */
+.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
+  color: var(--tertiary);
+}
+
+.explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-icon {
+  color: var(--tertiary);
+}
