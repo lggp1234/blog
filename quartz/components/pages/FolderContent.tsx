@@ -93,6 +93,29 @@ const readSpecialFlag = (frontmatter: any): boolean => {
     }
   }
 
+  const readTextFlag = (frontmatter: any): boolean => {
+  if (!frontmatter) return false
+
+  let v: any = frontmatter.Text ?? frontmatter.text
+
+  if (v === undefined) {
+    for (const [k, val] of Object.entries(frontmatter)) {
+      if (String(k).trim().toLowerCase() === "text") {
+        v = val
+        break
+      }
+    }
+  }
+
+  if (typeof v === "boolean") return v
+  if (typeof v === "number") return v !== 0
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on"
+  }
+  return false
+}
+
   if (typeof v === "boolean") return v
   if (typeof v === "number") return v !== 0
   if (typeof v === "string") {
@@ -152,6 +175,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
             const published = node.data.dates?.published ?? latestModified
 
             const childIsSpecial = readSpecialFlag(node.data.frontmatter ?? {})
+            const childIsTextOnly = readTextFlag(node.data.frontmatter ?? {}) 
 
             return {
               ...node.data,
@@ -159,6 +183,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
                 ...(node.data.frontmatter ?? {}),
                 __isFolder: true,
                 __specialButton: childIsSpecial, 
+                __textOnlyFolder: childIsTextOnly,
               },
               dates: {
                 created,
@@ -181,6 +206,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
               tags: [],
               __isFolder: true,
               __specialButton: false, // index.md 없으면 Special 판단 불가 → false
+              __textOnlyFolder: false,
             },
           }
         }
