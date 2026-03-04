@@ -327,7 +327,8 @@ export default ((opts?: Partial<FolderContentOptions>) => {
               },
             }
           }
-
+          
+          const folderKey = computeFolderKeyForSlug(renderRootForKeys, node.slug as FullSlug)
           // index.md 없는 폴더: synthetic 항목 생성
           return {
             slug: node.slug,
