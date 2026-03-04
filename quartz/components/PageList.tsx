@@ -96,8 +96,22 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
                       data-folderkey={folderKey}
                       aria-expanded={"false"}
                     >
-                      <span class="folder-text-accordion-arrow">&gt;</span>
-                      <span class="folder-text-only">{title}</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="5 8 14 8"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="folder-text-accordion-icon"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                      <span class="folder-text-accordion-title">{title}</span>
                     </button>
                   ) : isTextOnlyFolder ? (
                     <span class="folder-text-only">{title}</span>
@@ -232,9 +246,17 @@ a.internal.folder-special-btn-link {
 .folder-text-only {
   cursor: default;
   text-decoration: none;
-  color: inherit;
 
-  font-size: 1.35em; /* 4.2 글씨 크기 키우기 (원하면 1.25~1.6 조절) */
+  /* 1.1: 제목 중앙 정렬 */
+  display: block;
+  width: 100%;
+  text-align: center;
+
+  /* 1.1: 폰트/사이즈는 기본(h3) 그대로 */
+  font: inherit;
+
+  /* 1.2: 비활성(기본) 색 = 평범한 폴더 색(secondary) */
+  color: var(--secondary);
 }
 
 /* 날짜 column 자체를 없애서(좌측 공백 제거) title/tags만 2-column으로 정렬 */
@@ -246,10 +268,6 @@ a.internal.folder-special-btn-link {
   display: none;
 }
 
-.section.section-text-only .desc {
-  text-align: center;
-}
-
 /* Text: true + has subfolders -> accordion button */
 .folder-text-accordion-btn {
   background: transparent;
@@ -259,17 +277,35 @@ a.internal.folder-special-btn-link {
   width: 100%;
   display: inline-flex;
   align-items: center;
-  justify-content: center; /* Text-only 스타일(가운데) 유지 */
+  justify-content: center;   /* 1.1 제목 중앙 */
   gap: 0.35rem;
 
-  font: inherit;
-  color: inherit;
+  font: inherit;             /* 1.1 폰트/사이즈 기본 유지 */
   cursor: pointer;
+
+  /* 1.2 비활성(접힘) 색: 평범한 폴더 색 */
+  color: var(--secondary);
 }
 
-.folder-text-accordion-arrow {
-  font-size: 0.95em;
-  line-height: 1;
+/* 1.2 활성(펼침) 색: 평범한 “활성 폴더” 청록(tertiary) */
+li.section-li.is-open .folder-text-accordion-btn {
+  color: var(--tertiary);
+}
+
+/* 1.4 Quartz 기본 chevron 아이콘: 접힘이면 -90deg(오른쪽), 펼침이면 아래 */
+.folder-text-accordion-icon {
+  transition: transform 0.3s ease;
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+}
+
+li.section-li.is-open .folder-text-accordion-icon {
+  transform: rotate(0deg);
+}
+
+/* 제목 텍스트는 버튼 컬러를 상속 */
+.folder-text-accordion-title {
+  color: inherit;
 }
 
 .text-accordion-children {
