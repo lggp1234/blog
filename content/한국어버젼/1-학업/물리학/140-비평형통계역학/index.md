@@ -1,5 +1,5 @@
 ---
 lang: ko
 altLangPath: /english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index
-title: 비평형 통계역학
+title: 014. 비평형 통계역학
 ---
