@@ -428,6 +428,7 @@ function createFileNode(currentSlug: FullSlug, node: FileTrieNode): HTMLLIElemen
   a.href = resolveRelative(currentSlug, node.slug)
   a.dataset.for = node.slug
   a.textContent = node.displayName
+  a.classList.add("ce-truncate")
 
   if (currentSlug === node.slug) {
     a.classList.add("active")
@@ -516,6 +517,7 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
     titleEl?.classList.add("active")
   }
   // if the saved state is collapsed or the default state is collapsed
+  const folderTitleEl = folderContainer.querySelector(".folder-title") as HTMLElement | null
   const persisted = savedCollapsedByKeyV2.get(folderKey)
   const legacyKey = normalizeExplorerStatePathLegacy(folderPath)
   const fromLegacy = legacyCollapsedByKey.get(legacyKey)
@@ -742,6 +744,22 @@ function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
   }
 }
 
+function applyExplorerTitleTruncation(explorer: HTMLElement) {
+  const targets = explorer.querySelectorAll(".ce-truncate") as NodeListOf<HTMLElement>
+
+  for (const el of targets) {
+    el.classList.remove("is-overflowing")
+
+    // display:none 상태면 측정 불가하니 건너뜀
+    if (el.offsetParent === null) continue
+
+    // scrollWidth > clientWidth면 overflow
+    if (el.scrollWidth > el.clientWidth + 1) {
+      el.classList.add("is-overflowing")
+    }
+  }
+}
+
 async function setupExplorer(currentSlug: FullSlug) {
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
@@ -893,6 +911,7 @@ async function setupExplorer(currentSlug: FullSlug) {
     explorerUl.innerHTML = ""
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
+    applyExplorerTitleTruncation(explorer)
     if (opts.useSavedState) {
       localStorage.setItem(FILETREE_KEY, JSON.stringify(currentExplorerState))
     }
@@ -1041,6 +1060,8 @@ window.addEventListener("resize", function () {
   } else {
     document.documentElement.classList.remove("mobile-no-scroll")
   }
+
+  applyExplorerTitleTruncation(explorer)
 })
 
 function setFolderState(folderElement: HTMLElement, collapsed: boolean) {
