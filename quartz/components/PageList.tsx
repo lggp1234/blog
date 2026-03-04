@@ -164,6 +164,8 @@ a.internal.folder-special-btn-link {
   cursor: default;
   text-decoration: none;
   color: inherit;
+
+  font-size: 1.35em; /* 4.2 글씨 크기 키우기 (원하면 1.25~1.6 조절) */
 }
 
 /* 날짜 column 자체를 없애서(좌측 공백 제거) title/tags만 2-column으로 정렬 */
@@ -173,5 +175,9 @@ a.internal.folder-special-btn-link {
 
 .section.section-text-only > .meta {
   display: none;
+}
+
+.section.section-text-only .desc {
+  text-align: center;
 }
 `
