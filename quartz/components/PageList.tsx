@@ -71,23 +71,34 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit, offs
       {list.map((page) => {
         const title = page.frontmatter?.title
         const tags = page.frontmatter?.tags ?? []
+        const isTextOnlyFolder =
+          isFolderPath(page.slug ?? "") &&
+          Boolean(((page.frontmatter as any)?.Text ?? (page.frontmatter as any)?.text) === true)
 
         return (
           <li class="section-li">
-            <div class="section">
+            <div class={`section${isTextOnlyFolder ? " section-text-only" : ""}`}>
               <p class="meta">
-                {page.dates && <Date date={getDate(cfg, page)!} locale={cfg.locale} />}
+                {!isTextOnlyFolder && page.dates && <Date date={getDate(cfg, page)!} locale={cfg.locale} />}
               </p>
               <div class="desc">
                 <h3>
                   {(() => {
                     const fm: any = page.frontmatter ?? {}
                     const isFolder = fm.__isFolder === true || isFolderPath(page.slug ?? "")
+                    const isTextOnlyFolder = isFolder && (fm.Text === true || fm.text === true) // ✅ 추가
                     const isSpecialFolder = isFolder && fm.__specialButton === true
+                
+                    if (isTextOnlyFolder) {
+                      return <span class="folder-text-only">{title}</span>
+                    }
                 
                     return isSpecialFolder ? (
                       <span class="folder-special-btn-outer">
-                        <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal folder-special-btn-link">
+                        <a
+                          href={resolveRelative(fileData.slug!, page.slug!)}
+                          class="internal folder-special-btn-link"
+                        >
                           {title}
                         </a>
                       </span>
@@ -157,5 +168,21 @@ a.internal.folder-special-btn-link {
   background-color: #000;           /* 요구사항: 다크 모드 검은색 */
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Text: true 폴더는 링크가 아니므로, 링크처럼 보이지 않게 */
+.folder-text-only {
+  cursor: default;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 날짜 column 자체를 없애서(좌측 공백 제거) title/tags만 2-column으로 정렬 */
+.section.section-text-only {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.section.section-text-only > .meta {
+  display: none;
 }
 `
