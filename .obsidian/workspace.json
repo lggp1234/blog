@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론/index.md",
+                "file": "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,7 +183,9 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/english/1-study/1-physics/00-0-Fundamental-Series/index.md",
     "content/한국어버젼/1-학업/물리학/10-통계역학/index.md",
+    "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론/index.md",
     "content/english/1-study/1-physics/10-Statistical-Mechanics/index.md",
     "content/한국어버젼/1-학업/물리학/150-번외-동역학계와복잡계/index.md",
     "content/english/1-study/1-physics/100-thermalphysics/index.md",
@@ -207,8 +209,6 @@
     "content/한국어버젼/1-학업/물리학/120-평형통계역학/index.md",
     "content/한국어버젼/1-학업/물리학/110-동적이론/index.md",
     "content/한국어버젼/1-학업/물리학/100-열역학/index.md",
-    "content/한국어버젼/1-학업/물리학/02-양자역학/index.md",
-    "content/english/1-study/1-physics/00-classical-mechanics/index.md",
     "quartz/components/scripts/textAccordion.inline.ts",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/무제",
