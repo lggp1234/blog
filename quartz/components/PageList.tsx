@@ -288,7 +288,7 @@ a.internal.folder-special-btn-link {
 
 /* ✅ (요구) Text:true 폴더가 활성(펼침)일 때 색 변화 없이 Underline만 */
 li.section-li.is-open .folder-text-accordion-btn {
-  color: var(--tertiary);
+  color: var(--secondary);
 }
 
 /* 1.4 Quartz 기본 chevron 아이콘: 접힘이면 -90deg(오른쪽), 펼침이면 아래 */
