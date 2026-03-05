@@ -139,13 +139,16 @@ function extractNumericPrefix(seg: string): string | null {
 }
 
 function folderIndexAmongFolders(parent: FileTrieNode, child: FileTrieNode): number {
-  let idx = 0
-  for (const c of parent.children) {
-    if (!c.isFolder) continue
-    if (c === child) return idx
-    idx++
-  }
-  return 0
+  const folders = parent.children.filter((c) => c.isFolder)
+  folders.sort((a: any, b: any) =>
+    physicalNameKey(a).localeCompare(physicalNameKey(b), ["ko", "en"], {
+      numeric: true,
+      sensitivity: "base",
+    }),
+  )
+
+  const idx = folders.findIndex((c) => c === child)
+  return Math.max(0, idx)
 }
 
 function folderTokenFromNode(node: FileTrieNode, indexAmongFolders0: number): string {
@@ -154,7 +157,7 @@ function folderTokenFromNode(node: FileTrieNode, indexAmongFolders0: number): st
   if (isKoreanRootSegment(node.slugSegment)) return "lang-ko"
 
   // 숫자 프리픽스(예: 1-study, 2-research)가 있으면 그걸 우선 사용
-  const hint = String((node as any)?.fileSegmentHint ?? node.slugSegment ?? "")
+  const hint = physicalNameKey(node)
   const n = extractNumericPrefix(hint)
   if (n) return n
 
