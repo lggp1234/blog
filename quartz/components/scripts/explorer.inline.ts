@@ -819,11 +819,14 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     // 원문 저장(한 번만)
     if (!el.dataset.ceFullTitle) el.dataset.ceFullTitle = el.textContent ?? ""
     const full = el.dataset.ceFullTitle ?? ""
-
+    const hostBtn = el.closest("button") as HTMLButtonElement | null
+    const hostLink = el.closest("a") as HTMLAnchorElement | null
     // 매번 원문으로 복원 후 재측정 (펼침/폰트 로딩 후 변화 대응)
     el.classList.remove("ce-truncated")
     el.removeAttribute("title")
     el.textContent = full
+    if (hostBtn) hostBtn.removeAttribute("title")
+    if (hostLink) hostLink.removeAttribute("title")
 
     const avail = getAvailWidth(el)
     if (avail <= 0) continue
@@ -837,7 +840,9 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     const dotsW = measure(dots, el)
     el.classList.add("ce-truncated")
     el.setAttribute("title", full)
-
+    if (hostBtn) hostBtn.setAttribute("title", full)
+    if (hostLink) hostLink.setAttribute("title", full)
+    
     if (dotsW > avail + EPS) {
       // 극단적으로 좁으면 점만
       el.textContent = dots
