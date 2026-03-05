@@ -30,7 +30,7 @@
   white-space: nowrap;   // 줄바꿈 금지
   font-size: 0.9rem;     // 필요하면 0.85rem로 더 줄이기
   line-height: 1.2;
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
 }
 
 .explorer {
@@ -491,20 +491,26 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
   line-height: inherit !important;
 }
-/* ✅ Normalize perceived letter spacing between KO/EN in Explorer */
+
+/* =========================================================
+   ✅ Explorer typography normalization (all depths)
+   - revert letter spacing
+   - unify vertical row spacing for folders + files
+========================================================= */
+
+/* 1) 공통 행 높이/패딩 (원하면 숫자만 미세조정) */
 .explorer {
-  /* 기본(한국어 포함) */
-  --mx-explorer-letter-spacing: -0.01em;
-  --mx-explorer-word-spacing: 0em;
+  --mx-explorer-row-line: 1.38rem;   /* 기본 1.5rem보다 살짝 타이트 */
+  --mx-explorer-row-pad: 0.06rem;    /* 클릭 영역은 유지하면서 간격 정리 */
 }
 
-/* 영어는 0.8배 축소로 인해 트래킹이 넓어 보이기 쉬워서 조금 더 당김 */
+/* (영문 0.8배 유지 중이면) 영문은 line/pad도 같이 맞춰줌 */
 html[lang^="en"] .explorer {
-  --mx-explorer-letter-spacing: -0.02em;
-  --mx-explorer-word-spacing: -0.02em;
+  --mx-explorer-row-line: 1.20rem;
+  --mx-explorer-row-pad: 0.05rem;
 }
 
-/* 실제 적용 대상: Explorer 항목 텍스트들 */
+/* 2) letter/word spacing “원상복구”를 폴더/파일 전체에 강제 */
 .explorer .explorer-content a,
 .explorer .explorer-content button,
 .explorer .explorer-content button span,
@@ -512,8 +518,27 @@ html[lang^="en"] .explorer {
 .explorer .explorer-content .folder-title--textonly,
 .explorer .explorer-content .ce-truncate,
 .explorer .ce-ellipsis-btn {
-  letter-spacing: var(--mx-explorer-letter-spacing);
-  word-spacing: var(--mx-explorer-word-spacing);
-  font-kerning: normal;
-  font-feature-settings: "kern" 1;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
 }
+
+/* 3) 세로 줄 간격 통일 (폴더/파일 모두) */
+.explorer .explorer-content ul li > a {
+  line-height: var(--mx-explorer-row-line) !important;
+  padding-block: var(--mx-explorer-row-pad);
+  font-family: var(--headerFont); /* ✅ 폴더와 동일 폰트로 맞춰 깊이에 따라 달라 보이는 문제 제거 */
+  font-weight: #{$semiBoldWeight};
+}
+
+/* 폴더: 버튼 자체에 세로 패딩 부여 */
+.explorer .folder-container div > button {
+  padding-block: var(--mx-explorer-row-pad);
+}
+
+/* 폴더: span에도 line-height 통일 (혹시 남아있는 하드코딩 1.5rem 덮어쓰기) */
+.explorer .folder-container div > button span,
+.explorer .folder-container div > a,
+.explorer .folder-container.folder-text-only .folder-title--textonly {
+  line-height: var(--mx-explorer-row-line) !important;
+}
+
