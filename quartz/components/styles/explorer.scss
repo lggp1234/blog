@@ -475,29 +475,19 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   font-weight: 700;            /* Bold */  
 }
 
-/* ✅ English pages: Explorer item titles (folders + files) = 0.8× */
-html[lang^="en"] .explorer {
-  --mx-explorer-item-font: 0.76rem;  /* 0.95rem * 0.8 */
-  --mx-explorer-item-line: 1.2rem;   /* 1.5rem  * 0.8 */
+/* ✅ English pages: Explorer titles (folders + files) force 0.8× */
+html[lang^="en"] .explorer .explorer-content {
+  font-size: 0.76rem;   /* 0.95rem * 0.8 */
+  line-height: 1.2rem;  /* 1.5rem  * 0.8 */
 }
 
-/* folders: button/span (and folderClickBehavior=link case) */
-html[lang^="en"] .explorer .folder-container div > a,
-html[lang^="en"] .explorer .folder-container div > button span,
-html[lang^="en"] .explorer .folder-container.folder-text-only .folder-title--textonly {
-  font-size: var(--mx-explorer-item-font) !important;
-  line-height: var(--mx-explorer-item-line) !important;
-}
-
-/* files: <li><a>... */
-html[lang^="en"] .explorer .explorer-content ul li > a,
-html[lang^="en"] .explorer .explorer-content ul li > a .ce-truncate {
-  font-size: var(--mx-explorer-item-font) !important;
-  line-height: var(--mx-explorer-item-line) !important;
-}
-
-/* optional: the compact ⋯ button text size too */
-html[lang^="en"] .explorer .ce-ellipsis-btn {
-  font-size: var(--mx-explorer-item-font) !important;
-  line-height: var(--mx-explorer-item-line) !important;
+/* folders (button/span) + folder links + text-only labels + file links */
+html[lang^="en"] .explorer .explorer-content a,
+html[lang^="en"] .explorer .explorer-content button,
+html[lang^="en"] .explorer .explorer-content button span,
+html[lang^="en"] .explorer .explorer-content .folder-title,
+html[lang^="en"] .explorer .explorer-content .folder-title--textonly,
+html[lang^="en"] .explorer .explorer-content .ce-truncate {
+  font-size: inherit !important;
+  line-height: inherit !important;
 }
