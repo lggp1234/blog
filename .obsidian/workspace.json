@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/한국어버젼/1-학업/index.md",
+                "file": "content/한국어버젼/1-학업/물리학/00-0-물리학의 근간 이론/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -184,6 +184,7 @@
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
     "content/한국어버젼/1-학업/물리학/index.md",
+    "content/한국어버젼/1-학업/index.md",
     "content/한국어버젼/1-학업/물리학/10-통계역학/index.md",
     "content/한국어버젼/1-학업/수리과학/위상수학/무제.md",
     "content/한국어버젼/1-학업/수리과학/위상수학/index.md",
@@ -208,7 +209,6 @@
     "content/한국어버젼/1-학업/물리학/00-고전역학/강의1-뉴턴역학.md",
     "content/한국어버젼/1-학업/물리학/00-고전역학/index.md",
     "content/english/1-study/1-physics/00-classical-mechanics/lecture1-newtonian-mechanics.md",
-    "content/english/1-study/1-physics/02-quantum-mechanics/mathematical-notations-in-quantum-mechanics.md",
     "quartz/components/scripts/textAccordion.inline.ts",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/무제",
