@@ -482,38 +482,12 @@ html[lang^="en"] .explorer .explorer-content {
 }
 
 /* folders (button/span) + folder links + text-only labels + file links */
-/* =========================================================
-   ✅ Explorer font size normalization (depth/type independent)
-   - EN: 0.8×
-   - Applies to: normal folders, Text:true folders, files, ce-truncate
-========================================================= */
-
-/* (1) Base tokens */
-.explorer {
-  --mx-explorer-item-font: 0.95rem;
-  --mx-explorer-item-line: 1.5rem;
-}
-
-/* EN = 0.8× */
-html[lang^="en"] .explorer {
-  --mx-explorer-item-font: 0.76rem;  /* 0.95 * 0.8 */
-  --mx-explorer-item-line: 1.2rem;   /* 1.5  * 0.8 */
-}
-
-/* (2) Apply base size to the whole explorer list */
-.explorer .explorer-content {
-  font-size: var(--mx-explorer-item-font);
-  line-height: var(--mx-explorer-item-line);
-}
-
-/* (3) FORCE all title nodes to inherit (this kills “some folders ignore scaling”) */
-.explorer .folder-container div > a,
-.explorer .folder-container div > button span,              /* normal folder */
-.explorer .folder-container .folder-title,                  /* safety */
-.explorer .folder-container .folder-title--textonly,         /* Text:true text-only */
-.explorer .explorer-content ul li > a,                       /* files */
-.explorer .explorer-content ul li > a .ce-truncate,          /* truncated files */
-.explorer .ce-ellipsis-btn {                                 /* ⋯ button */
+html[lang^="en"] .explorer .explorer-content a,
+html[lang^="en"] .explorer .explorer-content button,
+html[lang^="en"] .explorer .explorer-content button span,
+html[lang^="en"] .explorer .explorer-content .folder-title,
+html[lang^="en"] .explorer .explorer-content .folder-title--textonly,
+html[lang^="en"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
   line-height: inherit !important;
 }
