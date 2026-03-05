@@ -472,5 +472,11 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
    - Bold만 적용 */
 .explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
   color: var(--secondary);     /* 기본 폴더 색 유지 */
-  font-weight: 700;            /* Bold */
+  font-weight: 700;            /* Bold */  
+}
+
+html[lang^="en"] .explorer-content li > a,
+html[lang^="en"] .explorer-content .folder-title,
+html[lang^="en"] .explorer-content .folder-title--textonly {
+  font-size: 80%;
 }
