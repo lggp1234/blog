@@ -477,8 +477,8 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 
 /* ✅ English pages: Explorer titles (folders + files) force 0.8× */
 html[lang^="en"] .explorer .explorer-content {
-  font-size: 0.76rem;   /* 0.95rem * 0.8 */
-  line-height: 1.2rem;  /* 1.5rem  * 0.8 */
+  font-size: 0.76rem;                 /* 유지 */
+  line-height: var(--mx-explorer-row-line);  /* ✅ row-line을 ‘행 높이’의 단일 기준으로 */
 }
 
 /* folders (button/span) + folder links + text-only labels + file links */
@@ -539,6 +539,14 @@ html[lang^="en"] .explorer {
   padding-block: var(--mx-explorer-row-pad) !important;
   font-family: var(--headerFont);
   font-weight: #{$semiBoldWeight};
+}
+
+/* ✅ 폴더 버튼(일반/accordion/Text:true 포함): UA 기본 padding 제거 + row 간격 적용 */
+.explorer .folder-container div > button {
+  padding-block: var(--mx-explorer-row-pad) !important;
+  padding-inline: 0 !important;  /* 기존 좌/우 0과 동일하지만 확실히 */
+  margin: 0 !important;
+  line-height: var(--mx-explorer-row-line) !important;
 }
 
 /* 폴더: 버튼 자체에 세로 패딩 부여 */
