@@ -174,8 +174,7 @@ button.desktop-explorer {
      - dots have opacity 0.8 / 0.7 / 0.6
   ========================================= */
   
-  .explorer-content {
-    /* 폴더/파일 제목이 flex 안에서 줄어들 수 있게 */
+  /* 폴더/파일 제목이 flex 안에서 줄어들 수 있게 */
     .folder-container,
     .folder-container > div,
     .folder-container .folder-button {
@@ -216,7 +215,6 @@ button.desktop-explorer {
     .ce-dots .d1 { opacity: 0.8; }
     .ce-dots .d2 { opacity: 0.7; }
     .ce-dots .d3 { opacity: 0.6; }
-  }
 
   .folder-outer {
     display: grid;
