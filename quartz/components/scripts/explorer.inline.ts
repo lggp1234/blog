@@ -775,9 +775,6 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
   meas.style.pointerEvents = "none"
   document.body.appendChild(meas)
 
-  const esc = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-
   const measure = (text: string, el: HTMLElement): number => {
     const st = getComputedStyle(el)
     meas.style.font = `${st.fontStyle} ${st.fontVariant} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`
@@ -787,12 +784,37 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     return meas.getBoundingClientRect().width
   }
 
+  const getAvailWidth = (el: HTMLElement): number => {
+    // "실제로 잘리는(clip 되는) 컨테이너" 폭을 잡기 위해,
+    // overflow:hidden/clip 이 걸린 조상들 중 가장 작은 폭을 사용
+    let best = 0
+    let cur: HTMLElement | null = el
+    while (cur && cur !== document.body) {
+      const st = getComputedStyle(cur)
+      const ox = st.overflowX || st.overflow
+      if (ox === "hidden" || ox === "clip") {
+        const w = cur.clientWidth
+        if (w > 0) best = best > 0 ? Math.min(best, w) : w
+      }
+      if (cur.classList.contains("explorer")) break
+      cur = cur.parentElement
+    }
+
+    // fallback
+    if (best <= 0) best = el.clientWidth
+
+    // 텍스트 요소 자체 패딩은 제외
+    const stEl = getComputedStyle(el)
+    const pl = parseFloat(stEl.paddingLeft || "0") || 0
+    const pr = parseFloat(stEl.paddingRight || "0") || 0
+    return best - pl - pr
+  }
+
   const dots = "..."
-  const EPS = 0.5 // 픽셀 오차 허용치(너무 일찍 잘리는 문제 완화)
+  const EPS = 1.0 // 서브픽셀/폰트 로딩 오차 여유 (너무 일찍 끊기는 문제 완화)
 
   for (const el of targets) {
-    // display:none 상태면 측정 불가
-    if (el.offsetParent === null) continue
+    if (el.offsetParent === null) continue // display:none 등은 스킵
 
     // 원문 저장(한 번만)
     if (!el.dataset.ceFullTitle) el.dataset.ceFullTitle = el.textContent ?? ""
@@ -803,34 +825,26 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     el.removeAttribute("title")
     el.textContent = full
 
-    const stAvail = getComputedStyle(el)
-    const pl = parseFloat(stAvail.paddingLeft || "0") || 0
-    const pr = parseFloat(stAvail.paddingRight || "0") || 0
-    const avail = el.clientWidth - pl - pr
+    const avail = getAvailWidth(el)
     if (avail <= 0) continue
 
-    // (3) 공간 충분한데 ... 끊는 문제 방지:
-    // 실제 DOM 측정으로 full이 들어가면 절대 truncation하지 않는다
     const fullW = measure(full, el)
     if (fullW <= avail + EPS) {
+      // 공간이 충분하면 절대 truncation 하지 않음
       continue
     }
 
     const dotsW = measure(dots, el)
+    el.classList.add("ce-truncated")
+    el.setAttribute("title", full)
+
     if (dotsW > avail + EPS) {
       // 극단적으로 좁으면 점만
-      el.classList.add("ce-truncated")
-      el.setAttribute("title", full)
-      el.innerHTML =
-        `<span class="ce-prefix"></span>` +
-        `<span class="ce-fade"></span>` +
-        `<span class="ce-dots">` +
-        `<span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span>` +
-        `</span>`
+      el.textContent = dots
       continue
     }
 
-    // (1) 글자 기준으로 최대 cut 찾기: prefix + "..." 가 avail 이하가 되는 최대 prefix 길이
+    // 글자 기준으로 최대 cut 찾기: prefix + "..." 가 avail 이하가 되는 최대 prefix 길이
     let lo = 0
     let hi = full.length
     while (lo < hi) {
@@ -842,30 +856,13 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
 
     let prefix = full.slice(0, lo)
 
-    // (2) 공백 처리(중요):
+    // trailing 공백 처리:
     // - 절대 trim 하지 않음 (끝이 공백이면 " ...")
     // - 다만 trailing 공백이 여러 개면 1개로만 줄임
     prefix = prefix.replace(/\s{2,}$/g, " ")
 
-    // fade는 “마지막 단어(앞 공백 포함)부터” 시작 (이전 글자 100% 유지)
-    // prefix가 공백으로 끝나도 출력은 prefix 그대로 유지하되,
-    // 단어 경계 탐색만 trimEnd 기준으로 한다.
-    const trimmed = prefix.replace(/\s+$/g, "")
-    const ws = trimmed.lastIndexOf(" ")
-    const splitAt = ws >= 0 ? ws : 0
-
-    const opaquePart = splitAt > 0 ? prefix.slice(0, splitAt) : ""
-    const fadePart = splitAt > 0 ? prefix.slice(splitAt) : prefix
-
-    el.classList.add("ce-truncated")
-    el.setAttribute("title", full) // (4) hover 시 풀네임 확인
-
-    el.innerHTML =
-      `<span class="ce-prefix">${esc(opaquePart)}</span>` +
-      `<span class="ce-fade">${esc(fadePart)}</span>` +
-      `<span class="ce-dots">` +
-      `<span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span>` +
-      `</span>`
+    // ✅ 투명도(fade) 없이, 원문 공백을 그대로 유지한 채 "..."만 붙임
+    el.textContent = prefix + dots
   }
 
   meas.remove()
