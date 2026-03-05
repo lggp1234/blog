@@ -97,6 +97,13 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   const html = p.parseFromString(contents, "text/html")
   normalizeRelativeURLs(html, url)
+  // ✅ SPA는 <body>만 morph 하므로, <html lang/dir>은 수동으로 동기화해야 함
+  const newLang = html.documentElement.getAttribute("lang")
+  if (newLang) document.documentElement.setAttribute("lang", newLang)
+
+  const newDir = html.documentElement.getAttribute("dir")
+  if (newDir) document.documentElement.setAttribute("dir", newDir)
+  else document.documentElement.removeAttribute("dir")
 
   let title = html.querySelector("title")?.textContent
   if (title) {
