@@ -491,3 +491,29 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
   line-height: inherit !important;
 }
+/* ✅ Normalize perceived letter spacing between KO/EN in Explorer */
+.explorer {
+  /* 기본(한국어 포함) */
+  --mx-explorer-letter-spacing: -0.01em;
+  --mx-explorer-word-spacing: 0em;
+}
+
+/* 영어는 0.8배 축소로 인해 트래킹이 넓어 보이기 쉬워서 조금 더 당김 */
+html[lang^="en"] .explorer {
+  --mx-explorer-letter-spacing: -0.02em;
+  --mx-explorer-word-spacing: -0.02em;
+}
+
+/* 실제 적용 대상: Explorer 항목 텍스트들 */
+.explorer .explorer-content a,
+.explorer .explorer-content button,
+.explorer .explorer-content button span,
+.explorer .explorer-content .folder-title,
+.explorer .explorer-content .folder-title--textonly,
+.explorer .explorer-content .ce-truncate,
+.explorer .ce-ellipsis-btn {
+  letter-spacing: var(--mx-explorer-letter-spacing);
+  word-spacing: var(--mx-explorer-word-spacing);
+  font-kerning: normal;
+  font-feature-settings: "kern" 1;
+}
