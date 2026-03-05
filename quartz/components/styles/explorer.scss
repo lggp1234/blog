@@ -536,12 +536,21 @@ html[lang^="en"] .explorer {
 /* 3) 세로 줄 간격 통일 (폴더/파일 모두) */
 .explorer .explorer-content ul li > a {
   line-height: var(--mx-explorer-row-line) !important;
-  padding-block: var(--mx-explorer-row-pad);
-  font-family: var(--headerFont); /* ✅ 폴더와 동일 폰트로 맞춰 깊이에 따라 달라 보이는 문제 제거 */
+  padding-block: var(--mx-explorer-row-pad) !important;
+  font-family: var(--headerFont);
   font-weight: #{$semiBoldWeight};
 }
 
 /* 폴더: 버튼 자체에 세로 패딩 부여 */
+/* ✅ 폴더(버튼/링크/Text-only) 행 패딩 통일: "현재 간격"의 0.8배는 --mx-explorer-row-pad로 제어 */
+.explorer .folder-container .folder-button {
+  /* 🔥 핵심: UA 기본 padding 때문에 간격이 안 줄던 문제 해결 */
+  padding-block: var(--mx-explorer-row-pad) !important;
+  padding-inline: 0 !important;
+  margin: 0 !important;
+  line-height: var(--mx-explorer-row-line) !important;
+}
+
 .explorer .folder-container div > a,
 .explorer .folder-container .folder-title--textonly {
   display: block;
