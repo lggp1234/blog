@@ -165,6 +165,41 @@ function folderTokenFromNode(node: FileTrieNode, indexAmongFolders0: number): st
   return String(indexAmongFolders0 + 1)
 }
 
+// ✅ Text:true 헤더(accordion) 그룹핑 규칙을 computeOpenFolderKeySet에도 반영하기 위한 헬퍼
+function findGroupingHeader(parent: FileTrieNode, childFolder: FileTrieNode): FileTrieNode | null {
+  const kids = parent.children
+  const idx = kids.indexOf(childFolder)
+  if (idx <= 0) return null
+
+  // child 바로 앞에서부터 뒤로 보면서:
+  // - 파일(=폴더 아님)을 만나면 그룹핑이 끊기므로 중단
+  // - 가장 가까운 textOnly 폴더를 만나면 그게 헤더
+  for (let i = idx - 1; i >= 0; i--) {
+    const k = kids[i]
+    if (!k.isFolder) break
+    if (!!(k.data as any)?.textOnly) return k
+  }
+  return null
+}
+
+function indexWithinHeaderGroup(parent: FileTrieNode, header: FileTrieNode, childFolder: FileTrieNode): number {
+  const kids = parent.children
+  const hi = kids.indexOf(header)
+  const ci = kids.indexOf(childFolder)
+  if (hi < 0 || ci < 0 || ci <= hi) return 0
+
+  // 헤더 바로 다음 폴더부터 childFolder 직전까지 몇 개의 “일반 폴더”가 있었는지
+  // (= headerNode의 virtualChildren에서의 indexAmongFolders0)
+  let idx0 = 0
+  for (let i = hi + 1; i < ci; i++) {
+    const k = kids[i]
+    if (!k.isFolder) break
+    if (!!(k.data as any)?.textOnly) break
+    idx0++
+  }
+  return idx0
+}
+
 function computeOpenFolderKeySet(renderRoot: FileTrieNode, currentSlug: FullSlug): Set<string> {
   const open = new Set<string>()
 
@@ -186,12 +221,30 @@ function computeOpenFolderKeySet(renderRoot: FileTrieNode, currentSlug: FullSlug
 
   for (const seg of segs) {
     const next = node.children.find((c) => c.slugSegment === seg)
-    if (!next) break
-    if (!next.isFolder) break
+    if (!next || !next.isFolder) break
 
-    const i0 = folderIndexAmongFolders(node, next)
-    const token = folderTokenFromNode(next, i0)
-    key = key ? `${key}/${token}` : token
+    // ✅ “Text:true 헤더 아래로 그룹핑되는 폴더”면,
+    // Explorer 상의 folderKey는 (부모/헤더/자식) 구조가 된다.
+    const header =
+      !!(next.data as any)?.textOnly ? null : findGroupingHeader(node, next)
+
+    let parentKeyForNext = key
+    let index0ForNext = folderIndexAmongFolders(node, next)
+
+    if (header) {
+      const hi0 = folderIndexAmongFolders(node, header)
+      const hToken = folderTokenFromNode(header, hi0)
+      const hKey = key ? `${key}/${hToken}` : hToken
+
+      // 헤더 폴더도 열려야 아래 자식이 보임
+      open.add(hKey)
+
+      parentKeyForNext = hKey
+      index0ForNext = indexWithinHeaderGroup(node, header, next)
+    }
+
+    const token = folderTokenFromNode(next, index0ForNext)
+    key = parentKeyForNext ? `${parentKeyForNext}/${token}` : token
     open.add(key)
 
     node = next
