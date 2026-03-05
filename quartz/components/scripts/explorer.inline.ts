@@ -24,6 +24,14 @@ function cssEscape(s: string): string {
   // @ts-ignore
   if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(s)
   return s.replace(/[^a-zA-Z0-9_\-]/g, (c) => `\\${c}`)
+
+
+// Text:true(accordion/text-only) 폴더 타이틀이 CamelCase로 들어오는 경우가 있어,
+// 소문자→대문자(뒤에 소문자) 경계에서만 공백을 복원한다. (예: PhysicsSeries → Physics Series)
+function normalizeTextTrueTitle(title: string): string {
+  if (!title) return title
+  return title.replace(/([a-z])([A-Z][a-z])/g, "$1 $2")
+}
 }
 
 /** folderContainer가 text-accordion일 때만 title 앞에 > / ∨ 를 갱신 */
@@ -487,12 +495,12 @@ if (isTextOnlyFolder && !isTextAccordionFolder) {
   const button = titleContainer.querySelector(".folder-button") as HTMLElement
   const span = document.createElement("span")
   span.className = "folder-title folder-title--textonly"
-  span.textContent = node.displayName
+  span.textContent = normalizeTextTrueTitle(node.displayName)
   button.replaceWith(span)
   folderContainer.classList.add("folder-text-only")
 } else if (isTextAccordionFolder) {
   const span = titleContainer.querySelector(".folder-title") as HTMLElement
-  span.textContent = node.displayName
+  span.textContent = normalizeTextTrueTitle(node.displayName)
 
   folderContainer.classList.add("folder-text-accordion")
 } else if (opts.folderClickBehavior === "link") {
@@ -794,7 +802,10 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     el.removeAttribute("title")
     el.textContent = full
 
-    const avail = el.clientWidth
+    const stAvail = getComputedStyle(el)
+    const pl = parseFloat(stAvail.paddingLeft || "0") || 0
+    const pr = parseFloat(stAvail.paddingRight || "0") || 0
+    const avail = el.clientWidth - pl - pr
     if (avail <= 0) continue
 
     // (3) 공간 충분한데 ... 끊는 문제 방지:
