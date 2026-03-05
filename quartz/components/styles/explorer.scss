@@ -567,34 +567,3 @@ html[lang^="en"] .explorer {
 .explorer .folder-container.folder-text-only .folder-title--textonly {
   line-height: var(--mx-explorer-row-line) !important;
 }
-
-/* ✅ Tighten Explorer vertical spacing (files + folders) */
-.explorer {
-  /* 기본보다 더 촘촘하게 */
-  --mx-explorer-item-line: 1.22rem; /* ↓ 줄 간격 */
-  --mx-explorer-row-pad: 0.02rem;   /* ↓ 위아래 여백 */
-}
-
-/* English 0.8× 기준도 함께 타이트하게 */
-html[lang^="en"] .explorer {
-  --mx-explorer-item-line: 1.06rem;
-  --mx-explorer-row-pad: 0.015rem;
-}
-
-/* 파일(links) 행 간격 */
-.explorer .explorer-content ul li > a {
-  line-height: var(--mx-explorer-item-line) !important;
-  padding-block: var(--mx-explorer-row-pad) !important;
-}
-
-/* 폴더(button) 행 간격도 같이 맞춤 */
-.explorer .folder-container div > button {
-  padding-block: var(--mx-explorer-row-pad) !important;
-}
-
-.explorer .folder-container div > button span,
-.explorer .folder-container div > a,
-.explorer .folder-container.folder-text-only .folder-title--textonly {
-  line-height: var(--mx-explorer-item-line) !important;
-}
-
