@@ -398,7 +398,7 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   justify-content: center;
 
   min-width: 20px;
-  padding: 0.08rem 0.34rem;
+  padding: var(--mx-explorer-ellipsis-btn-pad-y) var(--mx-explorer-ellipsis-btn-pad-x);
 
   border-radius: 999px;
   cursor: pointer;
@@ -502,6 +502,8 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
 .explorer {
   --mx-explorer-row-line: 1.38rem;
   --mx-explorer-row-pad: 0.06rem;
+  --mx-explorer-ellipsis-btn-pad-y: 0.08rem;
+  --mx-explorer-ellipsis-btn-pad-x: 0.34rem;
 
   /* ✅ (⋯) 구분선/리스트 끝 여백도 “간격”에 포함됨 */
   --mx-explorer-ellipsis-margin: 2px;
@@ -515,6 +517,9 @@ html[lang^="en"] .explorer {
 
   --mx-explorer-ellipsis-margin: 1.6px; /* 2px * 0.8 */
   --mx-explorer-overflow-end: 0.4rem;   /* 0.5rem * 0.8 */
+
+  --mx-explorer-ellipsis-btn-pad-y: 0.064rem; /* 0.08 * 0.8 */
+  --mx-explorer-ellipsis-btn-pad-x: 0.272rem;
 }
 
 .explorer ul.overflow > li.overflow-end {
