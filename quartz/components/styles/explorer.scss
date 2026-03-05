@@ -475,8 +475,8 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   font-weight: 700;            /* Bold */  
 }
 
-html[lang^="en"] .explorer-content li > a,
-html[lang^="en"] .explorer-content .folder-title,
-html[lang^="en"] .explorer-content .folder-title--textonly {
-  font-size: 80%;
+:lang(en) .folder-container div > a,
+:lang(en) .folder-container div > button span,
+:lang(en) .folder-container.folder-text-only .folder-title--textonly {
+  font-size: 0.76rem; /* 0.95rem * 0.8 */
 }
