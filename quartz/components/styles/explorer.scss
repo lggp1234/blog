@@ -498,18 +498,27 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
    - unify vertical row spacing for folders + files
 ========================================================= */
 
-/* 1) 공통 행 높이/패딩 (원하면 숫자만 미세조정) */
+/* 1) 공통 행 높이/패딩 */
 .explorer {
-  --mx-explorer-row-line: 1.38rem;   /* 기본 */
-  --mx-explorer-row-pad: 0.06rem;    /* 기본 */
-  --mx-explorer-ellipsis-margin: 2px; /* ⋯(Accordion) 줄의 위/아래 간격 */
+  --mx-explorer-row-line: 1.38rem;
+  --mx-explorer-row-pad: 0.06rem;
+
+  /* ✅ (⋯) 구분선/리스트 끝 여백도 “간격”에 포함됨 */
+  --mx-explorer-ellipsis-margin: 2px;
+  --mx-explorer-overflow-end: 0.5rem;
 }
 
+/* ✅ EN: “현재 간격”의 0.8배 */
 html[lang^="en"] .explorer {
-  /* ✅ 요청: EN 탐색기 줄 간격을 “현재”의 0.8배로 더 타이트하게 */
-  --mx-explorer-row-line: 0.96rem;   /* 1.20rem * 0.8 */
-  --mx-explorer-row-pad: 0.04rem;    /* 0.05rem  * 0.8 */
+  --mx-explorer-row-line: 0.96rem; /* 1.20rem * 0.8 */
+  --mx-explorer-row-pad: 0.04rem;  /* 0.05rem  * 0.8 */
+
   --mx-explorer-ellipsis-margin: 1.6px; /* 2px * 0.8 */
+  --mx-explorer-overflow-end: 0.4rem;   /* 0.5rem * 0.8 */
+}
+
+.explorer ul.overflow > li.overflow-end {
+  height: var(--mx-explorer-overflow-end);
 }
 
 /* 2) letter/word spacing “원상복구”를 폴더/파일 전체에 강제 */
@@ -533,7 +542,9 @@ html[lang^="en"] .explorer {
 }
 
 /* 폴더: 버튼 자체에 세로 패딩 부여 */
-.explorer .folder-container div > button {
+.explorer .folder-container div > a,
+.explorer .folder-container .folder-title--textonly {
+  display: block;
   padding-block: var(--mx-explorer-row-pad);
 }
 
