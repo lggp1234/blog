@@ -386,7 +386,7 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 /* ⋯ 줄: 중앙 */
 .explorer li.ce-ellipsis {
   width: 100%;
-  margin: 2px 0;
+  margin: var(--mx-explorer-ellipsis-margin) 0;
   display: flex;
   justify-content: center;
 }
@@ -500,14 +500,16 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
 
 /* 1) 공통 행 높이/패딩 (원하면 숫자만 미세조정) */
 .explorer {
-  --mx-explorer-row-line: 1.38rem;   /* 기본 1.5rem보다 살짝 타이트 */
-  --mx-explorer-row-pad: 0.06rem;    /* 클릭 영역은 유지하면서 간격 정리 */
+  --mx-explorer-row-line: 1.38rem;   /* 기본 */
+  --mx-explorer-row-pad: 0.06rem;    /* 기본 */
+  --mx-explorer-ellipsis-margin: 2px; /* ⋯(Accordion) 줄의 위/아래 간격 */
 }
 
-/* (영문 0.8배 유지 중이면) 영문은 line/pad도 같이 맞춰줌 */
 html[lang^="en"] .explorer {
-  --mx-explorer-row-line: 1.20rem;
-  --mx-explorer-row-pad: 0.05rem;
+  /* ✅ 요청: EN 탐색기 줄 간격을 “현재”의 0.8배로 더 타이트하게 */
+  --mx-explorer-row-line: 0.96rem;   /* 1.20rem * 0.8 */
+  --mx-explorer-row-pad: 0.04rem;    /* 0.05rem  * 0.8 */
+  --mx-explorer-ellipsis-margin: 1.6px; /* 2px * 0.8 */
 }
 
 /* 2) letter/word spacing “원상복구”를 폴더/파일 전체에 강제 */
