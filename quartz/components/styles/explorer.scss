@@ -256,9 +256,9 @@ button.desktop-explorer {
   & div > a {
     color: var(--secondary);
     font-family: var(--headerFont);
-    font-size: 0.95rem;
+    font-size: inherit;
     font-weight: $semiBoldWeight;
-    line-height: 1.5rem;
+    line-height: inherit;
     display: inline-block;
   }
 
@@ -279,12 +279,12 @@ button.desktop-explorer {
     font-family: var(--headerFont);
 
     & span {
-      font-size: 0.95rem;
+      font-size: inherit;
       display: inline-block;
       color: var(--secondary);
       font-weight: $semiBoldWeight;
       margin: 0;
-      line-height: 1.5rem;
+      line-height: inherit;
       pointer-events: none;
     }
   }
@@ -446,9 +446,9 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 .folder-container.folder-text-only {
   & .folder-title--textonly {
     font-family: var(--headerFont);
-    font-size: 0.95rem;
+    font-size: inherit;
     font-weight: $semiBoldWeight;
-    line-height: 1.5rem;
+    line-height: inherit;
     color: var(--secondary);
     cursor: default;
   }
@@ -598,3 +598,35 @@ html[lang^="en"] .explorer {
   line-height: var(--mx-explorer-item-line) !important;
 }
 
+/* =========================================================
+   Depth <= 2 Explorer items: make titles bigger
+   - depth 1: top-level items (Study/Research/Profile/...)
+   - depth 2: items inside an opened top-level folder
+   Works for: folders(button span / folder link), files(li>a), Text-only labels
+========================================================= */
+
+/* 원하는 “크게” 크기 (여기만 조절하면 됨) */
+:root {
+  --mx-explorer-depth2-font: 1.08rem; /* <- 기본(0.95rem)보다 약간 크게 */
+  --mx-explorer-depth2-line: 1.50rem;
+}
+
+/* -------- depth 1 (top level) -------- */
+.explorer .explorer-content > ul > li > a,
+.explorer .explorer-content > ul > li .folder-container > div > a,
+.explorer .explorer-content > ul > li .folder-container > div > button span,
+.explorer .explorer-content > ul > li .folder-title--textonly,
+.explorer .explorer-content > ul > li .ce-truncate {
+  font-size: var(--mx-explorer-depth2-font) !important;
+  line-height: var(--mx-explorer-depth2-line) !important;
+}
+
+/* -------- depth 2 (one level deeper) -------- */
+.explorer .explorer-content > ul > li > .folder-outer > ul > li > a,
+.explorer .explorer-content > ul > li > .folder-outer > ul > li .folder-container > div > a,
+.explorer .explorer-content > ul > li > .folder-outer > ul > li .folder-container > div > button span,
+.explorer .explorer-content > ul > li > .folder-outer > ul > li .folder-title--textonly,
+.explorer .explorer-content > ul > li > .folder-outer > ul > li .ce-truncate {
+  font-size: var(--mx-explorer-depth2-font) !important;
+  line-height: var(--mx-explorer-depth2-line) !important;
+}
