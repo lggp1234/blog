@@ -24,6 +24,7 @@ function cssEscape(s: string): string {
   // @ts-ignore
   if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(s)
   return s.replace(/[^a-zA-Z0-9_\-]/g, (c) => `\\${c}`)
+}
 
 
 // Text:true(accordion/text-only) 폴더 타이틀이 CamelCase로 들어오는 경우가 있어,
@@ -32,7 +33,7 @@ function normalizeTextTrueTitle(title: string): string {
   if (!title) return title
   return title.replace(/([a-z])([A-Z][a-z])/g, "$1 $2")
 }
-}
+
 
 /** folderContainer가 text-accordion일 때만 title 앞에 > / ∨ 를 갱신 */
 function updateTextAccordionTitle(folderContainer: HTMLElement, collapsed: boolean) {
