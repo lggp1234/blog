@@ -696,3 +696,128 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   box-shadow: none !important;
   transform: none !important;
 }
+
+/* =========================================================
+   FINAL OVERRIDE (Do not edit earlier blocks)
+   1) Row spacing: exactly controlled by --mx-explorer-row-line
+   2) Highlight box: identical for truncated/non-truncated + folder/file titles
+      (only width differs by text length)
+========================================================= */
+
+/* --- Box geometry tokens (match overlay + title box exactly) --- */
+:root {
+  --ce-box-pad-y: 0.12rem;
+  --ce-box-pad-x: 0.42rem;
+  --ce-box-radius: 0.5rem;
+  --ce-box-lift: -1px;
+}
+
+/* --- Ensure row spacing is not inflated by default list/item margins --- */
+.explorer .explorer-content ul,
+.explorer .explorer-content ol {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.explorer .explorer-content li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* --- Force “row height” to be exactly the scaled line height (0.8×) --- */
+.explorer .folder-container {
+  min-height: var(--mx-explorer-row-line) !important;
+  align-items: center;
+}
+
+/* File rows: <li><a/></li> */
+.explorer .explorer-content ul li > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--mx-explorer-row-line) !important;
+  line-height: var(--mx-explorer-row-line) !important;
+  padding-block: 0 !important; /* prevent hidden extra vertical spacing */
+}
+
+/* --- Unified title element metrics (folder + file) --- */
+.explorer .explorer-content .ce-truncate {
+  /* width == text length (capped by container via max-width) */
+  display: inline-flex !important;
+  align-items: center;
+  width: max-content !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  white-space: nowrap !important;
+  overflow: hidden !important;
+
+  /* the only vertical metric that should matter */
+  line-height: var(--mx-explorer-row-line) !important;
+  vertical-align: middle !important;
+
+  position: relative !important;
+  transform: translateY(0);
+  transition: transform 120ms ease;
+
+  /* IMPORTANT: neutralize any older hover box styles */
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* --- Unified highlight box (same geometry/strength everywhere) ---
+   - Drawn by pseudo-element so it does NOT affect truncation measurement.
+   - Same padding/radius/shadow/border for truncated/non-truncated.
+*/
+.explorer .explorer-content .ce-truncate::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--ce-box-pad-y) * -1) calc(var(--ce-box-pad-x) * -1);
+  border-radius: var(--ce-box-radius);
+  pointer-events: none;
+
+  background: var(--ce-hl-bg);
+  box-shadow: var(--ce-hl-shadow), inset 0 0 0 1px var(--ce-hl-border);
+
+  opacity: 0;
+  transform: scale(0.985);
+  transition: opacity 120ms ease, transform 120ms ease;
+  will-change: opacity, transform;
+}
+
+.explorer .explorer-content .ce-truncate:hover::before,
+.explorer .explorer-content .ce-truncate:focus::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.explorer .explorer-content .ce-truncate:hover,
+.explorer .explorer-content .ce-truncate:focus {
+  transform: translateY(var(--ce-box-lift));
+  /* keep neutralizing legacy rules on hover */
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* --- Make overlay box use the SAME tokens (perfect match) --- */
+.ce-hover-preview {
+  padding: var(--ce-box-pad-y) var(--ce-box-pad-x) !important;
+  border-radius: var(--ce-box-radius) !important;
+
+  background: var(--ce-hl-bg) !important;
+  border: 1px solid var(--ce-hl-border) !important;
+  box-shadow: var(--ce-hl-shadow) !important;
+}
+
+/* --- Exclude Text:true from the BOX highlight only (keep your teal text hover) --- */
+.explorer .folder-container.folder-text-only .ce-truncate::before,
+.explorer .folder-container.folder-text-accordion .ce-truncate::before {
+  opacity: 0 !important;
+  transform: none !important;
+}
+
+.explorer .folder-container.folder-text-only .ce-truncate:hover,
+.explorer .folder-container.folder-text-accordion .ce-truncate:hover,
+.explorer .folder-container.folder-text-only .ce-truncate:focus,
+.explorer .folder-container.folder-text-accordion .ce-truncate:focus {
+  transform: none !important;
+}
