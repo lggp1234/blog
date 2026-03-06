@@ -6,6 +6,7 @@
     & > :not(.sidebar.left:has(.explorer)) {
       transition: transform 300ms ease-in-out;
     }
+
     &.lock-scroll > :not(.sidebar.left:has(.explorer)) {
       transform: translateX(100dvw);
       transition: transform 300ms ease-in-out;
@@ -27,8 +28,8 @@
 }
 
 .explorer h2.lang-selection-title {
-  white-space: nowrap;   // 줄바꿈 금지
-  font-size: 0.9rem;     // 필요하면 0.85rem로 더 줄이기
+  white-space: nowrap;
+  font-size: 0.9rem;
   line-height: 1.2;
   letter-spacing: normal;
 }
@@ -37,11 +38,12 @@
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
-
   min-height: 1.2rem;
   flex: 0 1 auto;
+
   &.collapsed {
     flex: 0 1 1.2rem;
+
     & .fold {
       transform: rotateZ(-90deg);
     }
@@ -95,6 +97,25 @@
       pointer-events: none;
     }
   }
+
+  /* ===== Explorer row spacing variables ===== */
+  --mx-explorer-row-line-base: 1.5rem;
+  --mx-explorer-row-pad-base: 0rem;
+
+  --mx-explorer-ellipsis-margin-base: 2px;
+  --mx-explorer-ellipsis-btn-pad-y-base: 0.08rem;
+  --mx-explorer-ellipsis-btn-pad-x-base: 0.34rem;
+  --mx-explorer-overflow-end-base: 0.5rem;
+
+  --mx-explorer-row-scale: 1;
+
+  --mx-explorer-row-line: calc(var(--mx-explorer-row-line-base) * var(--mx-explorer-row-scale));
+  --mx-explorer-row-pad: calc(var(--mx-explorer-row-pad-base) * var(--mx-explorer-row-scale));
+
+  --mx-explorer-ellipsis-margin: calc(var(--mx-explorer-ellipsis-margin-base) * var(--mx-explorer-row-scale));
+  --mx-explorer-ellipsis-btn-pad-y: calc(var(--mx-explorer-ellipsis-btn-pad-y-base) * var(--mx-explorer-row-scale));
+  --mx-explorer-ellipsis-btn-pad-x: calc(var(--mx-explorer-ellipsis-btn-pad-x-base) * var(--mx-explorer-row-scale));
+  --mx-explorer-overflow-end: calc(var(--mx-explorer-overflow-end-base) * var(--mx-explorer-row-scale));
 }
 
 button.mobile-explorer,
@@ -115,11 +136,21 @@ button.desktop-explorer {
   }
 }
 
+/* =========================================
+   Floating preview for truncated explorer titles
+   - body-level overlay shown by JS
+   - allowed to overflow into main content area
+========================================= */
 .ce-hover-preview {
   position: fixed;
-  z-index: 9999;
+  z-index: 2147483647;
   pointer-events: none;
   box-sizing: border-box;
+
+  display: inline-block;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
 
   white-space: nowrap;
   overflow: visible;
@@ -133,6 +164,7 @@ button.desktop-explorer {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
 
   opacity: 0;
+  visibility: hidden;
   transform: translateY(1px) scale(0.985);
   transition:
     opacity 120ms ease,
@@ -143,11 +175,13 @@ button.desktop-explorer {
 
 .ce-hover-preview.is-visible {
   opacity: 1;
+  visibility: visible;
   transform: translateY(-2px) scale(1);
 }
 
 .ce-hover-preview.is-measuring {
   transition: none;
+  visibility: hidden;
 }
 
 :root[saved-theme="dark"] .ce-hover-preview {
@@ -156,15 +190,13 @@ button.desktop-explorer {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
+/* =========================================
+   Explorer content / truncation core
+========================================= */
 .explorer-content {
   & li .folder-title.active,
   & li .folder-title--textonly.active {
   }
-
-  /* =========================================
-     Explorer title truncation (no wrapping)
-     - overflow => cut tail + custom "..." + fade
-  ========================================= */
 
   .folder-container {
     min-width: 0;
@@ -248,128 +280,10 @@ button.desktop-explorer {
   background-color: color-mix(in srgb, var(--dark) 72%, transparent);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
 }
-  /* =========================================
-     Explorer title truncation (no wrapping)
-     - overflow => cut tail + custom "..." + fade
-  ========================================= */
-  
-  /* flex 안에서 ellipsis가 동작하려면 shrink 허용이 필요 */
-  .folder-container {
-    min-width: 0;
-  
-    & > div {
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-  
-    & div > button {
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-  
-    & div > a {
-      min-width: 0;
-      max-width: 100%;
-    }
-  }
-  
-  /* =========================================
-     JS-based truncation rendering
-     - no wrapping
-     - fade starts from last word span(.ce-fade)
-     - dots have opacity 0.8 / 0.7 / 0.6
-  ========================================= */
-  
-  /* 폴더/파일 제목이 flex 안에서 줄어들 수 있게 */
-    .folder-container,
-    .folder-container > div,
-    .folder-container .folder-button {
-      min-width: 0;
-      overflow: hidden;
-    }
-  
-    .ce-truncate {
-      display: block; /* ✅ 요소 폭을 컨테이너에 맞춰 측정/자르기 */
-      width: 100%;
-      max-width: 100%;
-      white-space: nowrap; /* ✅ 줄바꿈 금지 */
-      overflow: hidden;
-    }
 
-    .ce-truncate.ce-truncated {
-      position: relative;
-      border-radius: 0.35rem;
-      transition:
-        box-shadow 120ms ease,
-        background-color 120ms ease,
-        transform 120ms ease;
-    }
-
-    .ce-truncate.ce-truncated:hover,
-    .ce-truncate.ce-truncated:focus {
-      background-color: color-mix(in srgb, var(--light) 82%, transparent);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
-      transform: translateY(-1px);
-    }
-
-    :root[saved-theme="dark"] .ce-truncate.ce-truncated:hover,
-    :root[saved-theme="dark"] .ce-truncate.ce-truncated:focus {
-      background-color: color-mix(in srgb, var(--dark) 72%, transparent);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
-    }
-
-  .folder-outer {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-in-out;
-  }
-
-  .folder-outer.open {
-    grid-template-rows: 1fr;
-  }
-
-  .folder-outer > ul {
-    overflow: hidden;
-    margin-left: 6px;
-    padding-left: 0.8rem;
-    border-left: 1px solid var(--lightgray);
-  }
-
-  /* =========================================
-     Folder title truncation fix:
-     - folders are rendered inside flex/button
-     - without min-width:0, text won't shrink -> no overflow detected
-  ========================================= */
-  
-  .explorer-content {
-    /* 폴더 한 줄(container)에서 제목 영역이 폭을 줄일 수 있어야 함 */
-    .folder-container {
-      min-width: 0; /* ✅ flex item shrink 허용 */
-    }
-  
-    /* template-folder 안 구조에서 titleContainer 역할을 하는 div */
-    .folder-container > div {
-      min-width: 0;
-      flex: 1 1 auto;
-      overflow: hidden; /* ✅ 자식의 overflow를 클립 */
-    }
-  
-    /* collapse behavior일 때 제목이 button.folder-button 안에 있음 */
-    .folder-container .folder-button {
-      min-width: 0;
-      max-width: 100%;
-      overflow: hidden;
-    }
-  
-    /* 실제 텍스트 요소(폴더 제목) */
-    .folder-container .folder-title,
-    .folder-container .folder-title--textonly {
-      min-width: 0;
-      max-width: 100%;
-    }
-  }  
-}
-
+/* =========================================
+   Folder row / typography
+========================================= */
 .folder-container {
   flex-direction: row;
   display: flex;
@@ -430,6 +344,9 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   color: var(--tertiary);
 }
 
+/* =========================================
+   Mobile explorer panel
+========================================= */
 .explorer {
   @media all and ($mobile) {
     &.collapsed {
@@ -488,25 +405,24 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
     overscroll-behavior: none;
   }
 }
-/* ========= Compact Explorer (⋯) ========= */
-:root {
-  /* theme-independent */
-  --ce-active-text: #84a59d;     /* 활성(청록 글자) */
-  --ce-light-bg: #faf8f8;        /* 라이트 배경(거의 흰색) */
-  --ce-light-text: #5f5e5e;      /* 라이트 비활성 글자(진한 회색) */
-  --ce-dark-text: #b6b6b7;       /* 다크 비활성 글자(연한 회색) */
 
-  /* 테두리는 기존 값 유지(원하면 여기만 조절) */
+/* =========================================
+   Compact Explorer (⋯)
+========================================= */
+:root {
+  --ce-active-text: #84a59d;
+  --ce-light-bg: #faf8f8;
+  --ce-light-text: #5f5e5e;
+  --ce-dark-text: #b6b6b7;
+
   --ce-light-border: #e6e7ea;
   --ce-dark-border: #2a2a2e;
 }
 
-/* 숨김 처리 */
 .explorer .ce-hidden {
   display: none;
 }
 
-/* ⋯ 줄: 중앙 */
 .explorer li.ce-ellipsis {
   width: 100%;
   margin: var(--mx-explorer-ellipsis-margin) 0;
@@ -514,23 +430,19 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   justify-content: center;
 }
 
-/* ⋯ 버튼: 폭 더 줄이고(요청), 둥근 pill */
 .explorer .ce-ellipsis-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   min-width: 20px;
   padding: var(--mx-explorer-ellipsis-btn-pad-y) var(--mx-explorer-ellipsis-btn-pad-x);
-
   border-radius: 999px;
   cursor: pointer;
   line-height: 1.1;
   font-weight: 700;
-
   margin: 0 auto;
 }
-/* ✅ 접힘(비활성) — 라이트 */
+
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn {
   background-color: var(--ce-light-bg);
   color: var(--ce-light-text);
@@ -538,7 +450,6 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   box-shadow: none;
 }
 
-/* ✅ 접힘(비활성) — 다크 */
 :root[saved-theme="dark"] .explorer .ce-ellipsis-btn {
   background-color: #161618;
   color: var(--ce-dark-text);
@@ -546,7 +457,6 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   box-shadow: none;
 }
 
-/* ✅ 펼침(활성) — 배경/테두리는 그대로, 글자색만 청록으로 */
 :root[saved-theme="light"] .explorer .ce-ellipsis-btn.is-open {
   background-color: var(--ce-light-bg);
   border: 1px solid var(--ce-light-border);
@@ -561,11 +471,9 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   box-shadow: none;
 }
 
-/* -----------------------------
-   Text-only folder (index.md: Text: true)
-   - label is rendered as <span> (no link)
-   - keep the same typography as other folder titles
------------------------------- */
+/* =========================================
+   Text-only / text-accordion folders
+========================================= */
 .folder-container.folder-text-only {
   & .folder-title--textonly {
     font-family: var(--headerFont);
@@ -577,33 +485,37 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   }
 }
 
-/* ✅ Text: true 폴더는 아이콘을 제거해도 다른 폴더들과 제목 정렬이 맞도록 아이콘 폭만큼 왼쪽 패딩을 확보 */
 .folder-container.folder-text-only,
 .folder-container.folder-text-accordion {
   padding-left: 0;
 }
 
-/* ✅ Text-accordion 폴더의 하위 항목은 '한 단계 더' 들여쓰지 않고, 부모와 같은 선상에서 나오게 */
 .folder-container.folder-text-accordion + .folder-outer > ul {
   margin-left: 0;
   padding-left: 0;
   border-left: 0;
 }
 
-/* Text:true(=folder-text-accordion) 폴더가 열릴 때:
-   - 색상 변화 없음
-   - Bold만 적용 */
 .explorer-content li:has(> .folder-outer.open) > .folder-container.folder-text-accordion .folder-title {
-  color: var(--secondary);     /* 기본 폴더 색 유지 */
-  font-weight: 700;            /* Bold */  
+  color: var(--secondary);
+  font-weight: 700;
 }
 
-/* ✅ English pages: Explorer titles (folders + files) force 0.8× */
+/* =========================================
+   Language-specific explorer font sizing
+========================================= */
+html[lang^="en"] .explorer {
+  --mx-explorer-row-scale: 0.8;
+}
+
+html[lang^="ko"] .explorer {
+  --mx-explorer-row-scale: 0.8;
+}
+
 html[lang^="en"] .explorer .explorer-content {
-  font-size: 0.76rem; /* 글씨 크기 0.8× 유지 (여기: 더 줄이고 싶으면 값 조정) */
+  font-size: 0.76rem;
 }
 
-/* folders (button/span) + folder links + text-only labels + file links */
 html[lang^="en"] .explorer .explorer-content a,
 html[lang^="en"] .explorer .explorer-content button,
 html[lang^="en"] .explorer .explorer-content button span,
@@ -613,13 +525,11 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
 }
 
-/* ✅ Korean pages: Explorer titles (folders + files) force 0.8× (언어별 조절) */
 html[lang^="ko"] .explorer .explorer-content {
-  font-size: 0.76rem;                 /* 여기: KO 글씨 더 줄이려면 0.72rem 등으로 */
+  font-size: 0.76rem;
   line-height: var(--mx-explorer-row-line);
 }
 
-/* ✅ KO에서도 기존 0.95rem 고정값(폴더/파일/텍스트 라벨)을 끊고, 컨테이너 폰트를 상속받게 강제 */
 html[lang^="ko"] .explorer .explorer-content a,
 html[lang^="ko"] .explorer .explorer-content button,
 html[lang^="ko"] .explorer .explorer-content button span,
@@ -627,53 +537,11 @@ html[lang^="ko"] .explorer .explorer-content .folder-title,
 html[lang^="ko"] .explorer .explorer-content .folder-title--textonly,
 html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
-  /* line-height는 FINAL 섹션에서 var(--mx-explorer-row-line)로 강제되므로 여기서 건드리지 않음 */
 }
 
-/* =========================================================
-   ✅ Explorer row spacing (FINAL, EN 0.8×)
-   - 모든 항목(텍스트 헤더 / 아코디언 폴더 / 일반 폴더 / 파일)의 “행 간격(줄 간격)”을
-     아래 변수 한 군데에서만 제어합니다.
-   - 더 좁게/넓게 조정하고 싶으면 '여기' 표시한 값만 바꾸세요.
-========================================================= */
-
-/* ===== 0) 한 군데에서만 조정 ===== */
-.explorer {
-  /* (기본/KO) 현재 기준 행 간격 */
-  --mx-explorer-row-line-base: 1.5rem;  /* 여기: 기본 행 높이(줄 간격의 핵심) */
-  --mx-explorer-row-pad-base: 0.00rem;  /* 여기: 행 위/아래 추가 여백(없애고 싶으면 0) */
-
-  /* (⋯) 아코디언 구분선/버튼/끝 여백 */
-  --mx-explorer-ellipsis-margin-base: 2px;        /* 여기 */
-  --mx-explorer-ellipsis-btn-pad-y-base: 0.08rem; /* 여기 */
-  --mx-explorer-ellipsis-btn-pad-x-base: 0.34rem; /* 여기 */
-  --mx-explorer-overflow-end-base: 0.5rem;        /* 여기 */
-
-  /* 배율(기본=1) */
-  --mx-explorer-row-scale: 1;  /* 여기: KO에서도 더 줄이고 싶으면 0.9 등 */
-
-  /* 계산된(실사용) 값들 */
-  --mx-explorer-row-line: calc(var(--mx-explorer-row-line-base) * var(--mx-explorer-row-scale));
-  --mx-explorer-row-pad: calc(var(--mx-explorer-row-pad-base) * var(--mx-explorer-row-scale));
-
-  --mx-explorer-ellipsis-margin: calc(var(--mx-explorer-ellipsis-margin-base) * var(--mx-explorer-row-scale));
-  --mx-explorer-ellipsis-btn-pad-y: calc(var(--mx-explorer-ellipsis-btn-pad-y-base) * var(--mx-explorer-row-scale));
-  --mx-explorer-ellipsis-btn-pad-x: calc(var(--mx-explorer-ellipsis-btn-pad-x-base) * var(--mx-explorer-row-scale));
-  --mx-explorer-overflow-end: calc(var(--mx-explorer-overflow-end-base) * var(--mx-explorer-row-scale));
-}
-
-/* ✅ EN: 현재(기본) 대비 0.8배 */
-html[lang^="en"] .explorer {
-  --mx-explorer-row-scale: 0.8; /* 여기: EN에서 더 좁게 => 0.75 / 0.7 */
-}
-
-html[lang^="ko"] .explorer {
-  --mx-explorer-row-scale: 0.8; /* 여기: KO에서 더 좁게 => 0.75 / 0.7 */
-}
-
-/* ===== 1) 모든 row에 강제 적용 ===== */
-
-/* (A) 파일 row: <li><a/></li> */
+/* =========================================
+   Force consistent row spacing
+========================================= */
 .explorer .explorer-content ul li > a {
   line-height: var(--mx-explorer-row-line) !important;
   padding-block: var(--mx-explorer-row-pad) !important;
@@ -681,9 +549,6 @@ html[lang^="ko"] .explorer {
   font-weight: #{$semiBoldWeight};
 }
 
-/* (B) 폴더 row: <li><div class="folder-container">...</div></li>
-   - 행 패딩은 folder-container에만 주고,
-   - 내부 button/a/span에는 패딩을 0으로 만들어 “이중 padding”을 원천 차단 */
 .explorer .folder-container {
   padding-block: var(--mx-explorer-row-pad) !important;
   margin: 0 !important;
@@ -692,20 +557,18 @@ html[lang^="ko"] .explorer {
 .explorer .folder-container div > button,
 .explorer .folder-container div > a,
 .explorer .folder-container .folder-title--textonly {
-  padding-block: 0 !important; /* 내부는 0 (행 padding은 container에서만) */
+  padding-block: 0 !important;
   padding-inline: 0 !important;
   margin: 0 !important;
   line-height: var(--mx-explorer-row-line) !important;
 }
 
-/* 폴더 제목 span까지 확실하게 */
 .explorer .folder-container div > button span,
 .explorer .folder-container .folder-title,
 .explorer .folder-container .folder-title--textonly {
   line-height: var(--mx-explorer-row-line) !important;
 }
 
-/* (C) ⋯ 구분선/버튼 및 리스트 끝 여백 */
 .explorer li.ce-ellipsis {
   margin: var(--mx-explorer-ellipsis-margin) 0 !important;
 }
