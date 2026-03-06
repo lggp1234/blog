@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
+                "file": "content/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -183,6 +183,8 @@
   },
   "active": "bf750706b3ad40fc",
   "lastOpenFiles": [
+    "content/english/index.md",
+    "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
     "content/english/1-study/index.md",
     "content/한국어버젼/99-연습-페이지/무제/무제.md",
     "content/한국어버젼/1-학업/index.md",
@@ -207,8 +209,6 @@
     "content/english/1-study/1-physics/120-equilibriumstatisticalmechanics/lecture2-statistical-ensemble.md",
     "content/english/1-study/1-physics/130-phasetransitionandcriticalphenomena/index.md",
     "content/english/1-study/1-physics/140-non-equilibriumstatisticalmechanics/index.md",
-    "content/english/1-study/1-physics/150-furthertopics2-dsncs/index.md",
-    "content/한국어버젼/1-학업/물리학/02-양자역학/양자역학에서의-수학적-표기법.md",
     "quartz/components/scripts/textAccordion.inline.ts",
     "content/english/1-study/1-physics/00-0-Fundamental-Series",
     "content/한국어버젼/1-학업/물리학/무제",

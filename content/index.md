@@ -1,11 +1,11 @@
 ---
 title: Lee Geon Woo's Archive of Study & Research
-lang:
+lang: basic
 altLangPath:
 ---
 Welcome👋,  
 
-My name is **GeonWoo Lee**, a student in the **Department of Physics** at **KAIST(Korea Institute of Science and Technology)**, and I am responsible for curating and maintaining this archive.
+My name is **G. W. Lee**, a student in the **Department of Physics** at **KAIST(Korea Institute of Science and Technology)**, and I am responsible for curating and maintaining this archive.
 
 I am honored to have you visit my academic and research archive.  
 The **Profile** section provides an overview of my personal portfolio.  
