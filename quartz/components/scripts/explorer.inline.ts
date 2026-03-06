@@ -817,6 +817,137 @@ function applyCompactRuleToOpenFolders(explorer: HTMLElement) {
   }
 }
 
+let ceHoverPreviewEl: HTMLDivElement | null = null
+let ceHoverPreviewHideTimer: number | null = null
+
+function ensureExplorerHoverPreview(): HTMLDivElement {
+  if (ceHoverPreviewEl && document.body.contains(ceHoverPreviewEl)) return ceHoverPreviewEl
+
+  const el = document.createElement("div")
+  el.className = "ce-hover-preview"
+  el.setAttribute("aria-hidden", "true")
+  document.body.appendChild(el)
+  ceHoverPreviewEl = el
+  return el
+}
+
+function hideExplorerHoverPreview(immediate = false) {
+  if (!ceHoverPreviewEl) return
+
+  if (ceHoverPreviewHideTimer !== null) {
+    window.clearTimeout(ceHoverPreviewHideTimer)
+    ceHoverPreviewHideTimer = null
+  }
+
+  const el = ceHoverPreviewEl
+  el.classList.remove("is-visible")
+
+  if (immediate) {
+    el.remove()
+    if (ceHoverPreviewEl === el) ceHoverPreviewEl = null
+    return
+  }
+
+  ceHoverPreviewHideTimer = window.setTimeout(() => {
+    if (el.parentElement) el.remove()
+    if (ceHoverPreviewEl === el) ceHoverPreviewEl = null
+    ceHoverPreviewHideTimer = null
+  }, 140)
+}
+
+function showExplorerHoverPreview(target: HTMLElement, fullText: string) {
+  const preview = ensureExplorerHoverPreview()
+
+  if (ceHoverPreviewHideTimer !== null) {
+    window.clearTimeout(ceHoverPreviewHideTimer)
+    ceHoverPreviewHideTimer = null
+  }
+
+  const st = getComputedStyle(target)
+  preview.textContent = fullText
+
+  // 탐색기 제목의 실제 스타일을 그대로 복사
+  preview.style.fontFamily = st.fontFamily
+  preview.style.fontSize = st.fontSize
+  preview.style.fontWeight = st.fontWeight
+  preview.style.fontStyle = st.fontStyle
+  preview.style.letterSpacing = st.letterSpacing
+  preview.style.lineHeight = st.lineHeight
+  preview.style.color = st.color
+  preview.style.textTransform = st.textTransform
+  preview.style.textAlign = st.textAlign
+
+  const rect = target.getBoundingClientRect()
+  const gap = 2
+
+  // 먼저 화면 밖으로 잠깐 둬서 실제 크기 측정
+  preview.style.left = `-99999px`
+  preview.style.top = `-99999px`
+  preview.classList.add("is-measuring")
+  preview.classList.remove("is-visible")
+
+  const maxWidth = Math.min(window.innerWidth - 16, Math.max(220, window.innerWidth * 0.58))
+  preview.style.maxWidth = `${maxWidth}px`
+
+  const pw = preview.offsetWidth
+  const ph = preview.offsetHeight
+
+  let left = rect.left - 6
+  let top = rect.top + (rect.height - ph) / 2 - gap
+
+  // viewport 안으로 최대한 유지
+  const margin = 8
+  if (left + pw > window.innerWidth - margin) left = window.innerWidth - margin - pw
+  if (left < margin) left = margin
+
+  if (top + ph > window.innerHeight - margin) top = window.innerHeight - margin - ph
+  if (top < margin) top = margin
+
+  preview.style.left = `${Math.round(left)}px`
+  preview.style.top = `${Math.round(top)}px`
+
+  preview.classList.remove("is-measuring")
+
+  requestAnimationFrame(() => {
+    preview.classList.add("is-visible")
+  })
+}
+
+function bindExplorerHoverPreview(el: HTMLElement) {
+  if (el.dataset.ceHoverBound === "true") return
+  el.dataset.ceHoverBound = "true"
+
+  const onEnter = () => {
+    const full = el.dataset.ceFullTitle ?? ""
+    if (!full || !el.classList.contains("ce-truncated")) return
+    showExplorerHoverPreview(el, full)
+  }
+
+  const onLeave = () => {
+    hideExplorerHoverPreview(false)
+  }
+
+  const onFocus = () => {
+    const full = el.dataset.ceFullTitle ?? ""
+    if (!full || !el.classList.contains("ce-truncated")) return
+    showExplorerHoverPreview(el, full)
+  }
+
+  const onBlur = () => {
+    hideExplorerHoverPreview(false)
+  }
+
+  el.addEventListener("mouseenter", onEnter)
+  el.addEventListener("mouseleave", onLeave)
+  el.addEventListener("focus", onFocus)
+  el.addEventListener("blur", onBlur)
+
+  window.addCleanup(() => el.removeEventListener("mouseenter", onEnter))
+  window.addCleanup(() => el.removeEventListener("mouseleave", onLeave))
+  window.addCleanup(() => el.removeEventListener("focus", onFocus))
+  window.addCleanup(() => el.removeEventListener("blur", onBlur))
+}
+
 function applyExplorerTitleTruncation(explorer: HTMLElement) {
   const targets = explorer.querySelectorAll(".ce-truncate") as NodeListOf<HTMLElement>
   if (targets.length === 0) return
@@ -884,6 +1015,10 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
     if (hostBtn) hostBtn.removeAttribute("title")
     if (hostLink) hostLink.removeAttribute("title")
 
+    // 기본 브라우저 tooltip 대신 custom hover preview 사용
+    el.dataset.ceFullTitle = full
+    bindExplorerHoverPreview(el)
+
     const avail = getAvailWidth(el)
     if (avail <= 0) continue
 
@@ -895,9 +1030,11 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
 
     const dotsW = measure(dots, el)
     el.classList.add("ce-truncated")
-    el.setAttribute("title", full)
-    if (hostBtn) hostBtn.setAttribute("title", full)
-    if (hostLink) hostLink.setAttribute("title", full)
+
+    // 기본 title tooltip은 쓰지 않음
+    el.removeAttribute("title")
+    if (hostBtn) hostBtn.removeAttribute("title")
+    if (hostLink) hostLink.removeAttribute("title")
     
     if (dotsW > avail + EPS) {
       // 극단적으로 좁으면 점만
@@ -930,6 +1067,7 @@ function applyExplorerTitleTruncation(explorer: HTMLElement) {
 }
 
 async function setupExplorer(currentSlug: FullSlug) {
+  hideExplorerHoverPreview(true)
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>
 
   for (const explorer of allExplorers) {
