@@ -490,6 +490,23 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
   font-size: inherit !important;
 }
 
+/* ✅ Korean pages: Explorer titles (folders + files) force 0.8× (언어별 조절) */
+html[lang^="ko"] .explorer .explorer-content {
+  font-size: 0.76rem;                 /* 여기: KO 글씨 더 줄이려면 0.72rem 등으로 */
+  line-height: var(--mx-explorer-row-line);
+}
+
+/* ✅ KO에서도 기존 0.95rem 고정값(폴더/파일/텍스트 라벨)을 끊고, 컨테이너 폰트를 상속받게 강제 */
+html[lang^="ko"] .explorer .explorer-content a,
+html[lang^="ko"] .explorer .explorer-content button,
+html[lang^="ko"] .explorer .explorer-content button span,
+html[lang^="ko"] .explorer .explorer-content .folder-title,
+html[lang^="ko"] .explorer .explorer-content .folder-title--textonly,
+html[lang^="ko"] .explorer .explorer-content .ce-truncate {
+  font-size: inherit !important;
+  /* line-height는 FINAL 섹션에서 var(--mx-explorer-row-line)로 강제되므로 여기서 건드리지 않음 */
+}
+
 /* =========================================================
    ✅ Explorer row spacing (FINAL, EN 0.8×)
    - 모든 항목(텍스트 헤더 / 아코디언 폴더 / 일반 폴더 / 파일)의 “행 간격(줄 간격)”을
@@ -525,6 +542,10 @@ html[lang^="en"] .explorer .explorer-content .ce-truncate {
 /* ✅ EN: 현재(기본) 대비 0.8배 */
 html[lang^="en"] .explorer {
   --mx-explorer-row-scale: 0.8; /* 여기: EN에서 더 좁게 => 0.75 / 0.7 */
+}
+
+html[lang^="ko"] .explorer {
+  --mx-explorer-row-scale: 0.8; /* 여기: KO에서 더 좁게 => 0.75 / 0.7 */
 }
 
 /* ===== 1) 모든 row에 강제 적용 ===== */
