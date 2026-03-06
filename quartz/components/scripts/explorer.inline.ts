@@ -866,7 +866,7 @@ function showExplorerHoverPreview(target: HTMLElement, fullText: string) {
   const st = getComputedStyle(target)
   preview.textContent = fullText
 
-  // 탐색기 제목의 실제 스타일을 그대로 복사
+  // 탐색기 title과 최대한 동일하게 보이도록 실제 스타일 복사
   preview.style.fontFamily = st.fontFamily
   preview.style.fontSize = st.fontSize
   preview.style.fontWeight = st.fontWeight
@@ -877,36 +877,49 @@ function showExplorerHoverPreview(target: HTMLElement, fullText: string) {
   preview.style.textTransform = st.textTransform
   preview.style.textAlign = st.textAlign
 
-  const rect = target.getBoundingClientRect()
-  const gap = 2
+  // 핵심: preview가 실제 텍스트 길이만큼 width를 갖도록 강제
+  preview.style.display = "inline-block"
+  preview.style.width = "max-content"
+  preview.style.maxWidth = "none"
+  preview.style.minWidth = "0"
+  preview.style.whiteSpace = "nowrap"
+  preview.style.overflow = "visible"
+  preview.style.textOverflow = "clip"
+  preview.style.visibility = "hidden"
 
-  // 먼저 화면 밖으로 잠깐 둬서 실제 크기 측정
-  preview.style.left = `-99999px`
-  preview.style.top = `-99999px`
+  const rect = target.getBoundingClientRect()
+
+  // 먼저 화면 밖에서 실제 크기 측정
+  preview.style.left = "-99999px"
+  preview.style.top = "-99999px"
   preview.classList.add("is-measuring")
   preview.classList.remove("is-visible")
 
-  const maxWidth = Math.min(window.innerWidth - 16, Math.max(220, window.innerWidth * 0.58))
-  preview.style.maxWidth = `${maxWidth}px`
-
-  const pw = preview.offsetWidth
-  const ph = preview.offsetHeight
+  const previewRect = preview.getBoundingClientRect()
+  const pw = Math.ceil(previewRect.width)
+  const ph = Math.ceil(previewRect.height)
 
   let left = rect.left - 6
-  let top = rect.top + (rect.height - ph) / 2 - gap
+  let top = rect.top + (rect.height - ph) / 2
 
-  // viewport 안으로 최대한 유지
+  // viewport 밖으로 너무 벗어나지만 않게만 조정
   const margin = 8
-  if (left + pw > window.innerWidth - margin) left = window.innerWidth - margin - pw
+
+  if (left + pw > window.innerWidth - margin) {
+    left = Math.max(margin, rect.right - pw + 6)
+  }
   if (left < margin) left = margin
 
-  if (top + ph > window.innerHeight - margin) top = window.innerHeight - margin - ph
+  if (top + ph > window.innerHeight - margin) {
+    top = window.innerHeight - margin - ph
+  }
   if (top < margin) top = margin
 
   preview.style.left = `${Math.round(left)}px`
   preview.style.top = `${Math.round(top)}px`
 
   preview.classList.remove("is-measuring")
+  preview.style.visibility = ""
 
   requestAnimationFrame(() => {
     preview.classList.add("is-visible")
