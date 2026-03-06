@@ -614,7 +614,7 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   overflow-x: hidden !important; /* 가로 스크롤/가로 스크롤바 차단 */
 }
 
-/* WebKit(크롬/사파리)에서 혹시 남는 가로 스크롤바 트랙만 제거 */
+/* WebKit(크롬/사파리)에서 혹시 남는 가로 스크롤바 트랙만 제거*/
 .explorer .explorer-content::-webkit-scrollbar:horizontal {
   height: 0 !important;
 }
