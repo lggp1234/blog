@@ -137,6 +137,86 @@ button.desktop-explorer {
       color: var(--tertiary);
     }
 
+    .ce-hover-preview {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      box-sizing: border-box;
+    
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+    
+      padding: 0.12rem 0.42rem;
+      border-radius: 0.5rem;
+    
+      background: var(--light);
+      border: 1px solid var(--lightgray);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+    
+      opacity: 0;
+      transform: translateY(1px) scale(0.985);
+      transition:
+        opacity 120ms ease,
+        transform 120ms ease;
+    
+      will-change: opacity, transform, left, top;
+    }
+    
+    .ce-hover-preview.is-visible {
+      opacity: 1;
+      transform: translateY(-2px) scale(1);
+    }
+    
+    .ce-hover-preview.is-measuring {
+      transition: none;
+    }
+    
+    :root[saved-theme="dark"] .ce-hover-preview {
+      background: var(--dark);
+      border-color: var(--gray);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+    }.ce-hover-preview {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      box-sizing: border-box;
+    
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+    
+      padding: 0.12rem 0.42rem;
+      border-radius: 0.5rem;
+    
+      background: var(--light);
+      border: 1px solid var(--lightgray);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+    
+      opacity: 0;
+      transform: translateY(1px) scale(0.985);
+      transition:
+        opacity 120ms ease,
+        transform 120ms ease;
+    
+      will-change: opacity, transform, left, top;
+    }
+    
+    .ce-hover-preview.is-visible {
+      opacity: 1;
+      transform: translateY(-2px) scale(1);
+    }
+    
+    .ce-hover-preview.is-measuring {
+      transition: none;
+    }
+    
+    :root[saved-theme="dark"] .ce-hover-preview {
+      background: var(--dark);
+      border-color: var(--gray);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+    }
+
     & li .folder-title.active,
     & li .folder-title--textonly.active {
 
@@ -190,9 +270,26 @@ button.desktop-explorer {
       overflow: hidden;
     }
 
-    /* JS가 잘라서 textContent를 바꾼 상태(시각 효과 없음) */
     .ce-truncate.ce-truncated {
-      /* hover tooltip은 JS에서 title로 처리 */
+      position: relative;
+      border-radius: 0.35rem;
+      transition:
+        box-shadow 120ms ease,
+        background-color 120ms ease,
+        transform 120ms ease;
+    }
+
+    .ce-truncate.ce-truncated:hover,
+    .ce-truncate.ce-truncated:focus {
+      background-color: color-mix(in srgb, var(--light) 82%, transparent);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+      transform: translateY(-1px);
+    }
+
+    :root[saved-theme="dark"] .ce-truncate.ce-truncated:hover,
+    :root[saved-theme="dark"] .ce-truncate.ce-truncated:focus {
+      background-color: color-mix(in srgb, var(--dark) 72%, transparent);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
     }
 
   .folder-outer {
