@@ -633,3 +633,25 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   box-shadow: none !important;
   transform: none !important;
 }
+
+/* =========================================
+   FIX: Explorer row spacing too large
+   - keep overlay/emphasis features
+========================================= */
+
+/* 1) 행 높이(줄 간격) 자체를 줄임
+   - base 1.15rem * scale(0.8) = 0.92rem 정도로 맞춰짐 */
+.explorer {
+  --mx-explorer-row-line-base: 1.15rem !important; /* ✅ 이전 1.5rem → 줄임 */
+  --mx-explorer-row-pad-base: 0rem !important;
+}
+
+/* 2) UL 기본 위/아래 margin 때문에 덩어리 간격이 벌어지는 경우 방지 (좌우 들여쓰기는 건드리지 않음) */
+.explorer .explorer-content ul {
+  margin-block: 0 !important;
+}
+
+/* 3) 혹시 남아있는 LI 기본 여백이 있다면 제거 */
+.explorer .explorer-content li {
+  margin-block: 0 !important;
+}
