@@ -157,60 +157,97 @@ button.desktop-explorer {
 }
 
 .explorer-content {
-  .ce-hover-preview {
-    position: fixed;
-    z-index: 2147483647;
-    pointer-events: none;
-    box-sizing: border-box;
-  
-    display: inline-block;
-    width: max-content;
-    max-width: none;
+  & li .folder-title.active,
+  & li .folder-title--textonly.active {
+  }
+
+  /* =========================================
+     Explorer title truncation (no wrapping)
+     - overflow => cut tail + custom "..." + fade
+  ========================================= */
+
+  .folder-container {
     min-width: 0;
-  
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: clip;
-  
-    padding: 0.12rem 0.42rem;
-    border-radius: 0.5rem;
-  
-    background: var(--light);
-    border: 1px solid var(--lightgray);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
-  
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(1px) scale(0.985);
-    transition:
-      opacity 120ms ease,
-      transform 120ms ease;
-  
-    will-change: opacity, transform, left, top;
-  }
-  
-  .ce-hover-preview.is-visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(-2px) scale(1);
-  }
-  
-  .ce-hover-preview.is-measuring {
-    transition: none;
-    visibility: hidden;
-  }
-  
-  :root[saved-theme="dark"] .ce-hover-preview {
-    background: var(--dark);
-    border-color: var(--gray);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
-  }
 
-    & li .folder-title.active,
-    & li .folder-title--textonly.active {
+    & > div {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
 
+    & div > button {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    & div > a {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .folder-title,
+    .folder-title--textonly {
+      min-width: 0;
+      max-width: 100%;
     }
   }
+
+  .folder-container,
+  .folder-container > div,
+  .folder-container .folder-button {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ce-truncate {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .ce-truncate.ce-truncated {
+    position: relative;
+    border-radius: 0.35rem;
+    transition:
+      box-shadow 120ms ease,
+      background-color 120ms ease,
+      transform 120ms ease;
+  }
+
+  .ce-truncate.ce-truncated:hover,
+  .ce-truncate.ce-truncated:focus {
+    background-color: color-mix(in srgb, var(--light) 82%, transparent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    transform: translateY(-1px);
+  }
+
+  .folder-outer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-in-out;
+  }
+
+  .folder-outer.open {
+    grid-template-rows: 1fr;
+  }
+
+  .folder-outer > ul {
+    overflow: hidden;
+    margin-left: 6px;
+    padding-left: 0.8rem;
+    border-left: 1px solid var(--lightgray);
+  }
+}
+
+:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:hover,
+:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:focus {
+  background-color: color-mix(in srgb, var(--dark) 72%, transparent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
+}
   /* =========================================
      Explorer title truncation (no wrapping)
      - overflow => cut tail + custom "..." + fade
