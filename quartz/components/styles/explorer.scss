@@ -191,6 +191,19 @@ button.desktop-explorer {
 }
 
 /* =========================================
+   Unified hover highlight tokens (same for truncated & non-truncated)
+========================================= */
+:root {
+  --ce-hl-bg: color-mix(in srgb, var(--light) 82%, transparent);
+  --ce-hl-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+
+:root[saved-theme="dark"] {
+  --ce-hl-bg: color-mix(in srgb, var(--dark) 72%, transparent);
+  --ce-hl-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
+}
+
+/* =========================================
    Explorer content / truncation core
 ========================================= */
 .explorer-content {
@@ -234,14 +247,16 @@ button.desktop-explorer {
   }
 
   .ce-truncate {
-    display: block;
-    width: 100%;
+    /* ✅ bar(배경/그림자)가 "제목 길이"만큼만 나오게 */
+    display: inline-block;
+    width: max-content;
     max-width: 100%;
+
     white-space: nowrap;
     overflow: hidden;
-  }
+    vertical-align: top;
 
-  .ce-truncate.ce-truncated {
+    /* ✅ 강조 효과(들뜸/그림자/배경) fade-in/out을 모든 제목에 공통 적용 */
     position: relative;
     border-radius: 0.35rem;
     transition:
@@ -250,10 +265,11 @@ button.desktop-explorer {
       transform 120ms ease;
   }
 
+
   .ce-truncate.ce-truncated:hover,
   .ce-truncate.ce-truncated:focus {
-    background-color: color-mix(in srgb, var(--light) 82%, transparent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    background-color: var(--ce-hl-bg);
+    box-shadow: var(--ce-hl-shadow);
     transform: translateY(-1px);
   }
 
@@ -273,12 +289,6 @@ button.desktop-explorer {
     padding-left: 0.8rem;
     border-left: 1px solid var(--lightgray);
   }
-}
-
-:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:hover,
-:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:focus {
-  background-color: color-mix(in srgb, var(--dark) 72%, transparent);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
 }
 
 /* =========================================
@@ -656,25 +666,11 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
    - exclude Text:true folders for now
 ========================================= */
 
-.ce-emph-scope .ce-truncate {
-  border-radius: 0.35rem;
-  transition:
-    box-shadow 120ms ease,
-    background-color 120ms ease,
-    transform 120ms ease;
-}
-
 .ce-emph-scope .ce-truncate:hover,
 .ce-emph-scope .ce-truncate:focus {
-  background-color: color-mix(in srgb, var(--light) 82%, transparent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  background-color: var(--ce-hl-bg);
+  box-shadow: var(--ce-hl-shadow);
   transform: translateY(-1px);
-}
-
-:root[saved-theme="dark"] .ce-emph-scope .ce-truncate:hover,
-:root[saved-theme="dark"] .ce-emph-scope .ce-truncate:focus {
-  background-color: color-mix(in srgb, var(--dark) 72%, transparent);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
 }
 
 /* Text:true 폴더(텍스트 헤더/아코디언)는 강조 효과 제외 */
