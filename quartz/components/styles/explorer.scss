@@ -191,16 +191,19 @@ button.desktop-explorer {
 }
 
 /* =========================================
-   Unified hover highlight tokens (same for truncated & non-truncated)
+   Unified hover highlight tokens (crisp box)
+   - matches ce-hover-preview’s visual strength
 ========================================= */
 :root {
-  --ce-hl-bg: color-mix(in srgb, var(--light) 82%, transparent);
-  --ce-hl-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  --ce-hl-bg: var(--light);
+  --ce-hl-border: var(--lightgray);
+  --ce-hl-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
 :root[saved-theme="dark"] {
-  --ce-hl-bg: color-mix(in srgb, var(--dark) 72%, transparent);
-  --ce-hl-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
+  --ce-hl-bg: var(--dark);
+  --ce-hl-border: var(--gray);
+  --ce-hl-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
 /* =========================================
@@ -247,16 +250,18 @@ button.desktop-explorer {
   }
 
   .ce-truncate {
-    /* ✅ bar(배경/그림자)가 "제목 길이"만큼만 나오게 */
+    /* bar 길이 = 제목 길이 */
     display: inline-block;
     width: max-content;
     max-width: 100%;
 
     white-space: nowrap;
     overflow: hidden;
-    vertical-align: top;
 
-    /* ✅ 강조 효과(들뜸/그림자/배경) fade-in/out을 모든 제목에 공통 적용 */
+    /* ✅ 줄간격(0.8×) 체감이 흔들리지 않게 고정 */
+    line-height: var(--mx-explorer-row-line) !important;
+    vertical-align: middle;
+
     position: relative;
     border-radius: 0.35rem;
     transition:
@@ -266,10 +271,12 @@ button.desktop-explorer {
   }
 
 
-  .ce-truncate.ce-truncated:hover,
-  .ce-truncate.ce-truncated:focus {
+  .ce-emph-scope .ce-truncate:hover,
+  .ce-emph-scope .ce-truncate:focus {
     background-color: var(--ce-hl-bg);
-    box-shadow: var(--ce-hl-shadow);
+    box-shadow:
+      var(--ce-hl-shadow),
+      inset 0 0 0 1px var(--ce-hl-border); /* ✅ truncated와 동일 선명도 */
     transform: translateY(-1px);
   }
 
