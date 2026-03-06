@@ -466,6 +466,7 @@ function toggleFolder(evt: MouseEvent) {
   }
   const explorer = folderContainer.closest(".explorer") as HTMLElement | null
   if (explorer) applyExplorerTitleTruncation(explorer)
+  if (explorer) applyPhysicsMathEmphasisScopes(explorer)
 
   // ✅ 상태 키는 무조건 v2 folderKey로 통일
   const folderKey =
@@ -1269,7 +1270,7 @@ async function setupExplorer(currentSlug: FullSlug) {
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
     applyExplorerTitleTruncation(explorer)
-    applyExplorerTitleTruncation(explorer)
+    applyPhysicsMathEmphasisScopes(explorer)
     const anyDoc = document as any
     if (anyDoc.fonts?.ready) {
       anyDoc.fonts.ready.then(() => applyExplorerTitleTruncation(explorer))
@@ -1424,6 +1425,7 @@ window.addEventListener("resize", function () {
   }
 
   applyExplorerTitleTruncation(explorer)
+  applyPhysicsMathEmphasisScopes(explorer)
 })
 
 function setFolderState(folderElement: HTMLElement, collapsed: boolean) {
