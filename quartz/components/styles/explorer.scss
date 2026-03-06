@@ -485,21 +485,20 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   }
 }
 
-/* Text:true(텍스트-only/텍스트-accordion)도 hover 시 청록색(기존 hover와 동일) */
+/* Text:true(텍스트-only/텍스트-accordion): "hover일 때만" 청록색 + fade-out */
+.explorer .folder-container.folder-text-only .folder-title--textonly,
+.explorer .folder-container.folder-text-accordion .folder-title {
+  transition: color 140ms ease;
+}
+
 .explorer .folder-container.folder-text-only:hover .folder-title--textonly,
-.explorer .folder-container.folder-text-only:focus-within .folder-title--textonly,
-.explorer .folder-container.folder-text-accordion:hover .folder-title,
-.explorer .folder-container.folder-text-accordion:focus-within .folder-title {
+.explorer .folder-container.folder-text-accordion:hover .folder-title {
   color: var(--tertiary);
 }
 
-/* 열려있는 Text-accordion은 기존에 color를 var(--secondary)로 고정해두었으니,
-   hover에서는 그 규칙을 이기도록 한 번 더 명시 */
+/* 열려있는 Text-accordion도 "hover일 때만" 청록색 */
 .explorer-content li:has(> .folder-outer.open)
   > .folder-container.folder-text-accordion:hover
-  .folder-title,
-.explorer-content li:has(> .folder-outer.open)
-  > .folder-container.folder-text-accordion:focus-within
   .folder-title {
   color: var(--tertiary);
 }
