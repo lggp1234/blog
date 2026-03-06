@@ -193,36 +193,90 @@ button.desktop-explorer {
 /* =========================================
    Explorer content / truncation core
 ========================================= */
-/* ================================
-   Folder title emphasis (ALL titles)
-   - applies to truncated + non-truncated
-   - excludes Text:true folders
-   - hover only (no focus-sticky)
-================================= */
+.explorer-content {
+  & li .folder-title.active,
+  & li .folder-title--textonly.active {
+  }
 
-.explorer-content
-  .folder-container:not(.folder-text-only):not(.folder-text-accordion)
+  .folder-container {
+    min-width: 0;
+
+    & > div {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    & div > button {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    & div > a {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .folder-title,
+    .folder-title--textonly {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
+
+  .folder-container,
+  .folder-container > div,
+  .folder-container .folder-button {
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .ce-truncate {
-  position: relative;
-  border-radius: 0.35rem;
-  transition:
-    box-shadow 120ms ease,
-    background-color 120ms ease,
-    transform 120ms ease;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .ce-truncate.ce-truncated {
+    position: relative;
+    border-radius: 0.35rem;
+    transition:
+      box-shadow 120ms ease,
+      background-color 120ms ease,
+      transform 120ms ease;
+  }
+
+  .ce-truncate.ce-truncated:hover,
+  .ce-truncate.ce-truncated:focus {
+    background-color: color-mix(in srgb, var(--light) 82%, transparent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    transform: translateY(-1px);
+  }
+
+  .folder-outer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-in-out;
+  }
+
+  .folder-outer.open {
+    grid-template-rows: 1fr;
+  }
+
+  .folder-outer > ul {
+    overflow: hidden;
+    margin-left: 6px;
+    padding-left: 0.8rem;
+    border-left: 1px solid var(--lightgray);
+  }
 }
 
-.explorer-content
-  .folder-container:not(.folder-text-only):not(.folder-text-accordion)
-  .ce-truncate:hover {
-  background-color: color-mix(in srgb, var(--light) 82%, transparent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
-  transform: translateY(-1px);
-}
-
-:root[saved-theme="dark"]
-  .explorer-content
-  .folder-container:not(.folder-text-only):not(.folder-text-accordion)
-  .ce-truncate:hover {
+:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:hover,
+:root[saved-theme="dark"] .explorer-content .ce-truncate.ce-truncated:focus {
   background-color: color-mix(in srgb, var(--dark) 72%, transparent);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.20);
 }
@@ -431,14 +485,21 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   }
 }
 
+/* Text:true(텍스트-only/텍스트-accordion)도 hover 시 청록색(기존 hover와 동일) */
 .explorer .folder-container.folder-text-only:hover .folder-title--textonly,
-.explorer .folder-container.folder-text-accordion:hover .folder-title {
+.explorer .folder-container.folder-text-only:focus-within .folder-title--textonly,
+.explorer .folder-container.folder-text-accordion:hover .folder-title,
+.explorer .folder-container.folder-text-accordion:focus-within .folder-title {
   color: var(--tertiary);
 }
 
-/* 열려있는 Text-accordion도 hover에서만 청록색 */
+/* 열려있는 Text-accordion은 기존에 color를 var(--secondary)로 고정해두었으니,
+   hover에서는 그 규칙을 이기도록 한 번 더 명시 */
 .explorer-content li:has(> .folder-outer.open)
   > .folder-container.folder-text-accordion:hover
+  .folder-title,
+.explorer-content li:has(> .folder-outer.open)
+  > .folder-container.folder-text-accordion:focus-within
   .folder-title {
   color: var(--tertiary);
 }
@@ -633,25 +694,3 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   box-shadow: none !important;
   transform: none !important;
 }
-
-/* =========================================
-   FIX: Explorer row spacing too large
-   - keep overlay/emphasis features
-========================================= */
-
-/* 1) 행 높이(줄 간격) 자체를 줄임
-   - base 1.15rem * scale(0.8) = 0.92rem 정도로 맞춰짐 */
-.explorer {
-  --mx-explorer-row-line-base: 1.15rem !important; /* ✅ 이전 1.5rem → 줄임 */
-  --mx-explorer-row-pad-base: 0rem !important;
-}
-
-/* 2) UL 기본 위/아래 margin 때문에 덩어리 간격이 벌어지는 경우 방지 (좌우 들여쓰기는 건드리지 않음) */
-.explorer .explorer-content ul {
-  margin-block: 0 !important;
-}
-
-/* 3) 혹시 남아있는 LI 기본 여백이 있다면 제거 */
-.explorer .explorer-content li {
-  margin-block: 0 !important;
-} /* 쌰갈 commit을 했는데 왜 업데이트가 안되노 */
