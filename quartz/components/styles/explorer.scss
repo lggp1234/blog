@@ -580,3 +580,54 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
 .explorer ul.overflow > li.overflow-end {
   height: var(--mx-explorer-overflow-end) !important;
 }
+
+/* =========================================
+   Cleanup: remove unintended markers + visible side scrollbars
+   - keeps hover overlay feature
+   - does NOT change your existing typography / language sizing / text-only folder styles
+========================================= */
+
+/* 1) explorer 리스트의 기본 marker(원/점/사각형) 제거 */
+.explorer .explorer-content ul,
+.explorer .explorer-content ol,
+.explorer .explorer-content li {
+  list-style: none !important;
+}
+
+.explorer .explorer-content li::marker {
+  content: "" !important;
+  font-size: 0 !important;
+}
+
+/* 2) explorer 내부에서 marker 때문에 생기는 기본 들여쓰기/여백 정리
+   - 단, 네가 이미 따로 준 .folder-outer > ul 들여쓰기는 유지되도록
+     root/basic list만 정리 */
+.explorer .explorer-content > ul,
+.explorer .explorer-content > div > ul {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* 세로 스크롤은 유지하고, 가로 스크롤만 차단 */
+.explorer .explorer-content {
+  overflow-y: auto !important;   /* 세로 스크롤 OK (스크롤바도 보임) */
+  overflow-x: hidden !important; /* 가로 스크롤/가로 스크롤바 차단 */
+}
+
+/* WebKit(크롬/사파리)에서 혹시 남는 가로 스크롤바 트랙만 제거 */
+.explorer .explorer-content::-webkit-scrollbar:horizontal {
+  height: 0 !important;
+}
+
+/* 4) truncation 때문에 가로 스크롤이 다시 생기지 않도록 폭 클램프 */
+.explorer .explorer-content,
+.explorer .explorer-content ul,
+.explorer .explorer-content li,
+.explorer .explorer-content .folder-container,
+.explorer .explorer-content .folder-container > div,
+.explorer .explorer-content .folder-container .folder-button,
+.explorer .explorer-content .ce-truncate {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
