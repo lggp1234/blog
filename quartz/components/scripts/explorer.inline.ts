@@ -88,15 +88,18 @@ type ExplorerUiState = {
 
 function readExplorerUiState(): ExplorerUiState {
   const raw = localStorage.getItem(EXPLORER_UI_KEY)
-  if (!raw) return { desktopCollapsed: false, mobileCollapsed: true }
+  // ✅ 처음 상태(저장값 없음)에서는 데스크탑도 접힘으로 시작
+  if (!raw) return { desktopCollapsed: true, mobileCollapsed: true }
+
   try {
     const parsed = JSON.parse(raw) as Partial<ExplorerUiState>
     return {
-      desktopCollapsed: parsed.desktopCollapsed ?? false,
+      // ✅ 저장값이 없거나(구버전) 누락된 경우에도 접힘을 기본으로
+      desktopCollapsed: parsed.desktopCollapsed ?? true,
       mobileCollapsed: parsed.mobileCollapsed ?? true,
     }
   } catch {
-    return { desktopCollapsed: false, mobileCollapsed: true }
+    return { desktopCollapsed: true, mobileCollapsed: true }
   }
 }
 
