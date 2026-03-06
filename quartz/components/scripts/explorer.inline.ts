@@ -961,6 +961,43 @@ function bindExplorerHoverPreview(el: HTMLElement) {
   window.addCleanup(() => el.removeEventListener("blur", onBlur))
 }
 
+function applyPhysicsMathEmphasisScopes(explorer: HTMLElement) {
+  // 이전 마킹 제거(재렌더/언어전환 등 대비)
+  explorer.querySelectorAll("ul.ce-emph-scope").forEach((ul) => ul.classList.remove("ce-emph-scope"))
+
+  // Physics/Mathematics 폴더명을 기준으로 해당 폴더의 자식 UL만 마킹
+  // (필요하면 여기 배열에 너의 실제 폴더명/번역명을 더 추가하면 됨)
+  const targets = new Set(["physics", "mathematics", "물리학", "수학"])
+
+  const folderContainers = explorer.querySelectorAll(".folder-container") as NodeListOf<HTMLElement>
+  for (const fc of folderContainers) {
+    // “Physics/Mathematics 폴더 자체”가 Text:true일 일은 거의 없지만 안전하게 스킵
+    if (fc.classList.contains("folder-text-only") || fc.classList.contains("folder-text-accordion")) continue
+
+    const titleEl = fc.querySelector(".folder-title, .folder-title--textonly, .ce-truncate") as HTMLElement | null
+    if (!titleEl) continue
+
+    // truncation이 개입해도 원문을 쓰도록 dataset 우선
+    const raw = (titleEl.dataset.ceFullTitle ?? titleEl.textContent ?? "").trim()
+
+    // text-accordion 화살표(> / ∨) 같은 prefix가 있으면 제거
+    const label = raw.replace(/^[>∨]\s+/, "").trim()
+
+    const key = label.toLowerCase()
+    const hit = targets.has(key) || targets.has(label)
+    if (!hit) continue
+
+    // 해당 폴더(li) 바로 아래의 “자식 리스트(ul)”에 scope 클래스 부여
+    const li = fc.closest("li") as HTMLLIElement | null
+    if (!li) continue
+
+    const ul = li.querySelector(":scope > .folder-outer > ul") as HTMLUListElement | null
+    if (!ul) continue
+
+    ul.classList.add("ce-emph-scope")
+  }
+}
+
 function applyExplorerTitleTruncation(explorer: HTMLElement) {
   const targets = explorer.querySelectorAll(".ce-truncate") as NodeListOf<HTMLElement>
   if (targets.length === 0) return
@@ -1231,6 +1268,7 @@ async function setupExplorer(currentSlug: FullSlug) {
     explorerUl.innerHTML = ""
     explorerUl.insertBefore(fragment, explorerUl.firstChild)
     applyCompactRuleToOpenFolders(explorer)
+    applyExplorerTitleTruncation(explorer)
     applyExplorerTitleTruncation(explorer)
     const anyDoc = document as any
     if (anyDoc.fonts?.ready) {
