@@ -1,4 +1,4 @@
-import { FileTrieNode } from "../../util/fileTrie"
+import { FileTrieNode } from "../../util/fileTrie" // 씨발 commit 되라고
 import { FullSlug, resolveRelative } from "../../util/path"
 import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
