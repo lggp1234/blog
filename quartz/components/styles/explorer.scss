@@ -698,64 +698,81 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
 }
 
 /* =========================================================
-   FINAL OVERRIDE
-   1) Row spacing: force identical row height for ALL items
-   2) Hover box: identical for ALL titles (truncated/non-truncated)
-      - matches the "ce-hover-preview" look
-      - only width differs by title length
+   FINAL NORMALIZATION (row spacing + identical hover box)
+   - fixes row spacing to true 0.8× feel (ALL items)
+   - makes hover box 100% identical across:
+     truncated / non-truncated / folder / file / Text:true
+     (only width differs by title length)
 ========================================================= */
 
-/* -------- 1) Row spacing: "확실히" 동일 행 높이로 고정 -------- */
+/* ---------- (1) Row spacing: force identical row height for ALL rows ---------- */
 
-/* 기본 줄간격이 여전히 넓게 느껴지면, 여기 1줄만 줄이면 됨.
-   (원래 0.8배 느낌으로 확실히 촘촘해지도록 약간 더 타이트하게 잡음) */
-.explorer {
-  --mx-explorer-row-line-base: 1.50rem; /* ✅ 여기: 줄 간격의 기준 (기존 1.5rem보다 타이트) */
+/* 0.8× 스케일이 어디서든 확실히 적용되게 강제 */
+html[lang^="en"] .explorer,
+html[lang^="ko"] .explorer {
+  --mx-explorer-row-scale: 0.8 !important;
 }
 
-/* 모든 li/row에서 불필요한 margin/padding 제거 */
+/* base는 네가 원래 쓰던 값으로 두고(scale로 0.8 적용) */
+.explorer {
+  --mx-explorer-row-line-base: 1.5rem !important;
+  --mx-explorer-row-pad-base: 0rem !important;
+}
+
+/* 모든 li의 기본 마진/패딩 제거 (행간 흔들림 원천 차단) */
 .explorer .explorer-content li {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-/* 파일 row(<li><a/>)도 폴더 row와 동일한 높이로 고정 */
+/* 파일 row (<li><a>) : 행 높이 강제 고정 */
 .explorer .explorer-content ul li > a {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  align-items: center !important;
+
   height: var(--mx-explorer-row-line) !important;
   min-height: var(--mx-explorer-row-line) !important;
+
   line-height: var(--mx-explorer-row-line) !important;
   padding-block: 0 !important;
+  margin: 0 !important;
+
+  text-decoration: none !important; /* underline로 인한 시각적 차이 제거 */
 }
 
-/* 폴더 row(<div class="folder-container">)도 동일한 높이로 고정 */
+/* 폴더 row (<div class="folder-container">...) : 행 높이 강제 고정 */
 .explorer .folder-container {
+  display: flex !important;
+  align-items: center !important;
+
   height: var(--mx-explorer-row-line) !important;
   min-height: var(--mx-explorer-row-line) !important;
+
   padding-block: 0 !important;
   margin: 0 !important;
 }
 
-/* 폴더 내부 클릭 요소들도 행 높이를 깨지 못하게 고정 */
+/* 폴더 내부 요소들도 행 높이/라인하이트를 깨지 못하게 통일 */
 .explorer .folder-container div > button,
 .explorer .folder-container div > a,
 .explorer .folder-container .folder-title,
 .explorer .folder-container .folder-title--textonly,
-.explorer .folder-container div > button span {
+.explorer .folder-container div > button span,
+.explorer .ce-truncate {
   line-height: var(--mx-explorer-row-line) !important;
   margin: 0 !important;
   padding-block: 0 !important;
 }
 
-/* -------- 2) Hover box: truncated/non-truncated 완전 동일 -------- */
+/* ---------- (2) Hover box: identical code for ALL titles ---------- */
 
-/* hover 박스 “모양”을 overlay(ce-hover-preview)와 동일하게 맞춤 */
+/* truncated hover(현재 네가 만족하는 pill)과 동일한 토큰 */
 :root {
-  --ce-pill-pad-y: 0.12rem;     /* ce-hover-preview padding-y */
-  --ce-pill-pad-x: 0.42rem;     /* ce-hover-preview padding-x */
-  --ce-pill-radius: 0.5rem;     /* ce-hover-preview radius */
-  --ce-pill-bg: var(--light);   /* ce-hover-preview bg */
+  --ce-pill-pad-y: 0.12rem;
+  --ce-pill-pad-x: 0.42rem;
+  --ce-pill-radius: 0.5rem;
+
+  --ce-pill-bg: var(--light);
   --ce-pill-border: var(--lightgray);
   --ce-pill-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
 }
@@ -766,29 +783,24 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   --ce-pill-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
-/* 기존 여러 hover 규칙들이 background/box-shadow를 직접 주며 섞이는 걸 막기 위해
-   base에서는 무조건 투명으로 “리셋” */
+/* 기존에 여기저기 섞인 hover background/box-shadow를 전부 무력화(차이 제거) */
 .explorer .ce-truncate {
   background: transparent !important;
   box-shadow: none !important;
 
-  /* ✅ title 길이만큼만 폭을 가지게(너비=텍스트 길이 기반) */
-  display: inline-block;
-  width: max-content;
-  max-width: 100%;
+  /* 박스 너비는 제목 길이에만 의존 */
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: 100% !important;
 
-  /* ✅ 줄높이 통일(행 간격 흔들림 방지) */
-  line-height: var(--mx-explorer-row-line) !important;
-  vertical-align: middle;
+  position: relative !important;
+  z-index: 0 !important;
 
-  /* hover box를 pseudo-element로 그릴 준비 */
-  position: relative;
-  z-index: 0;
-  border-radius: var(--ce-pill-radius);
-  transition: transform 120ms ease;
+  border-radius: var(--ce-pill-radius) !important;
+  transition: transform 120ms ease !important;
 }
 
-/* hover 박스는 ::before 로만 그림 (레이아웃에 영향 X → 줄간격 안 늘어남) */
+/* hover 박스는 오직 ::before “한 코드”로만 렌더 (truncated/non-truncated 동일) */
 .explorer .ce-truncate::before {
   content: "";
   position: absolute;
@@ -812,21 +824,64 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   z-index: -1;
 }
 
-/* ✅ 모든 title(truncated/non-truncated, 폴더/파일, Text:true 포함) hover 효과 동일 */
-.explorer .ce-truncate:hover::before,
-.explorer .ce-truncate:focus-visible::before {
+/* ✅ hover 트리거를 “부모(button/a)”에만 건다.
+   (folder title span은 pointer-events:none 인 경우가 있어서 span:hover가 불안정함) */
+
+/* 파일: <li><a> ... </a> */
+.explorer .explorer-content ul li > a:hover .ce-truncate::before,
+.explorer .explorer-content ul li > a:focus-visible .ce-truncate::before {
   opacity: 1;
   transform: translateY(-2px) scale(1);
 }
 
-.explorer .ce-truncate:hover,
-.explorer .ce-truncate:focus-visible {
+.explorer .explorer-content ul li > a:hover .ce-truncate,
+.explorer .explorer-content ul li > a:focus-visible .ce-truncate {
   transform: translateY(-1px);
 }
 
-/* Text:true가 “hover 때만” 청록색으로 변하게 (포커스 고착 방지) */
+/* 폴더: button */
+.explorer .folder-container div > button:hover .ce-truncate::before,
+.explorer .folder-container div > button:focus-visible .ce-truncate::before {
+  opacity: 1;
+  transform: translateY(-2px) scale(1);
+}
+
+.explorer .folder-container div > button:hover .ce-truncate,
+.explorer .folder-container div > button:focus-visible .ce-truncate {
+  transform: translateY(-1px);
+}
+
+/* 폴더: a(폴더 링크 구조가 있는 경우도 커버) */
+.explorer .folder-container div > a:hover .ce-truncate::before,
+.explorer .folder-container div > a:focus-visible .ce-truncate::before {
+  opacity: 1;
+  transform: translateY(-2px) scale(1);
+}
+
+.explorer .folder-container div > a:hover .ce-truncate,
+.explorer .folder-container div > a:focus-visible .ce-truncate {
+  transform: translateY(-1px);
+}
+
+/* Text:true 폴더(텍스트-only/아코디언)도 동일 hover 박스 적용 */
+.explorer .folder-container.folder-text-only:hover .ce-truncate::before,
+.explorer .folder-container.folder-text-accordion:hover .ce-truncate::before {
+  opacity: 1;
+  transform: translateY(-2px) scale(1);
+}
+
+.explorer .folder-container.folder-text-only:hover .ce-truncate,
+.explorer .folder-container.folder-text-accordion:hover .ce-truncate {
+  transform: translateY(-1px);
+}
+
+/* Text:true 색상 변화는 hover에서만 */
+.explorer .folder-container.folder-text-only .folder-title--textonly,
+.explorer .folder-container.folder-text-accordion .folder-title {
+  transition: color 120ms ease;
+}
+
 .explorer .folder-container.folder-text-only:hover .folder-title--textonly,
 .explorer .folder-container.folder-text-accordion:hover .folder-title {
   color: var(--tertiary);
-  transition: color 120ms ease;
 }
