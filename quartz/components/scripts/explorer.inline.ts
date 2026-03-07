@@ -530,7 +530,9 @@ function createFolderNode(
   const isTextOnlyFolder = !forceNormalTextOnly && !!(node.data as any)?.textOnly
   const childrenForThisFolder = virtualChildren ?? node.children
   const isTextAccordionFolder = isTextOnlyFolder && childrenForThisFolder.some((c) => c.isFolder)
-
+  if (isTextAccordionFolder) {
+    ul.dataset.ceTextTrueScope = "true"
+  }
   // ✅ Text: true 폴더는 펼침/접힘 아이콘(chevron) 없이 제목 클릭으로만 토글되게
   if (isTextOnlyFolder) {
     const icon = folderContainer.querySelector(".folder-icon")
@@ -927,13 +929,35 @@ function showExplorerHoverPreview(target: HTMLElement, fullText: string) {
   })
 }
 
+function isInsideTextTrueScope(el: HTMLElement): boolean {
+  return !!el.closest('ul[data-ce-text-true-scope="true"]')
+}
+
+function shouldShowExplorerHoverPreview(el: HTMLElement): boolean {
+  // 기존 규칙 유지:
+  // - 잘린 항목은 어디서든 preview 허용
+  if (el.classList.contains("ce-truncated")) return true
+
+  // 추가 규칙:
+  // - Text:true 폴더 내부(scope) 항목은 non-truncated여도 허용
+  return isInsideTextTrueScope(el)
+}
+
 function bindExplorerHoverPreview(el: HTMLElement) {
-  if (el.dataset.ceHoverBound === "true") return
-  el.dataset.ceHoverBound = "true"
+  // hover/focus 이벤트는 실제 상호작용 host에 건다.
+  // - 파일: <a>
+  // - 일반 폴더(link mode): <a>
+  // - collapse mode / text-accordion: <button>
+  // - text-only header: .folder-container 자체
+  const host =
+    (el.closest("a, button, .folder-container.folder-text-only") as HTMLElement | null) ?? el
+
+  if (host.dataset.ceHoverBound === "true") return
+  host.dataset.ceHoverBound = "true"
 
   const onEnter = () => {
     const full = el.dataset.ceFullTitle ?? ""
-    if (!full || !el.classList.contains("ce-truncated")) return
+    if (!full || !shouldShowExplorerHoverPreview(el)) return
     showExplorerHoverPreview(el, full)
   }
 
@@ -943,7 +967,7 @@ function bindExplorerHoverPreview(el: HTMLElement) {
 
   const onFocus = () => {
     const full = el.dataset.ceFullTitle ?? ""
-    if (!full || !el.classList.contains("ce-truncated")) return
+    if (!full || !shouldShowExplorerHoverPreview(el)) return
     showExplorerHoverPreview(el, full)
   }
 
@@ -951,15 +975,15 @@ function bindExplorerHoverPreview(el: HTMLElement) {
     hideExplorerHoverPreview(false)
   }
 
-  el.addEventListener("mouseenter", onEnter)
-  el.addEventListener("mouseleave", onLeave)
-  el.addEventListener("focus", onFocus)
-  el.addEventListener("blur", onBlur)
+  host.addEventListener("mouseenter", onEnter)
+  host.addEventListener("mouseleave", onLeave)
+  host.addEventListener("focus", onFocus)
+  host.addEventListener("blur", onBlur)
 
-  window.addCleanup(() => el.removeEventListener("mouseenter", onEnter))
-  window.addCleanup(() => el.removeEventListener("mouseleave", onLeave))
-  window.addCleanup(() => el.removeEventListener("focus", onFocus))
-  window.addCleanup(() => el.removeEventListener("blur", onBlur))
+  window.addCleanup(() => host.removeEventListener("mouseenter", onEnter))
+  window.addCleanup(() => host.removeEventListener("mouseleave", onLeave))
+  window.addCleanup(() => host.removeEventListener("focus", onFocus))
+  window.addCleanup(() => host.removeEventListener("blur", onBlur))
 }
 
 function applyPhysicsMathEmphasisScopes(explorer: HTMLElement) {
