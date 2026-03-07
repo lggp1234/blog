@@ -185,8 +185,9 @@ button.desktop-explorer {
 }
 
 :root[saved-theme="dark"] .ce-hover-preview {
-  background: var(--dark);
-  border-color: var(--gray);
+  background: color-mix(in srgb, var(--light) 88%, white 12%);
+  border-color: color-mix(in srgb, var(--gray) 72%, var(--lightgray) 28%);
+  color: var(--darkgray);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
@@ -201,8 +202,8 @@ button.desktop-explorer {
 }
 
 :root[saved-theme="dark"] {
-  --ce-hl-bg: var(--dark);
-  --ce-hl-border: var(--gray);
+  --ce-hl-bg: color-mix(in srgb, var(--light) 88%, white 12%);
+  --ce-hl-border: color-mix(in srgb, var(--gray) 72%, var(--lightgray) 28%);
   --ce-hl-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
@@ -777,8 +778,8 @@ html[lang^="ko"] .explorer {
 }
 
 :root[saved-theme="dark"] {
-  --ce-pill-bg: var(--dark);
-  --ce-pill-border: var(--gray);
+  --ce-pill-bg: color-mix(in srgb, var(--light) 88%, white 12%);
+  --ce-pill-border: color-mix(in srgb, var(--gray) 72%, var(--lightgray) 28%);
   --ce-pill-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
