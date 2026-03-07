@@ -710,7 +710,7 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
 /* 기본 줄간격이 여전히 넓게 느껴지면, 여기 1줄만 줄이면 됨.
    (원래 0.8배 느낌으로 확실히 촘촘해지도록 약간 더 타이트하게 잡음) */
 .explorer {
-  --mx-explorer-row-line-base: 1.35rem; /* ✅ 여기: 줄 간격의 기준 (기존 1.5rem보다 타이트) */
+  --mx-explorer-row-line-base: 1.40rem; /* ✅ 여기: 줄 간격의 기준 (기존 1.5rem보다 타이트) */
 }
 
 /* 모든 li/row에서 불필요한 margin/padding 제거 */
