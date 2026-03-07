@@ -874,25 +874,29 @@ html[lang^="ko"] .explorer {
   transform: translateY(-1px);
 }
 
-/* Text:true 폴더(텍스트-only/아코디언)도 동일 hover 박스 적용 */
-.explorer .folder-container.folder-text-only:hover .ce-truncate::before,
-.explorer .folder-container.folder-text-accordion:hover .ce-truncate::before {
-  opacity: 1;
-  transform: translateY(-2px) scale(1);
-}
-
-.explorer .folder-container.folder-text-only:hover .ce-truncate,
-.explorer .folder-container.folder-text-accordion:hover .ce-truncate {
-  transform: translateY(-1px);
-}
-
 /* Text:true 색상 변화는 hover에서만 */
 .explorer .folder-container.folder-text-only .folder-title--textonly,
 .explorer .folder-container.folder-text-accordion .folder-title {
   transition: color 120ms ease;
 }
 
-.explorer .folder-container.folder-text-only:hover .folder-title--textonly,
-.explorer .folder-container.folder-text-accordion:hover .folder-title {
+/* Text:true도 container 전체가 아니라 "실제 title/button hover"일 때만 반응 */
+.explorer .folder-container.folder-text-only .folder-title--textonly:hover,
+.explorer .folder-container.folder-text-only .folder-title--textonly:focus-visible {
+  color: var(--tertiary);
+}
+
+.explorer .folder-container.folder-text-accordion div > button:hover .folder-title,
+.explorer .folder-container.folder-text-accordion div > button:focus-visible .folder-title {
+  color: var(--tertiary);
+  
+}/* Text:true도 container 전체가 아니라 "실제 title/button hover"일 때만 반응 */
+.explorer .folder-container.folder-text-only .folder-title--textonly:hover,
+.explorer .folder-container.folder-text-only .folder-title--textonly:focus-visible {
+  color: var(--tertiary);
+}
+
+.explorer .folder-container.folder-text-accordion div > button:hover .folder-title,
+.explorer .folder-container.folder-text-accordion div > button:focus-visible .folder-title {
   color: var(--tertiary);
 }
