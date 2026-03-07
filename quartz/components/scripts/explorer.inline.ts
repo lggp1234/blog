@@ -933,20 +933,13 @@ function isInsideTextTrueScope(el: HTMLElement): boolean {
   return !!el.closest('ul[data-ce-text-true-scope="true"]')
 }
 
-function isTextTrueHeader(el: HTMLElement): boolean {
-  return !!el.closest(
-    ".folder-container.folder-text-only, .folder-container.folder-text-accordion",
-  )
-}
-
 function shouldShowExplorerHoverPreview(el: HTMLElement): boolean {
-  // 1) 기존 규칙 유지: 잘린 항목은 어디서든 허용
+  // 기존 규칙 유지:
+  // - 잘린 항목은 어디서든 preview 허용
   if (el.classList.contains("ce-truncated")) return true
 
-  // 2) Text:true 폴더 헤더 자체도 허용
-  if (isTextTrueHeader(el)) return true
-
-  // 3) Text:true 폴더 내부(scope)의 일반 폴더/파일도 허용
+  // 추가 규칙:
+  // - Text:true 폴더 내부(scope) 항목은 non-truncated여도 허용
   return isInsideTextTrueScope(el)
 }
 
@@ -956,14 +949,8 @@ function bindExplorerHoverPreview(el: HTMLElement) {
   // - 일반 폴더(link mode): <a>
   // - collapse mode / text-accordion: <button>
   // - text-only header: .folder-container 자체
-  const textTrueContainer = el.closest(
-    ".folder-container.folder-text-only, .folder-container.folder-text-accordion",
-  ) as HTMLElement | null
-  
   const host =
-    textTrueContainer ??
-    (el.closest("a, button") as HTMLElement | null) ??
-    el
+    (el.closest("a, button") as HTMLElement | null) ?? el
 
   if (host.dataset.ceHoverBound === "true") return
   host.dataset.ceHoverBound = "true"
