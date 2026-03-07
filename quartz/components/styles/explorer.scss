@@ -99,8 +99,8 @@
   }
 
   /* ===== Explorer row spacing variables ===== */
-  --mx-explorer-row-line-base: 1.5em;
-  --mx-explorer-row-pad-base: 0em;
+  --mx-explorer-row-line-base: 1.5rem;
+  --mx-explorer-row-pad-base: 0rem;
 
   --mx-explorer-ellipsis-margin-base: 2px;
   --mx-explorer-ellipsis-btn-pad-y-base: 0.08rem;
@@ -198,18 +198,12 @@ button.desktop-explorer {
   --ce-hl-bg: var(--light);
   --ce-hl-border: var(--lightgray);
   --ce-hl-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
-  --ce-hl-pad-x: 0.42rem;
-  --ce-hl-pad-y: 0.12rem;
-  --ce-hl-radius: 0.5rem;
 }
 
 :root[saved-theme="dark"] {
   --ce-hl-bg: var(--dark);
   --ce-hl-border: var(--gray);
   --ce-hl-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
-  --ce-hl-pad-x: 0.42rem;
-  --ce-hl-pad-y: 0.12rem;
-  --ce-hl-radius: 0.5rem;
 }
 
 /* =========================================
@@ -256,7 +250,7 @@ button.desktop-explorer {
   }
 
   .ce-truncate {
-    /* ✅ 너비는 title 길이만큼 (요구사항 유지) */
+    /* bar 길이 = 제목 길이 */
     display: inline-block;
     width: max-content;
     max-width: 100%;
@@ -264,51 +258,16 @@ button.desktop-explorer {
     white-space: nowrap;
     overflow: hidden;
 
-    /* ✅ 줄간격은 row-line로 고정(0.8× 목표와 일치) */
+    /* ✅ 줄간격(0.8×) 체감이 흔들리지 않게 고정 */
     line-height: var(--mx-explorer-row-line) !important;
     vertical-align: middle;
 
-    /* ✅ hover 박스는 pseudo-element로 (레이아웃/측정에 영향 0) */
     position: relative;
-    z-index: 0;
-    isolation: isolate;
-
-    transition: transform 120ms ease;
-
-    &::before {
-      content: "";
-      position: absolute;
-
-      left: calc(-1 * var(--ce-hl-pad-x));
-      right: calc(-1 * var(--ce-hl-pad-x));
-      top: calc(-1 * var(--ce-hl-pad-y));
-      bottom: calc(-1 * var(--ce-hl-pad-y));
-
-      background: var(--ce-hl-bg);
-      border: 1px solid var(--ce-hl-border);
-      box-shadow: var(--ce-hl-shadow);
-      border-radius: var(--ce-hl-radius);
-
-      opacity: 0;
-      transform: translateY(1px) scale(0.985);
-      transition: opacity 120ms ease, transform 120ms ease;
-      will-change: opacity, transform;
-
-      pointer-events: none;
-      z-index: -1;
-    }
-  }
-
-  /* ✅ hover 트리거 통일: truncated/non-truncated/버튼/링크 모두 동일 */
-  .ce-truncate:hover,
-  .folder-container:hover .ce-truncate {
-    transform: translateY(-1px);
-  }
-
-  .ce-truncate:hover::before,
-  .folder-container:hover .ce-truncate::before {
-    opacity: 1;
-    transform: translateY(-2px) scale(1);
+    border-radius: 0.35rem;
+    transition:
+      box-shadow 120ms ease,
+      background-color 120ms ease,
+      transform 120ms ease;
   }
 
 
@@ -706,4 +665,168 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* =========================================
+   Physics/Mathematics subtree emphasis
+   - apply hover emphasis even when NOT truncated
+   - exclude Text:true folders for now
+========================================= */
+
+.ce-emph-scope .ce-truncate:hover,
+.ce-emph-scope .ce-truncate:focus {
+  background-color: var(--ce-hl-bg);
+  box-shadow: var(--ce-hl-shadow);
+  transform: translateY(-1px);
+}
+
+/* Text:true 폴더(텍스트 헤더/아코디언)는 강조 효과 제외 */
+.ce-emph-scope .folder-container.folder-text-only .ce-truncate,
+.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.ce-emph-scope .folder-container.folder-text-only .ce-truncate:hover,
+.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate:hover,
+.ce-emph-scope .folder-container.folder-text-only .ce-truncate:focus,
+.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate:focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* =========================================================
+   FINAL OVERRIDE
+   1) Row spacing: force identical row height for ALL items
+   2) Hover box: identical for ALL titles (truncated/non-truncated)
+      - matches the "ce-hover-preview" look
+      - only width differs by title length
+========================================================= */
+
+/* -------- 1) Row spacing: "확실히" 동일 행 높이로 고정 -------- */
+
+/* 기본 줄간격이 여전히 넓게 느껴지면, 여기 1줄만 줄이면 됨.
+   (원래 0.8배 느낌으로 확실히 촘촘해지도록 약간 더 타이트하게 잡음) */
+.explorer {
+  --mx-explorer-row-line-base: 1.35rem; /* ✅ 여기: 줄 간격의 기준 (기존 1.5rem보다 타이트) */
+}
+
+/* 모든 li/row에서 불필요한 margin/padding 제거 */
+.explorer .explorer-content li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 파일 row(<li><a/>)도 폴더 row와 동일한 높이로 고정 */
+.explorer .explorer-content ul li > a {
+  display: flex;
+  align-items: center;
+  height: var(--mx-explorer-row-line) !important;
+  min-height: var(--mx-explorer-row-line) !important;
+  line-height: var(--mx-explorer-row-line) !important;
+  padding-block: 0 !important;
+}
+
+/* 폴더 row(<div class="folder-container">)도 동일한 높이로 고정 */
+.explorer .folder-container {
+  height: var(--mx-explorer-row-line) !important;
+  min-height: var(--mx-explorer-row-line) !important;
+  padding-block: 0 !important;
+  margin: 0 !important;
+}
+
+/* 폴더 내부 클릭 요소들도 행 높이를 깨지 못하게 고정 */
+.explorer .folder-container div > button,
+.explorer .folder-container div > a,
+.explorer .folder-container .folder-title,
+.explorer .folder-container .folder-title--textonly,
+.explorer .folder-container div > button span {
+  line-height: var(--mx-explorer-row-line) !important;
+  margin: 0 !important;
+  padding-block: 0 !important;
+}
+
+/* -------- 2) Hover box: truncated/non-truncated 완전 동일 -------- */
+
+/* hover 박스 “모양”을 overlay(ce-hover-preview)와 동일하게 맞춤 */
+:root {
+  --ce-pill-pad-y: 0.12rem;     /* ce-hover-preview padding-y */
+  --ce-pill-pad-x: 0.42rem;     /* ce-hover-preview padding-x */
+  --ce-pill-radius: 0.5rem;     /* ce-hover-preview radius */
+  --ce-pill-bg: var(--light);   /* ce-hover-preview bg */
+  --ce-pill-border: var(--lightgray);
+  --ce-pill-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+:root[saved-theme="dark"] {
+  --ce-pill-bg: var(--dark);
+  --ce-pill-border: var(--gray);
+  --ce-pill-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+}
+
+/* 기존 여러 hover 규칙들이 background/box-shadow를 직접 주며 섞이는 걸 막기 위해
+   base에서는 무조건 투명으로 “리셋” */
+.explorer .ce-truncate {
+  background: transparent !important;
+  box-shadow: none !important;
+
+  /* ✅ title 길이만큼만 폭을 가지게(너비=텍스트 길이 기반) */
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+
+  /* ✅ 줄높이 통일(행 간격 흔들림 방지) */
+  line-height: var(--mx-explorer-row-line) !important;
+  vertical-align: middle;
+
+  /* hover box를 pseudo-element로 그릴 준비 */
+  position: relative;
+  z-index: 0;
+  border-radius: var(--ce-pill-radius);
+  transition: transform 120ms ease;
+}
+
+/* hover 박스는 ::before 로만 그림 (레이아웃에 영향 X → 줄간격 안 늘어남) */
+.explorer .ce-truncate::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--ce-pill-pad-x));
+  right: calc(-1 * var(--ce-pill-pad-x));
+  top: calc(-1 * var(--ce-pill-pad-y));
+  bottom: calc(-1 * var(--ce-pill-pad-y));
+
+  border-radius: var(--ce-pill-radius);
+  background: var(--ce-pill-bg);
+  border: 1px solid var(--ce-pill-border);
+  box-shadow: var(--ce-pill-shadow);
+
+  opacity: 0;
+  transform: translateY(1px) scale(0.985);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ✅ 모든 title(truncated/non-truncated, 폴더/파일, Text:true 포함) hover 효과 동일 */
+.explorer .ce-truncate:hover::before,
+.explorer .ce-truncate:focus-visible::before {
+  opacity: 1;
+  transform: translateY(-2px) scale(1);
+}
+
+.explorer .ce-truncate:hover,
+.explorer .ce-truncate:focus-visible {
+  transform: translateY(-1px);
+}
+
+/* Text:true가 “hover 때만” 청록색으로 변하게 (포커스 고착 방지) */
+.explorer .folder-container.folder-text-only:hover .folder-title--textonly,
+.explorer .folder-container.folder-text-accordion:hover .folder-title {
+  color: var(--tertiary);
+  transition: color 120ms ease;
 }
