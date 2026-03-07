@@ -198,12 +198,18 @@ button.desktop-explorer {
   --ce-hl-bg: var(--light);
   --ce-hl-border: var(--lightgray);
   --ce-hl-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  --ce-hl-pad-x: 0.42rem;
+  --ce-hl-pad-y: 0.12rem;
+  --ce-hl-radius: 0.5rem;
 }
 
 :root[saved-theme="dark"] {
   --ce-hl-bg: var(--dark);
   --ce-hl-border: var(--gray);
   --ce-hl-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+  --ce-hl-pad-x: 0.42rem;
+  --ce-hl-pad-y: 0.12rem;
+  --ce-hl-radius: 0.5rem;
 }
 
 /* =========================================
@@ -250,7 +256,7 @@ button.desktop-explorer {
   }
 
   .ce-truncate {
-    /* bar 길이 = 제목 길이 */
+    /* ✅ 너비는 title 길이만큼 (요구사항 유지) */
     display: inline-block;
     width: max-content;
     max-width: 100%;
@@ -258,16 +264,51 @@ button.desktop-explorer {
     white-space: nowrap;
     overflow: hidden;
 
-    /* ✅ 줄간격(0.8×) 체감이 흔들리지 않게 고정 */
+    /* ✅ 줄간격은 row-line로 고정(0.8× 목표와 일치) */
     line-height: var(--mx-explorer-row-line) !important;
     vertical-align: middle;
 
+    /* ✅ hover 박스는 pseudo-element로 (레이아웃/측정에 영향 0) */
     position: relative;
-    border-radius: 0.35rem;
-    transition:
-      box-shadow 120ms ease,
-      background-color 120ms ease,
-      transform 120ms ease;
+    z-index: 0;
+    isolation: isolate;
+
+    transition: transform 120ms ease;
+
+    &::before {
+      content: "";
+      position: absolute;
+
+      left: calc(-1 * var(--ce-hl-pad-x));
+      right: calc(-1 * var(--ce-hl-pad-x));
+      top: calc(-1 * var(--ce-hl-pad-y));
+      bottom: calc(-1 * var(--ce-hl-pad-y));
+
+      background: var(--ce-hl-bg);
+      border: 1px solid var(--ce-hl-border);
+      box-shadow: var(--ce-hl-shadow);
+      border-radius: var(--ce-hl-radius);
+
+      opacity: 0;
+      transform: translateY(1px) scale(0.985);
+      transition: opacity 120ms ease, transform 120ms ease;
+      will-change: opacity, transform;
+
+      pointer-events: none;
+      z-index: -1;
+    }
+  }
+
+  /* ✅ hover 트리거 통일: truncated/non-truncated/버튼/링크 모두 동일 */
+  .ce-truncate:hover,
+  .folder-container:hover .ce-truncate {
+    transform: translateY(-1px);
+  }
+
+  .ce-truncate:hover::before,
+  .folder-container:hover .ce-truncate::before {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
   }
 
 
@@ -665,34 +706,4 @@ html[lang^="ko"] .explorer .explorer-content .ce-truncate {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-}
-
-/* =========================================
-   Physics/Mathematics subtree emphasis
-   - apply hover emphasis even when NOT truncated
-   - exclude Text:true folders for now
-========================================= */
-
-.ce-emph-scope .ce-truncate:hover,
-.ce-emph-scope .ce-truncate:focus {
-  background-color: var(--ce-hl-bg);
-  box-shadow: var(--ce-hl-shadow);
-  transform: translateY(-1px);
-}
-
-/* Text:true 폴더(텍스트 헤더/아코디언)는 강조 효과 제외 */
-.ce-emph-scope .folder-container.folder-text-only .ce-truncate,
-.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-.ce-emph-scope .folder-container.folder-text-only .ce-truncate:hover,
-.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate:hover,
-.ce-emph-scope .folder-container.folder-text-only .ce-truncate:focus,
-.ce-emph-scope .folder-container.folder-text-accordion .ce-truncate:focus {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
 }
