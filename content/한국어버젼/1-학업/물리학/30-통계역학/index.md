@@ -1,6 +1,6 @@
 ---
 lang: ko
-altLangPath: /english/1-study/1-physics/10-Statistical-Mechanics/index
+altLangPath: /english/1-study/1-physics/30-Statistical-Mechanics/index
 title: 《통계역학 시리즈》
 Text: "true"
 ---
