@@ -56,13 +56,9 @@ const config: QuartzConfig = {
   },
   plugins: {
     transformers: [
+      Plugin.FrontMatter(),
       Plugin.Latex({
         renderEngine: "mathjax",
-      }),
-      Plugin.CompileLatexBlocks({
-        languages: ["latex-render", "tex-render"],
-        cacheDir: ".quartz-cache/latex",
-        preamblePath: "quartz/latex/preamble.tex",
       }),
       Plugin.CreatedModifiedDate({
         priority: ["frontmatter", "git", "filesystem"],
